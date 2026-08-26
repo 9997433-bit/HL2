@@ -445,7 +445,7 @@ function draw() {
   ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
 
   // header
-  const left = tiles.filter(t => t.state !== 'gone').length;
+  const left = tiles.filter(t => t.state === 'board').length;
   ctx.fillStyle = '#e8eef5'; ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
   ctx.font = '600 20px sans-serif';
   ctx.fillText(LEVELS[levelIdx].name, 22, 44);
