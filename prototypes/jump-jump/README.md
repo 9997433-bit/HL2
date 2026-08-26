@@ -166,7 +166,7 @@ real team these dwarf the mechanic, which is the point of the exercise.
 
 ## Files
 
-- `index.html` — the whole thing: 628 lines of game, renderer, HUD, WeChat loop
+- `index.html` — the whole thing: 644 lines of game, renderer, HUD, WeChat loop
   and test surface.
 - `../../scripts/verify-jump-jump.mjs` — the headless verifier. Node 22+, real
   Chrome, no dependencies.

@@ -15,7 +15,7 @@ aim compensated for it. Fixing any one in isolation would have produced a game
 that plays worse than the broken one. The loop was rebuilt around a single
 model instead: charge → launch velocity → parabola → landing test.
 
-`index.html` stays a single file (628 lines of script) and keeps the wx-shim
+`index.html` stays a single file (644 lines of script) and keeps the wx-shim
 integration that landed in Round 2 (`166d5e7`).
 
 ## 2. The five defects
