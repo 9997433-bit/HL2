@@ -37,16 +37,22 @@ name, art, code, levels, text, audio, or licensed IP.
 - [`round2/ROUND2_CONTEXT.md`](./round2/ROUND2_CONTEXT.md) — Shared Round 2 mission, mandatory deliverables, existing-prototype inventory, branch, and output convention.
 - [`round2/gpt-docs-index-report.md`](./round2/gpt-docs-index-report.md) — Documentation alignment record, resolved navigation issues, and still-missing evidence or deliverables.
 - [`round2/gpt-test-harness-report.md`](./round2/gpt-test-harness-report.md) — Test-run evidence for the aggregate runner, including detailed coverage and exclusions for all three current prototypes.
+- [`round2/fable-dual-axis-scoring.md`](./round2/fable-dual-axis-scoring.md) — Mechanic score separated from product score for 22 top-chart games, resolving the Round 1 defect that mixed the two axes.
+- [`round2/fable-sota-gap-review.md`](./round2/fable-sota-gap-review.md) — Follow-up review of the Round 1 SOTA audit against Round 2 findings.
+- [`round2/opus-wx-shim-report.md`](./round2/opus-wx-shim-report.md) — The shared `wx.*` mock: mocked surface, fidelity per API, and the platform gaps it makes visible rather than hides.
+- [`round2/opus-parking-prototype-report.md`](./round2/opus-parking-prototype-report.md) — Parking Jam implementation report: solver cost versus generation cost, why search cost is not a difficulty proxy, and why a step-limited puzzle collapses its whole revenue line onto rewarded video.
 
-Round 2 implementation and analysis artifacts should be added to this section
-as they land; the gap report records which planned outputs were absent when
-this index was prepared.
+### Structured data
+
+- [`round2/dual-axis-scores.json`](./round2/dual-axis-scores.json) — Machine-readable mechanic/product scores backing the dual-axis report.
 
 ## Playable prototypes
 
 - [`../prototypes/jump-jump/`](../prototypes/jump-jump/) — Single-file Canvas hold-to-charge jumping demo with randomized platforms, scoring, and combo feedback, covered by a Chrome/CDP smoke test.
 - [`../prototypes/sheep-match3/`](../prototypes/sheep-match3/) — Modular stacked match-3 prototype with a guaranteed-solvable generator, live solver/hints, props, debug autoplay, and 14 Node tests.
 - [`../prototypes/tile-trio/`](../prototypes/tile-trio/) — Single-file layered three-match game with three levels, three ad-shaped props, an inline platform shim, and a dependency-free verification script.
+- [`../prototypes/parking-jam/`](../prototypes/parking-jam/) — Parking-jam sliding puzzle whose BFS solver doubles as the level pipeline, with eight solver-rated levels, a rewarded-video-gated hint, 23 unit tests, and a verifier that plays every level through the shipped input handlers.
+- [`../prototypes/shared/`](../prototypes/shared/) — `wx-shim`, the shared mock of the 微信小游戏 `wx.*` surface that every prototype's platform calls run through.
 
 These are mechanic probes, not deployable WeChat Mini Game packages. They do
 not provide production identity, ads, payments, friend data, sharing,
