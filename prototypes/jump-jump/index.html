@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>跳一跳 — 复刻原型</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #1a1a2e;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      font-family: system-ui, sans-serif;
+      color: #fff;
+    }
+    canvas { border-radius: 12px; box-shadow: 0 8px 32px rgba(0,0,0,0.4); cursor: pointer; }
+    .hud { margin-top: 16px; text-align: center; }
+    .score { font-size: 2rem; font-weight: bold; color: #ffd700; }
+    .hint { margin-top: 8px; color: #888; font-size: 0.9rem; }
+    .game-over { color: #ff6b6b; font-size: 1.2rem; margin-top: 8px; display: none; }
+  </style>
+</head>
+<body>
+  <canvas id="game" width="400" height="600"></canvas>
+  <div class="hud">
+    <div class="score">得分: <span id="score">0</span></div>
+    <div class="hint">按住蓄力，松开跳跃 | 空格键同样有效</div>
+    <div class="game-over" id="gameOver">游戏结束 — 点击重试</div>
+  </div>
+  <script>
+    const canvas = document.getElementById('game');
+    const ctx = canvas.getContext('2d');
+    const scoreEl = document.getElementById('score');
+    const gameOverEl = document.getElementById('gameOver');
+
+    // Player (the "jumper")
+    const player = { x: 80, y: 0, vy: 0, size: 20, charging: false, chargeStart: 0, jumping: false, jumpVx: 0 };
+
+    // Platforms
+    let platforms = [];
+    let score = 0;
+    let cameraY = 0;
+    let alive = true;
+    let combo = 0;
+
+    function rand(min, max) { return min + Math.random() * (max - min); }
+
+    function initPlatforms() {
+      platforms = [];
+      let px = 60, py = canvas.height - 80;
+      for (let i = 0; i < 20; i++) {
+        const w = rand(50, 90);
+        const gap = rand(60, 140);
+        px += gap;
+        py += rand(-40, 40);
+        py = Math.max(100, Math.min(canvas.height - 60, py));
+        platforms.push({ x: px, y: py, w, h: 16, color: `hsl(${rand(200,280)},60%,55%)` });
+      }
+      player.x = platforms[0].x + platforms[0].w / 2;
+      player.y = platforms[0].y - player.size;
+    }
+
+    function drawPlatform(p) {
+      const sy = p.y - cameraY;
+      ctx.fillStyle = p.color;
+      ctx.beginPath();
+      ctx.roundRect(p.x - p.w/2, sy, p.w, p.h, 4);
+      ctx.fill();
+      ctx.fillStyle = 'rgba(255,255,255,0.15)';
+      ctx.fillRect(p.x - p.w/2, sy, p.w, 4);
+    }
+
+    function drawPlayer() {
+      const sy = player.y - cameraY;
+      // Shadow
+      ctx.fillStyle = 'rgba(0,0,0,0.2)';
+      ctx.beginPath();
+      ctx.ellipse(player.x, sy + player.size + 4, player.size * 0.8, 4, 0, 0, Math.PI * 2);
+      ctx.fill();
+      // Body
+      ctx.fillStyle = '#ffd700';
+      ctx.beginPath();
+      ctx.arc(player.x, sy, player.size, 0, Math.PI * 2);
+      ctx.fill();
+      // Charge indicator
+      if (player.charging) {
+        const charge = Math.min((Date.now() - player.chargeStart) / 1000, 1.5);
+        ctx.strokeStyle = `rgba(255,255,255,${charge / 1.5})`;
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.arc(player.x, sy, player.size + charge * 20, 0, Math.PI * 2);
+        ctx.stroke();
+      }
+    }
+
+    function getCurrentPlatform() {
+      for (const p of platforms) {
+        if (Math.abs(player.x - p.x) < p.w / 2 + 10) return p;
+      }
+      return null;
+    }
+
+    function jump() {
+      if (!player.charging || player.jumping) return;
+      const charge = Math.min((Date.now() - player.chargeStart) / 1000, 1.5);
+      player.charging = false;
+      player.jumping = true;
+      const power = charge * 280;
+      // Find next platform direction
+      const idx = platforms.findIndex(p => Math.abs(player.x - p.x) < p.w);
+      const next = platforms[idx + 1];
+      if (next) {
+        const dx = next.x - player.x;
+        player.jumpVx = dx / (power / 400);
+      } else {
+        player.jumpVx = power / 400;
+      }
+      player.vy = -power;
+    }
+
+    function update(dt) {
+      if (!alive) return;
+
+      if (player.jumping) {
+        player.vy += 900 * dt;
+        player.y += player.vy * dt;
+        player.x += player.jumpVx;
+
+        // Land check
+        for (const p of platforms) {
+          const onPlatform = player.vy > 0 &&
+            player.x > p.x - p.w/2 && player.x < p.x + p.w/2 &&
+            player.y + player.size >= p.y && player.y + player.size <= p.y + p.h + 10;
+          if (onPlatform) {
+            player.y = p.y - player.size;
+            player.vy = 0;
+            player.jumping = false;
+            player.jumpVx = 0;
+            // Score if landed on new platform
+            const idx = platforms.indexOf(p);
+            if (idx > score) {
+              const centerBonus = Math.abs(player.x - p.x) < 8;
+              combo = centerBonus ? combo + 1 : 0;
+              score = idx;
+              scoreEl.textContent = score + (combo > 1 ? ` (+${combo}连击)` : '');
+            }
+            break;
+          }
+        }
+
+        // Fall off screen
+        if (player.y - cameraY > canvas.height + 50) {
+          alive = false;
+          gameOverEl.style.display = 'block';
+        }
+      }
+
+      // Camera follow
+      const targetCam = player.y - canvas.height * 0.6;
+      cameraY += (targetCam - cameraY) * 0.08;
+    }
+
+    function render() {
+      ctx.fillStyle = '#1a1a2e';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // Background gradient
+      const grad = ctx.createLinearGradient(0, 0, 0, canvas.height);
+      grad.addColorStop(0, '#16213e');
+      grad.addColorStop(1, '#1a1a2e');
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      platforms.forEach(drawPlatform);
+      drawPlayer();
+    }
+
+    let lastTime = 0;
+    function loop(t) {
+      const dt = Math.min((t - lastTime) / 1000, 0.05);
+      lastTime = t;
+      update(dt);
+      render();
+      requestAnimationFrame(loop);
+    }
+
+    function startCharge() {
+      if (!alive || player.jumping) return;
+      player.charging = true;
+      player.chargeStart = Date.now();
+    }
+
+    function reset() {
+      score = 0; combo = 0; alive = true; cameraY = 0;
+      scoreEl.textContent = '0';
+      gameOverEl.style.display = 'none';
+      player.jumping = false; player.vy = 0; player.jumpVx = 0;
+      initPlatforms();
+    }
+
+    canvas.addEventListener('mousedown', startCharge);
+    canvas.addEventListener('mouseup', jump);
+    canvas.addEventListener('touchstart', e => { e.preventDefault(); startCharge(); });
+    canvas.addEventListener('touchend', e => { e.preventDefault(); jump(); });
+    canvas.addEventListener('click', () => { if (!alive) reset(); });
+    document.addEventListener('keydown', e => {
+      if (e.code === 'Space') {
+        e.preventDefault();
+        if (!alive) { reset(); return; }
+        if (!player.charging) startCharge();
+      }
+    });
+    document.addEventListener('keyup', e => {
+      if (e.code === 'Space') jump();
+    });
+
+    initPlatforms();
+    requestAnimationFrame(loop);
+  </script>
+</body>
+</html>
