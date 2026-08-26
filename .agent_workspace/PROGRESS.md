@@ -15,12 +15,12 @@ Find top 10 WeChat mini games (微信小游戏) and assess whether they can be r
 |-------|--------|---------|
 | Round 1 | ✅ complete | 6/6 done; 3 prototypes + 8 Markdown reports + 2 JSON datasets; see `ROUND1_CONCLUSION_BRIEF.md` |
 | Round 2 | ✅ complete | 6/6 done; 4 prototypes + wx-shim + dual-axis; see `ROUND2_CONCLUSION_BRIEF.md` |
-| Round 3 | in_progress | 5/6 done; CI + platform constants + prototype convergence + jump-jump defect fixes + GLOBAL_FINAL_REPORT.md |
+| Round 3 | ✅ complete | 6/6 done; CI + platform constants + prototype convergence + jump-jump rebuild + GLOBAL_FINAL_REPORT.md + final acceptance sign-off (all 15 gates pass, 6 test suites green, no merge blockers) |
 
 ## Subagent Status (Round 3)
 | Agent | Model | Status |
 |-------|-------|--------|
-| [fable-r3-final-acceptance](bc-a0f382a5-162e-5cd0-ad16-421ee3871a63) | fable | running ☁️ |
+| [fable-r3-final-acceptance](bc-a0f382a5-162e-5cd0-ad16-421ee3871a63) | fable | ✅ done → `34c5432` |
 | [fable-r3-global-report](bc-d8a86cc4-f8ca-5dfe-a4a7-eb0ba09306d2) | fable | ✅ done → `7a51b40` |
 | [opus-r3-jump-jump-fix](bc-1e456385-9989-5407-891b-aca471af06f7) | opus-fast | ✅ done → `5344dca` |
 | [opus-r3-prototype-convergence](bc-a0563b1b-b789-516e-ab1e-898c17375fdb) | opus-fast | ✅ done → `88136a1` |
@@ -57,4 +57,5 @@ See [`.agent_workspace/round1/ROUND1_CONCLUSION_BRIEF.md`](round1/ROUND1_CONCLUS
 See [`.agent_workspace/round2/ROUND2_CONCLUSION_BRIEF.md`](round2/ROUND2_CONCLUSION_BRIEF.md)
 
 ### Round 3 Final Report
-See [`.agent_workspace/GLOBAL_FINAL_REPORT.md`](GLOBAL_FINAL_REPORT.md)
+See [`.agent_workspace/GLOBAL_FINAL_REPORT.md`](GLOBAL_FINAL_REPORT.md) (global findings) and
+[`.agent_workspace/round3/fable-final-acceptance.md`](round3/fable-final-acceptance.md) (acceptance sign-off: gate-by-gate checklist, prototype rescoring, residual register, test-gate record).
