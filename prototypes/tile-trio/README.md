@@ -69,18 +69,27 @@ the groups already sitting in the tray first, so shuffling cannot strand you.
 
 ### Measured
 
-Driving the shipped file headlessly (stubbed DOM, real game code), 60 runs per
-level with a greedy solver that has no lookahead:
+`verify.js` loads `index.html`'s script into a stubbed DOM and exercises the
+shipped code — the real generator, the real tray, the real props:
 
-| Level | Tiles | Guaranteed line replays | Solver clears |
-|-------|-------|-------------------------|---------------|
-| 1 · 入门 | 30 | 300/300 | 60/60 |
-| 2 · 地狱 | 57 | 300/300 | 54/60 |
-| 3 · 深渊 | 96 | 300/300 | 32/60 |
+```
+node prototypes/tile-trio/verify.js
+```
 
-Tile count is conserved across undo, shuffle and pull-out, and every tile on
-every level is reachable by peeling. A ~50% clear rate for a machine on level 3
-is intentional: the original's difficulty spike is the reason it went viral.
+It drives the generator 300 times per level and replays the exact order each deal
+was built around, then auto-plays 60 rounds per level with a greedy solver that
+has no lookahead.
+
+| Level | Tiles | Intended line winnable | Peak tray on that line | Greedy solver clears |
+|-------|-------|------------------------|------------------------|----------------------|
+| 1 · 入门 | 30 | 300/300 | 4 of 7 | ~98–100% |
+| 2 · 地狱 | 57 | 300/300 | 4 of 7 | ~85–92% |
+| 3 · 深渊 | 96 | 300/300 | 4 of 7 | ~50–60% |
+
+It also asserts that tile count is conserved across undo, shuffle and pull-out,
+and that every tile on every level is reachable by peeling. Roughly half of a
+machine's runs failing on level 3 is intentional: the original's difficulty spike
+is the reason it went viral.
 
 ## What is replicated, and what is not
 
@@ -124,6 +133,7 @@ dwarf the mechanic in cost, which is precisely the point of the exercise.
 ## Files
 
 - `index.html` — the whole thing: game, renderer, UI, and the WeChat shim.
+- `verify.js` — headless checks against that file. Node, no dependencies.
 
 ## On IP
 
