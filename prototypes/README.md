@@ -6,6 +6,7 @@ be a finished game.
 
 | Prototype | Replicates | Status |
 |---|---|---|
+| [`tile-trio/`](./tile-trio) | Layered 3-match puzzle (羊了个羊 family) | Playable, headless verify script |
 | [`sheep-match3/`](./sheep-match3) | Stacked tile match-3 (羊了个羊 / 抓大鹅 family) | Playable, 14 headless tests, solver-verified levels |
 | [`jump-jump/`](./jump-jump) | 跳一跳 hold-to-charge hop | Playable single-file canvas demo |
 
