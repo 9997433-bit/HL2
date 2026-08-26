@@ -4,13 +4,15 @@
 //   node prototypes/tile-trio/verify.js
 //
 // Asserts: every level's tile count is divisible by three, a greedy solver can
-// clear each level, tiles are conserved across undo/shuffle/pull-out, and no
-// tile is unreachable.
+// clear each level, tiles are conserved across undo/shuffle/pull-out, no tile is
+// unreachable, and the wx-shim platform loop (rewarded video -> prop, share
+// return -> revive, cloud storage -> friend board) actually fires.
 const fs = require('fs'), vm = require('vm'), path = require('path');
 
 const html = fs.readFileSync(path.join(__dirname, 'index.html'), 'utf8');
 const m = html.match(/<script>([\s\S]*?)<\/script>/);
 if (!m) throw new Error('no <script> found');
+const shimSrc = fs.readFileSync(path.join(__dirname, '..', 'shared', 'wx-shim.js'), 'utf8');
 
 const noop = () => {};
 const ctxStub = new Proxy({}, {
@@ -28,7 +30,11 @@ function el(id) {
   if (!els[id]) els[id] = {
     id, textContent: '', innerHTML: '', dataset: {},
     classList: { _s: new Set(), add(c){this._s.add(c);}, remove(c){this._s.delete(c);}, contains(c){return this._s.has(c);} },
-    addEventListener: noop, getContext: () => ctxStub,
+    // Listeners are kept so the checks can press the shim-driven buttons.
+    _h: {},
+    addEventListener(type, fn) { (this._h[type] || (this._h[type] = [])).push(fn); },
+    fire(type, ev) { (this._h[type] || []).forEach(fn => fn(ev || { preventDefault: noop })); },
+    getContext: () => ctxStub,
     getBoundingClientRect: () => ({ left: 0, top: 0, width: 480, height: 820 }),
     width: 0, height: 0, style: {}
   };
@@ -62,11 +68,15 @@ const src = m[1] + `
 ;globalThis.__api = {
   startLevel, sendToTray, isLocked, useShuffle, usePull, useUndo, draw, check,
   buildPositions, peelOrder, dealSymbols, overlaps, LAYER_OFFSET, TILE,
+  end, revive, submitScore, watchAd, shim,
   get tiles(){return tiles;}, get tray(){return tray;}, get running(){return running;},
   get props(){return props;}, LEVELS, TRAY_SLOTS
 };`;
 
 vm.createContext(sandbox);
+// The page loads the shared shim from a <script src>, so the sandbox has to as
+// well — otherwise these checks would test a game that never sees wx.*.
+vm.runInContext(shimSrc, sandbox, { filename: 'shared/wx-shim.js' });
 vm.runInContext(src, sandbox, { filename: 'index.html<script>' });
 const api = sandbox.__api;
 
@@ -181,6 +191,68 @@ while (g++ < 500) {
 }
 console.log(`reachability: peeled ${peeled}/${api.tiles.length} tiles ${peeled === api.tiles.length ? '(no unreachable tiles)' : '!! UNREACHABLE TILES'}`);
 if (peeled !== api.tiles.length) fail = true;
+
+/* ---------------------------------------------------------------------------
+   wx-shim platform loop. These four checks are the product half of the game:
+   without them the prototype is a mechanic demo with no monetisation, no viral
+   loop and no social proof. */
+const shim = api.shim;
+function check(label, ok, detail) {
+  console.log(`${label}: ${detail}${ok ? '' : '  !! FAILED'}`);
+  if (!ok) fail = true;
+}
+
+// 1. one free use per prop, then a rewarded video pays for the next one
+api.startLevel(0);
+const showsBefore = shim.calls('rewardedAd.show').length;
+api.useShuffle();                                   // free
+const freeLeft = api.props.shuffle;
+api.useShuffle();                                   // must open an ad
+const shows = shim.calls('rewardedAd.show').length - showsBefore;
+check('rewarded video',
+  freeLeft === 0 && shows === 1 && shim.currentAd === null,
+  `first use free (${freeLeft} left), second use opened ${shows} ad, ` +
+  `player watched it through and the ad closed: ${shim.currentAd === null}`);
+
+// 2. a win writes the score to cloud storage and reads the friend board back
+let won = false;
+for (let attempt = 0; attempt < 20 && !won; attempt++) won = autoplay(0, true).win;
+const wrote = won && shim.calls('wx.setUserCloudStorage').length > 0;
+const boardRows = (els.board.innerHTML.match(/class="row/g) || []).length;
+check('friend leaderboard',
+  wrote && boardRows === shim.friends.length + 1,
+  `setUserCloudStorage ${wrote ? 'called' : 'NOT called'}, board rendered ${boardRows} rows ` +
+  `(self + ${shim.friends.length} mock friends)`);
+
+// 3. share-to-revive: the revive hangs off the simulated return trip, not off
+//    the share call, because the real wx.shareAppMessage never reports success
+api.startLevel(1);
+while (api.tray.length < 3) {
+  const free = api.tiles.filter(t => t.state === 'board' && !api.isLocked(t));
+  if (!free.length) break;
+  api.sendToTray(free[0]);
+}
+const trayBefore = api.tray.length;
+api.end(false);
+els.btnShareRevive.fire('click');
+check('share revive',
+  api.running && api.tray.length === trayBefore - 3 && shim.calls('wx.shareAppMessage').length > 0,
+  `shared, friend opened the card, tray ${trayBefore} -> ${api.tray.length}, running ${api.running}`);
+
+// 4. ad revive goes through the same rewarded unit
+while (api.tray.length < 3) {
+  const free = api.tiles.filter(t => t.state === 'board' && !api.isLocked(t));
+  if (!free.length) break;
+  api.sendToTray(free[0]);
+}
+const showsBeforeRevive = shim.calls('rewardedAd.show').length;
+const trayBeforeRevive = api.tray.length;
+api.end(false);
+els.btnAdRevive.fire('click');
+check('ad revive',
+  shim.calls('rewardedAd.show').length === showsBeforeRevive + 1 &&
+  api.tray.length === trayBeforeRevive - 3 && api.running,
+  `rewarded video watched, tray ${trayBeforeRevive} -> ${api.tray.length}, running ${api.running}`);
 
 console.log(fail ? '\nREAL-FILE CHECKS FAILED' : '\nREAL-FILE CHECKS PASSED');
 process.exit(fail ? 1 : 0);

@@ -44,6 +44,41 @@
   }
   #toast.show { opacity: 1; }
   .tag { display:inline-block; font-size: 11px; color:#8fa3b8; border:1px solid #33475c; border-radius:6px; padding:2px 7px; }
+
+  /* ----- mock 激励视频 (wx.createRewardedVideoAd) ----- */
+  #ovAd { background: rgba(6, 10, 14, .96); z-index: 5; gap: 0; }
+  .adcard {
+    width: 90%; max-width: 330px; background: #101922;
+    border: 1px solid #24374a; border-radius: 16px; overflow: hidden;
+  }
+  .adscreen {
+    height: 168px; display: flex; flex-direction: column; gap: 6px;
+    align-items: center; justify-content: center; font-size: 40px;
+    background: linear-gradient(135deg, #2b4a6b, #6b3f7a);
+  }
+  .adscreen small { font-size: 12px; color: rgba(255,255,255,.75); letter-spacing: 1px; }
+  .adprogress { height: 4px; background: #1b2733; }
+  .adprogress > i { display: block; height: 100%; width: 0; background: #56c271; transition: width .95s linear; }
+  .admeta { padding: 12px 14px; display: flex; align-items: center; gap: 10px; text-align: left; }
+  .admeta .t { flex: 1; font-size: 13px; line-height: 1.5; }
+  .admeta .t em { display: block; font-style: normal; font-size: 10px; color: #61798f; margin-top: 3px; }
+  #btnAdSkip {
+    border: 0; border-radius: 999px; padding: 8px 14px; font-size: 12px; font-family: inherit;
+    background: #2b3a4a; color: #b9cadb; cursor: pointer; white-space: nowrap;
+  }
+
+  /* ----- mock 好友排行榜 (wx.getFriendCloudStorage) ----- */
+  #board { width: 100%; max-width: 320px; text-align: left; font-size: 13px; }
+  #board .hd { font-size: 11px; color: #61798f; margin-bottom: 6px; letter-spacing: 1px; }
+  #board .row { display: flex; align-items: center; gap: 9px; padding: 5px 9px; border-radius: 9px; }
+  #board .row.me { background: rgba(86, 194, 113, .17); }
+  #board .rk { width: 18px; text-align: right; color: #8fa3b8; }
+  #board .av {
+    width: 22px; height: 22px; border-radius: 50%; background: #2f4358;
+    display: flex; align-items: center; justify-content: center; font-size: 11px; color: #cfe0f0;
+  }
+  #board .nm { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  #board .sc { color: #ffd479; }
 </style>
 </head>
 <body>
@@ -67,51 +102,163 @@
   <div class="overlay" id="ovEnd">
     <h2 id="endTitle"></h2>
     <p id="endText"></p>
+    <div id="board"></div>
+    <div class="row" id="reviveRow">
+      <button class="btn" id="btnAdRevive">🎬 看广告复活</button>
+      <button class="btn ghost" id="btnShareRevive">📤 分享复活</button>
+    </div>
     <div class="row">
       <button class="btn" id="btnAgain">再来一次 Retry</button>
       <button class="btn ghost" id="btnMenu">选关 Levels</button>
+      <button class="btn ghost" id="btnShare">📤 炫耀一下</button>
+    </div>
+  </div>
+
+  <div class="overlay" id="ovAd">
+    <div class="adcard">
+      <div class="adscreen">🎬<small id="adCount">MOCK REWARDED VIDEO</small></div>
+      <div class="adprogress"><i id="adBar"></i></div>
+      <div class="admeta">
+        <div class="t"><span id="adTitle"></span><em id="adUnit"></em></div>
+        <button id="btnAdSkip">跳过</button>
+      </div>
     </div>
   </div>
 </div>
 
+<script src="../shared/wx-shim.js"></script>
 <script>
 /* ------------------------------------------------------------------
    叠叠消 (Tile Trio) — an original re-implementation of the layered
    3-tile-matching mechanic popularised by 羊了个羊 / 猪了个猪, the games
    that have topped WeChat's 畅玩榜 (DAU chart) through 2025-2026.
 
-   Everything here is plain HTML5 Canvas + vanilla JS. Anything that would
-   require a WeChat-only API is routed through the WX shim below so the
-   platform dependency is explicit rather than hidden.
+   Everything here is plain HTML5 Canvas + vanilla JS. Every WeChat-only API is
+   called by its real name through `prototypes/shared/wx-shim.js`, which mocks
+   the platform off-device and stands aside inside a real 微信小游戏 — so the
+   call sites below are the ones that would ship.
 ------------------------------------------------------------------- */
 
-/* ===== WeChat platform shim =================================================
-   In a real 微信小游戏 these calls hit wx.* globals. On the open web they do
-   not exist, so we stub them and surface what would have happened. This is the
-   full set of platform hooks this genre actually depends on. */
-const WX = {
-  available: typeof wx !== 'undefined',
-  // wx.createRewardedVideoAd({adUnitId}) -> .load()/.show()/.onClose(cb)
-  rewardedAd(reason, onReward) {
-    if (this.available) { /* wx.createRewardedVideoAd(...).show() */ }
-    toast('🎬 ' + reason + '\n（微信端为激励视频广告 wx.createRewardedVideoAd，此处直接发放）');
-    onReward(true);
-  },
-  // wx.shareAppMessage({title, imageUrl}) — the viral loop of 羊了个羊
-  share(title) {
-    if (this.available) { /* wx.shareAppMessage({title}) */ }
-    toast('📤 分享给好友复活\n（微信端 wx.shareAppMessage，Web 无等价能力）');
-  },
-  // wx.setUserCloudStorage + 开放数据域 for the friend leaderboard
-  submitScore(kv) {
-    if (this.available) { /* wx.setUserCloudStorage({KVDataList:[...]}) */ }
-    console.info('[WX shim] setUserCloudStorage', kv);
-  },
-  vibrate(long) {
-    if (navigator.vibrate) navigator.vibrate(long ? 30 : 12);
-    // 微信端: wx.vibrateShort({type:'light'}) / wx.vibrateLong()
-  }
+/* ===== WeChat platform ====================================================
+   installWxShim() publishes the mock as `globalThis.wx`; on a real device the
+   genuine namespace wins and `shim.isMock` is false. Ads run in 'manual' mode
+   so this page can draw the fake video player itself. */
+const shim = WxShim.installWxShim({
+  adBehavior: 'manual',
+  shareBehavior: 'auto',
+  shareReturnMs: 900,
+  friendCount: 7,
+  seed: 20260826
+});
+
+const AD_UNITS = {
+  prop:   'adunit-tiletrio-prop-9f21',      // 道具：洗牌 / 移出 / 撤销
+  revive: 'adunit-tiletrio-revive-4c07'     // 复活
 };
+const CLOUD_KEY = 'score';                  // 好友榜 KV，沿用微信 wxgame 结构
+
+const AD_SECONDS = 5;                       // fake creative length
+let adReason = '', adReward = null, adLeft = 0, adTimer = null;
+
+/* A rewarded ad is a singleton per ad unit and pre-loads itself, so one
+   instance is created up front and every prop routes its reward through the
+   single onClose handler — the pattern the real SDK forces on you. */
+const rewardedAd = wx.createRewardedVideoAd({ adUnitId: AD_UNITS.prop });
+
+rewardedAd.onError(err => {
+  adReward = null;
+  hideAdOverlay();
+  toast('广告拉取失败 ' + err.errCode + '（' + err.errMsg + '）');
+});
+
+rewardedAd.onClose(res => {
+  hideAdOverlay();
+  const grant = adReward;
+  adReward = null;
+  if (res && res.isEnded) { if (grant) grant(); }
+  else toast('提前关闭广告，本次奖励不发放');
+});
+
+/** Show a rewarded video and run `onReward` only if it was watched to the end. */
+function watchAd(reason, onReward) {
+  adReason = reason;
+  adReward = onReward;
+  rewardedAd.show().catch(() => {
+    // Real fallback: the creative was not ready, so load and show again.
+    rewardedAd.load()
+      .then(() => rewardedAd.show())
+      .catch(err => {
+        adReward = null;
+        toast('暂无广告库存（errCode ' + (err.errCode || 1004) + '），道具未发放');
+      });
+  });
+}
+
+/* The shim only reports that an ad is on screen; drawing it is the host's job,
+   exactly as the WeChat SDK draws its own player over the canvas. */
+shim.on('ad:show', session => {
+  document.getElementById('adTitle').textContent = adReason;
+  document.getElementById('adUnit').textContent = session.adUnitId + ' · wx-shim mock';
+  document.getElementById('adBar').style.width = '0%';
+  adLeft = AD_SECONDS;
+  show('ovAd');
+  tickAd();
+});
+
+function tickAd() {
+  const skip = document.getElementById('btnAdSkip');
+  document.getElementById('adCount').textContent = adLeft + 's';
+  document.getElementById('adBar').style.width =
+    Math.round((1 - adLeft / AD_SECONDS) * 100) + '%';
+  skip.textContent = adLeft > 0 ? '跳过 (' + adLeft + ')' : '关闭';
+  if (adLeft <= 0) { shim.completeAd(); return; }   // watched through -> reward
+  adLeft--;
+  adTimer = setTimeout(tickAd, 1000);
+}
+
+function hideAdOverlay() {
+  clearTimeout(adTimer);
+  hide('ovAd');
+}
+
+/* Score goes to the friend leaderboard in WeChat's own wxgame envelope, which
+   is what 开放数据域 排行榜模板 expects to read back. */
+function submitScore(score) {
+  wx.setUserCloudStorage({
+    KVDataList: [
+      { key: CLOUD_KEY, value: JSON.stringify({ wxgame: { score, update_time: Math.floor(Date.now() / 1000) } }) },
+      { key: 'level', value: String(levelIdx + 1) }
+    ]
+  });
+}
+
+function readScore(kvList) {
+  const kv = kvList.find(k => k.key === CLOUD_KEY);
+  if (!kv) return 0;
+  try { return Number(JSON.parse(kv.value).wxgame.score) || 0; } catch (e) { return 0; }
+}
+
+/** Render the friend board. On a real device this HTML would instead be drawn
+    into the 开放数据域 sub-canvas — the main context cannot read friend data. */
+function showLeaderboard() {
+  wx.getFriendCloudStorage({
+    keyList: [CLOUD_KEY],
+    success: res => {
+      const rows = res.data
+        .map(u => ({ name: u.nickname, score: readScore(u.KVDataList), me: u.openid === shim.config.self.openid }))
+        .sort((a, b) => b.score - a.score);
+      document.getElementById('board').innerHTML =
+        '<div class="hd">好友榜 · wx.getFriendCloudStorage（mock ' + rows.length + ' 人）</div>' +
+        rows.map((r, i) =>
+          '<div class="row' + (r.me ? ' me' : '') + '">' +
+            '<span class="rk">' + (i + 1) + '</span>' +
+            '<span class="av">' + r.name.slice(0, 1) + '</span>' +
+            '<span class="nm">' + r.name + '</span>' +
+            '<span class="sc">' + r.score + '</span>' +
+          '</div>').join('');
+    }
+  });
+}
 
 /* ===== constants ========================================================== */
 const W = 480, H = 820;
@@ -151,6 +298,7 @@ let history = [];    // tile refs, for undo
 let props = { shuffle: 0, pull: 0, undo: 0 };
 let levelIdx = 0;
 let running = false;
+let levelStart = 0;
 let shakeUntil = 0, shakeTile = null;
 
 /* ===== layout generation ==================================================
@@ -254,9 +402,11 @@ function startLevel(idx) {
   tiles.forEach(t => { t.tx = t.x; t.ty = t.y; });
 
   tray = []; history = [];
-  props = { shuffle: 1, pull: 1, undo: 1 };
+  props = { shuffle: 1, pull: 1, undo: 1 };   // free uses; after that, watch an ad
   running = true;
-  hide('ovStart'); hide('ovEnd');
+  levelStart = Date.now();
+  hide('ovStart'); hide('ovEnd'); hide('ovAd');
+  document.getElementById('board').innerHTML = '';
   layoutTray();
 }
 
@@ -274,7 +424,7 @@ function sendToTray(t) {
   if (at >= 0) tray.splice(at + 1, 0, t); else tray.push(t);
   history.push(t);
   layoutTray();
-  WX.vibrate(false);
+  wx.vibrateShort({ type: 'light' });
 
   const same = tray.filter(x => x.type === t.type);
   if (same.length >= 3) {
@@ -285,7 +435,7 @@ function sendToTray(t) {
         const h = history.indexOf(x); if (h >= 0) history.splice(h, 1);
       });
       layoutTray();
-      WX.vibrate(true);
+      wx.vibrateLong();
       check();
     }, 130);
   } else {
@@ -293,11 +443,17 @@ function sendToTray(t) {
   }
 }
 
+/* Faster clears score higher, so the friend board has something to rank. */
+function levelScore() {
+  const elapsed = (Date.now() - levelStart) / 1000;
+  return (levelIdx + 1) * 1000 + Math.max(0, Math.round(600 - elapsed * 4));
+}
+
 function check() {
   if (!running) return;
   if (tiles.every(t => t.state === 'gone')) {
     running = false;
-    WX.submitScore({ key: 'level', value: String(levelIdx + 1) });
+    submitScore(levelScore());
     setTimeout(() => end(true), 350);
   } else if (tray.length >= TRAY_SLOTS) {
     running = false;
@@ -305,12 +461,19 @@ function check() {
   }
 }
 
-/* ===== props (rewarded-ad gated in the real game) ========================= */
+/* ===== props ==============================================================
+   The genre's actual monetisation: one free use per level, then every further
+   use costs a 激励视频. `withProp` is the whole IAA loop in eight lines. */
+function withProp(key, reason, action) {
+  if (!running) return false;
+  if (props[key] > 0) { props[key]--; action(); return true; }
+  watchAd('看广告获得「' + reason + '」', action);
+  return true;
+}
+
 function useShuffle() {
   if (!running) return;
-  if (props.shuffle <= 0) return toast('本关洗牌已用完');
-  WX.rewardedAd('洗牌 Shuffle', () => {
-    props.shuffle--;
+  withProp('shuffle', '洗牌 Shuffle', () => {
     const board = tiles.filter(t => t.state === 'board');
     const order = peelOrder(board);
     const need = {};                                     // finish what's in the tray first
@@ -335,28 +498,27 @@ function useShuffle() {
   });
 }
 
+/** Send the first three tray tiles back to the board, on a free top layer. */
+function pullOut() {
+  const top = Math.max(...tiles.map(t => t.layer)) + 1;
+  tray.splice(0, 3).forEach((t, i) => {
+    t.state = 'board'; t.layer = top;                    // returned tiles land on top, always free
+    t.bx = CX - TILE * 1.5 + i * TILE; t.by = TRAY_Y - 92;
+    const h = history.indexOf(t); if (h >= 0) history.splice(h, 1);
+  });
+  layoutTray();
+}
+
 function usePull() {
   if (!running) return;
-  if (props.pull <= 0) return toast('本关移出已用完');
   if (tray.length === 0) return toast('槽位是空的');
-  WX.rewardedAd('移出 Pull out — 取回槽内 3 张', () => {
-    props.pull--;
-    const top = Math.max(...tiles.map(t => t.layer)) + 1;
-    tray.splice(0, 3).forEach((t, i) => {
-      t.state = 'board'; t.layer = top;                  // returned tiles land on top, always free
-      t.bx = CX - TILE * 1.5 + i * TILE; t.by = TRAY_Y - 92;
-      const h = history.indexOf(t); if (h >= 0) history.splice(h, 1);
-    });
-    layoutTray();
-  });
+  withProp('pull', '移出 Pull out — 取回槽内 3 张', pullOut);
 }
 
 function useUndo() {
   if (!running) return;
-  if (props.undo <= 0) return toast('本关撤销已用完');
   if (!history.length) return toast('没有可撤销的操作');
-  WX.rewardedAd('撤销 Undo', () => {
-    props.undo--;
+  withProp('undo', '撤销 Undo', () => {
     const t = history.pop();
     tray.splice(tray.indexOf(t), 1);
     t.state = 'board';
@@ -453,7 +615,7 @@ function draw() {
   ctx.fillText('剩余 ' + left + ' 张 · 槽位 ' + tray.length + '/' + TRAY_SLOTS, 22, 66);
   ctx.textAlign = 'right'; ctx.fillStyle = '#617d99';
   ctx.font = '11px sans-serif';
-  ctx.fillText('mechanic prototype · no WeChat SDK', W - 22, 66);
+  ctx.fillText(shim.isMock ? 'wx-shim mock · 广告/分享/好友榜' : '微信小游戏 · 真实 wx SDK', W - 22, 66);
 
   // board, painted bottom layer first
   const board = tiles.filter(t => t.state === 'board').sort((a, b) => a.layer - b.layer || a.by - b.by);
@@ -479,14 +641,14 @@ function draw() {
     t.pop = Math.max(0, t.pop - 0.05);
   });
 
-  // prop buttons
+  // prop buttons — 🎬 marks the ones that now cost a rewarded video
   BTNS.forEach(b => {
     const n = props[b.key];
-    ctx.fillStyle = n > 0 ? '#2f4358' : '#232f3b';
+    ctx.fillStyle = n > 0 ? '#2f4358' : '#3a3350';
     roundRect(b.x, b.y, b.w, b.h, 12); ctx.fill();
-    ctx.fillStyle = n > 0 ? '#e8eef5' : '#5b6b7c';
+    ctx.fillStyle = '#e8eef5';
     ctx.font = '14px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.fillText(b.label + ' ×' + n, b.x + b.w / 2, b.y + b.h / 2);
+    ctx.fillText(b.label + (n > 0 ? ' ×' + n : ' 🎬'), b.x + b.w / 2, b.y + b.h / 2);
   });
 }
 
@@ -512,18 +674,70 @@ function toast(msg) {
   toastTimer = setTimeout(() => el.classList.remove('show'), 2400);
 }
 
+let revived = false;
+
 function end(win) {
   document.getElementById('endTitle').textContent = win ? '通关！ 🎉' : '槽位满了 💀';
   document.getElementById('endText').innerHTML = win
-    ? LEVELS[levelIdx].name + ' 全部消除。<br>微信端此处会调用 wx.shareAppMessage 发起炫耀分享，并把成绩写入开放数据域好友榜。'
-    : '七个槽位被占满且无法凑齐三张。<br>微信端此处会弹出激励视频广告或“分享给好友”以复活 —— 这正是该品类的核心变现与传播闭环。';
+    ? LEVELS[levelIdx].name + ' 全部消除，得分 ' + levelScore() +
+      '。<br>成绩已写入 wx.setUserCloudStorage，好友榜由 wx.getFriendCloudStorage 读回。'
+    : '七个槽位被占满且无法凑齐三张。<br>看广告或分享给好友即可复活 —— 该品类的变现与传播闭环。';
+  document.getElementById('reviveRow').style.display = (!win && !revived) ? 'flex' : 'none';
+  if (win) showLeaderboard(); else document.getElementById('board').innerHTML = '';
   show('ovEnd');
 }
 
+/** One revive per run, from either an ad or a share. */
+function revive(how) {
+  revived = true;
+  running = true;
+  hide('ovEnd');
+  pullOut();
+  toast('复活成功（' + how + '）：槽内 3 张已退回牌面');
+}
+
 document.querySelectorAll('[data-level]').forEach(b =>
-  b.addEventListener('click', () => startLevel(+b.dataset.level)));
-document.getElementById('btnAgain').addEventListener('click', () => startLevel(levelIdx));
+  b.addEventListener('click', () => { revived = false; startLevel(+b.dataset.level); }));
+document.getElementById('btnAgain').addEventListener('click', () => { revived = false; startLevel(levelIdx); });
 document.getElementById('btnMenu').addEventListener('click', () => { hide('ovEnd'); show('ovStart'); });
+
+document.getElementById('btnAdSkip').addEventListener('click', () => {
+  // Closing early is the interesting branch: onClose reports isEnded:false.
+  if (adLeft > 0) shim.skipAd(); else shim.completeAd();
+});
+
+document.getElementById('btnAdRevive').addEventListener('click', () =>
+  watchAd('复活 Revive — 退回槽内 3 张', () => revive('激励视频')));
+
+/* wx.shareAppMessage has no success callback on the real platform; a game can
+   only react to the user coming back with a shareTicket. The shim replays that
+   round trip as `share:success`, so the revive is wired to the return, not to
+   the share call. */
+document.getElementById('btnShareRevive').addEventListener('click', () => {
+  toast('已拉起分享面板，等待好友打开卡片…');
+  shim.once('share:success', info =>
+    revive('分享回流 · scene ' + info.scene + ' · 来自 ' + (info.from ? info.from.nickname : '好友')));
+  wx.shareAppMessage({
+    title: '我卡在' + LEVELS[levelIdx].name + '了，帮我一把！',
+    imageUrl: 'assets/share-card.png',
+    query: 'level=' + (levelIdx + 1) + '&from=revive'
+  });
+});
+
+document.getElementById('btnShare').addEventListener('click', () => {
+  wx.shareAppMessage({
+    title: '我在叠叠消通关了' + LEVELS[levelIdx].name + '，来挑战我 ' + levelScore() + ' 分',
+    imageUrl: 'assets/share-card.png',
+    query: 'level=' + (levelIdx + 1) + '&from=brag'
+  });
+  toast('📤 wx.shareAppMessage 已调用（平台不返回成功回调）');
+});
+
+/* Coming back through a share card is a real re-entry: WeChat fires onShow with
+   the scene value and the ticket. */
+wx.onShow(res => {
+  if (res.shareTicket) console.info('[tile-trio] 分享回流 scene=' + res.scene + ' ticket=' + res.shareTicket);
+});
 
 // ?level=2 deep-links straight into a level, for demos and headless testing
 const deep = new URLSearchParams(location.search).get('level');
