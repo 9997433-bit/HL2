@@ -1,0 +1,11 @@
+{
+  "name": "stacked-match3-prototype",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Minimal HTML5 Canvas prototype of the WeChat mini-game stacked match-3 loop (羊了个羊 / 抓大鹅 family), with a guaranteed-solvable level generator.",
+  "scripts": {
+    "test": "node --test 'test/*.test.mjs'",
+    "serve": "node --run-serve || python3 -m http.server 8080"
+  }
+}
