@@ -18,14 +18,14 @@ Find top 10 WeChat mini games (微信小游戏) and assess whether they can be r
 | Round 3 | pending | SOTA polish & final acceptance |
 
 ## Subagent Status (Round 2)
-| Agent | Status |
-|-------|--------|
-| fable-r2-dual-axis | pending |
-| fable-r2-sota-review | pending |
-| opus-r2-parking-prototype | pending |
-| opus-r2-wx-shim | pending |
-| gpt-sol-r2-test-harness | pending |
-| gpt-sol-r2-docs-index | pending |
+| Agent | Model | Status |
+|-------|-------|--------|
+| [fable-r2-dual-axis](bc-a372d5e5-0cde-584e-9e47-7e642ca84a1f) | fable | running ☁️ |
+| [fable-r2-sota-review](bc-5c23743a-4286-5ed8-bd26-633193182140) | fable | running ☁️ |
+| [opus-r2-parking-prototype](bc-67ad5d81-6d12-5144-9093-0f99c9f5883c) | opus-fast | running ☁️ |
+| [opus-r2-wx-shim](bc-977a7fb8-54dd-5b24-a11d-2186e180fcba) | opus-fast | running |
+| [gpt-sol-r2-test-harness](bc-2ae60e8a-6902-511f-a575-cb7429ba6e03) | gpt-sol | running |
+| [gpt-sol-r2-docs-index](bc-17771006-72a3-5a06-809b-f7b79caf8dcf) | gpt-sol | running |
 
 ## Subagent Status (Round 1)
 | Agent | Status |
