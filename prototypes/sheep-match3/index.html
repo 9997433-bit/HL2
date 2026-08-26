@@ -39,11 +39,43 @@
         height: 100%;
         touch-action: manipulation;
       }
+      /* Stand-ins for the two things WeChat draws itself: the rewarded-video
+         overlay and the friend board inside the 开放数据域. */
+      .wxpanel {
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%);
+        max-width: 88%;
+        padding: 9px 16px;
+        border-radius: 12px;
+        background: rgba(28, 25, 23, 0.86);
+        color: #fafaf9;
+        font-size: 13px;
+        line-height: 1.5;
+        text-align: center;
+        opacity: 0;
+        transition: opacity 0.2s;
+        pointer-events: none;
+      }
+      .wxpanel.show {
+        opacity: 1;
+      }
+      #wxad {
+        top: 12%;
+      }
+      #wxboard {
+        bottom: 4%;
+        background: rgba(63, 98, 18, 0.92);
+      }
     </style>
   </head>
   <body>
     <div id="stage">
-      <div id="frame"><canvas id="game"></canvas></div>
+      <div id="frame">
+        <canvas id="game"></canvas>
+        <div id="wxad" class="wxpanel"></div>
+        <div id="wxboard" class="wxpanel"></div>
+      </div>
     </div>
     <script type="module" src="./src/main.js"></script>
   </body>
