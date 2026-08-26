@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>微信小游戏复刻原型 · Demo</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+      background: linear-gradient(160deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+      color: #e2e8f0;
+      min-height: 100vh;
+      padding: 2rem 1rem 3rem;
+    }
+    .wrap { max-width: 720px; margin: 0 auto; }
+    h1 {
+      font-size: 1.75rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+      background: linear-gradient(90deg, #fbbf24, #f472b6);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .sub { color: #94a3b8; font-size: 0.95rem; line-height: 1.6; margin-bottom: 2rem; }
+    .grid { display: grid; gap: 1rem; }
+    a.card {
+      display: block;
+      text-decoration: none;
+      color: inherit;
+      background: rgba(30, 41, 59, 0.8);
+      border: 1px solid rgba(148, 163, 184, 0.2);
+      border-radius: 16px;
+      padding: 1.25rem 1.5rem;
+      transition: transform 0.15s, border-color 0.15s, box-shadow 0.15s;
+    }
+    a.card:hover {
+      transform: translateY(-2px);
+      border-color: rgba(251, 191, 36, 0.5);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    }
+    .card h2 { font-size: 1.15rem; margin-bottom: 0.35rem; color: #f8fafc; }
+    .card .tag {
+      display: inline-block;
+      font-size: 0.7rem;
+      padding: 0.15rem 0.5rem;
+      border-radius: 999px;
+      background: rgba(251, 191, 36, 0.15);
+      color: #fbbf24;
+      margin-bottom: 0.5rem;
+    }
+    .card p { font-size: 0.85rem; color: #94a3b8; line-height: 1.5; }
+    footer {
+      margin-top: 2.5rem;
+      text-align: center;
+      font-size: 0.8rem;
+      color: #64748b;
+    }
+    footer a { color: #94a3b8; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>微信小游戏 Top10 复刻原型</h1>
+    <p class="sub">4 个可玩 Demo，验证畅玩榜头部休闲游戏的机制可复刻性。点击卡片即玩，无需安装。</p>
+    <div class="grid">
+      <a class="card" href="prototypes/tile-trio/">
+        <span class="tag">羊了个羊类</span>
+        <h2>Tile Trio · 层叠三消</h2>
+        <p>层叠方块 + 7 槽消除，含 Mock 激励视频与分享复活。</p>
+      </a>
+      <a class="card" href="prototypes/sheep-match3/">
+        <span class="tag">参考核心</span>
+        <h2>Sheep Match-3 · 模块化三消</h2>
+        <p>可解性生成器 + 求解器，支持 <code>?autoplay=90</code> 自动演示。</p>
+      </a>
+      <a class="card" href="prototypes/parking-jam/">
+        <span class="tag">挪了下车类</span>
+        <h2>Parking Jam · 错位车库</h2>
+        <p>滑块停车解谜，8 关 + BFS 提示（Mock 广告解锁）。</p>
+      </a>
+      <a class="card" href="prototypes/jump-jump/">
+        <span class="tag">跳一跳</span>
+        <h2>Jump Jump · 蓄力跳跃</h2>
+        <p>按住蓄力、居中连击 2/4/8/16，无尽平台 + 好友 Mock 排行。</p>
+      </a>
+    </div>
+    <footer>
+      <p>研究仓库 · <a href="https://github.com/9997433-bit/HL2">9997433-bit/HL2</a></p>
+      <p style="margin-top:0.5rem">玩法可借鉴，美术原创 · 非商业成品</p>
+    </footer>
+  </div>
+</body>
+</html>
