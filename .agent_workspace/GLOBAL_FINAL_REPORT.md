@@ -4,7 +4,7 @@ Model slug: claude-fable-5-thinking-xhigh
 
 > Round 3 全局报告 · fable-r3-global-report · 2026-08-26
 > 基线：Round 1（调研与可行性）+ Round 2（双轴评分、第 4 原型、wx-shim、统一测试链）全部产出
-> 验证记录：代码树 commit `9c4d0cc`，`./scripts/run-all-prototype-tests.sh` → **5 套件全部通过，0 失败**（Node v22.14.0 / Linux / headless Chromium）
+> 验证记录：代码树 commit `6a2cbcf`，`./scripts/run-all-prototype-tests.sh` → **5 套件全部通过，0 失败**（Node v22.14.0 / Linux / headless Chromium）
 
 ---
 
@@ -89,7 +89,7 @@ Round 1 的单轴「复刻分」曾把跳一跳和向僵尸开炮都打成 7 分
 | `tile-trio/`（叠叠消） | 羊了个羊 | **榜首休闲游戏的"游戏部分"只是几百行原生 JS**——单文件实现完整循环：层级遮挡、七槽托盘、保证可解的发牌、三种广告门控道具、胜负判定 | 每关 300/300 次生成均含可赢线；贪心求解器通关率 98–100% / 85–92% / 50–60%（难度曲线故意陡峭）；4 项平台闭环断言（看完广告才发奖、跳过不发奖、分享复活走回流、好友榜渲染 8 行） |
 | `sheep-match3/` | 羊了个羊 | **可解性生成是该品类唯一算法难点，且可被解决**：446 行纯核心 + 种子化 PRNG + 位集记忆化 DFS 求解器（生成/提示/洗牌/自动通关四用） | 17/17 Node 测试（Round 3 把洗牌道具升级为求解器验证的安全重发，修复 G-SM1「看广告换来的洗牌可能把玩家洗死」）；无头 Chrome 驱动 129 瓦片"地狱关"129/129 全清；验证中发现并修复 2 个真实缺陷（槽位差一错误、首帧几何） |
 | `parking-jam/`（错位车库） | 挪了下车 | **求解器就是内容管线**：BFS（核心约 50 行）同时充当难度评级、星级 par、步数预算和提示；Round 1 预测的"1k–1.5k 行核心"被证实（可玩部分约 1,600 行） | 8 关 par 2→34，最难关搜索 <10,000 状态、<100 ms；23 项单测 + 无头验证器以真实指针事件通关全部 8 关；**产量塌方实测**：par 34 的关卡需约 25,000 次生成-测试（par 8–9 只需几十次） |
-| `jump-jump/` | 跳一跳 | 蓄力-起跳-落点循环的画布实现 + Chrome/CDP 冒烟测试 | ⚠️ **诚实标注**：Round 2 审计发现其游戏逻辑存在真实缺陷（有限 20 平台、水平位移帧率相关、自动瞄准反转蓄力技巧、连击不计分，G-JJ1–JJ5），修复为 Round 3 并行验收项。它是四者中唯一低于验收线的原型 |
+| `jump-jump/` | 跳一跳 | **技巧循环与帧率无关物理可低成本达标**：蓄力→固定 1/120 s 步长的精确抛体→落点自负（不自动瞄准），无尽按需生成世界，居中连击 2/4/8/16/32 计分 | Round 2 审计曾发现 5 项真实逻辑缺陷（G-JJ1–JJ5），Round 3 重建后全部关闭；验证器从冒烟升级为 14 项确定性断言：种子化重放、200 世界 × 25 跳全部可通过、精确连击分值序列、30/60/120/240 Hz 落点一致、蓄力-距离单调性、经 shim 的分享/复活/好友榜路径 |
 
 ### 4.2 跨原型发现（比单个原型更重要）
 
@@ -101,10 +101,10 @@ Round 1 的单轴「复刻分」曾把跳一跳和向僵尸开炮都打成 7 分
 ### 4.3 测试链（最终验证记录）
 
 ```
-代码树  commit 9c4d0cc · 分支 agent/wechat-minigames-research（本报告为其上的纯文档提交）
+代码树  commit 6a2cbcf · 分支 agent/wechat-minigames-research（本报告为其上的纯文档提交）
 命令    ./scripts/run-all-prototype-tests.sh
 结果    5 套件通过，0 失败：
-        PASS jump-jump 浏览器冒烟（Chrome/CDP）
+        PASS jump-jump 确定性浏览器验证器（Chrome/CDP，14 项断言）
         PASS sheep-match3 单测与求解器（17 项）
         PASS tile-trio 种子化真实文件集成验证器（固定种子集 0/1/20260826/tray-overflow 可复现）
         PASS parking-jam 核心单测（23 项）
@@ -168,7 +168,7 @@ CI      .github/workflows/prototype-tests.yml 在 push/PR 上运行同一命令�
 - ✅ CI 门禁 + tile-trio 种子化回归（`.github/workflows/prototype-tests.yml`，[报告](./round3/gpt-ci-seeded-report.md)）
 - ✅ 平台常量归一化 + 微信打包骨架（`platform-constants.json`，[报告](./round3/gpt-platform-normalize-report.md)）
 - ✅ sheep-match3 洗牌可解性保证（G-SM1）+ 原型角色收敛（[报告](./round3/opus-convergence-report.md)）
-- ⏳ jump-jump 逻辑缺陷修复（G-JJ1–JJ5）——并行进行中
+- ✅ jump-jump 重建（G-JJ1–JJ5 全部关闭：无尽世界、固定步长物理、蓄力决定距离、连击计分、种子化；验证器升级为 14 项确定性断言）
 - ⏳ 终审验收扫尾——并行进行中
 
 已知未闭合的机制缺口：sheep-match3/tile-trio 均未实现原作的暗牌底部队列（G-SM4，两个三消原型中最大的剩余机制缺口）。
