@@ -15,7 +15,7 @@ Find top 10 WeChat mini games (微信小游戏) and assess whether they can be r
 |-------|--------|---------|
 | Round 1 | ✅ complete | 6/6 done; 3 prototypes + 8 Markdown reports + 2 JSON datasets; see `ROUND1_CONCLUSION_BRIEF.md` |
 | Round 2 | ✅ complete | 6/6 done; 4 prototypes + wx-shim + dual-axis; see `ROUND2_CONCLUSION_BRIEF.md` |
-| Round 3 | in_progress | 6 subagents dispatched; SOTA acceptance sprint |
+| Round 3 | in_progress | 1/6 done; CI workflow + seeded regression landed |
 
 ## Subagent Status (Round 3)
 | Agent | Model | Status |
@@ -24,7 +24,7 @@ Find top 10 WeChat mini games (微信小游戏) and assess whether they can be r
 | [fable-r3-global-report](bc-d8a86cc4-f8ca-5dfe-a4a7-eb0ba09306d2) | fable | running ☁️ |
 | [opus-r3-jump-jump-fix](bc-1e456385-9989-5407-891b-aca471af06f7) | opus-fast | running ☁️ |
 | [opus-r3-prototype-convergence](bc-a0563b1b-b789-516e-ab1e-898c17375fdb) | opus-fast | running |
-| [gpt-sol-r3-ci-seeded](bc-670f5081-9e16-5ca6-8a2a-560422d524ec) | gpt-sol | running |
+| [gpt-sol-r3-ci-seeded](bc-670f5081-9e16-5ca6-8a2a-560422d524ec) | gpt-sol | ✅ done → `90c16cf` |
 | [gpt-sol-r3-platform-normalize](bc-d07be4f3-2995-5c7d-b00a-a696c3bb83b1) | gpt-sol | running |
 
 ## Subagent Status (Round 2)
