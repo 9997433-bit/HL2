@@ -214,7 +214,7 @@ exercise.
 | `src/render.js` | 240 | Canvas drawing. Every car is vector primitives |
 | `test/core.test.mjs` | 334 | 23 unit tests |
 | `verify.js` | 290 | Level audit, invariant fuzz, stub-DOM playthrough |
-| `serve.js` | 39 | Static server, so the modules load |
+| `serve.js` | 49 | Static server, so the modules load |
 
 ## On IP
 
