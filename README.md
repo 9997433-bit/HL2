@@ -48,15 +48,17 @@ node --test prototypes/shared/wx-shim.test.mjs # 平台 mock 自身的 19 项测
 python3 scripts/collect_rankings.py --check    # 校验榜单数据快照
 ```
 
-聚合测试链覆盖：jump-jump 的 Chrome/CDP 冒烟、sheep-match3 的 14 项单测、
-tile-trio 的真实文件验证器、parking-jam 的 23 项单测 + 8 关全通关验证器。
+聚合测试链覆盖：jump-jump 的 Chrome/CDP 冒烟、sheep-match3 的 17 项单测、
+tile-trio 的种子化真实文件验证器、parking-jam 的 23 项单测 + 8 关全通关验证
+器。同一命令由 CI（GitHub Actions）在每次 push/PR 时执行。
 
 ## 仓库结构
 
 - [`.agent_workspace/GLOBAL_FINAL_REPORT.md`](./.agent_workspace/GLOBAL_FINAL_REPORT.md) — **全局终审报告**（双榜 Top 10、双轴评分、原型证明、开发者建议、法律摘要）
 - [`.agent_workspace/README.md`](./.agent_workspace/README.md) — 全部研究报告与数据集的主索引（Round 1–3）
-- [`prototypes/`](./prototypes/) — 4 个可玩原型 + 共享 `wx.*` mock（`shared/wx-shim.js`）
-- [`scripts/`](./scripts/) — 聚合测试链、CDP 冒烟测试、榜单数据校验器
+- [`prototypes/`](./prototypes/) — 4 个可玩原型 + 共享 `wx.*` mock（`shared/wx-shim.js`）+ 原生打包骨架（`wechat-packaging-skeleton/`）
+- [`.agent_workspace/platform-constants.json`](./.agent_workspace/platform-constants.json) — 微信平台常量正典（2026-08-26 官方文档核对，逐条验证标签）
+- [`scripts/`](./scripts/) — 聚合测试链、CDP 冒烟测试、榜单数据校验器；CI 门禁见 [`.github/workflows/prototype-tests.yml`](./.github/workflows/prototype-tests.yml)
 
 ## 范围与免责声明
 

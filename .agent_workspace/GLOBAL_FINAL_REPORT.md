@@ -4,7 +4,7 @@ Model slug: claude-fable-5-thinking-xhigh
 
 > Round 3 全局报告 · fable-r3-global-report · 2026-08-26
 > 基线：Round 1（调研与可行性）+ Round 2（双轴评分、第 4 原型、wx-shim、统一测试链）全部产出
-> 验证记录：commit `bbc0661`，`./scripts/run-all-prototype-tests.sh` → **5 套件全部通过，0 失败**（Node v22.14.0 / Linux / headless Chromium）
+> 验证记录：代码树 commit `9c4d0cc`，`./scripts/run-all-prototype-tests.sh` → **5 套件全部通过，0 失败**（Node v22.14.0 / Linux / headless Chromium）
 
 ---
 
@@ -87,7 +87,7 @@ Round 1 的单轴「复刻分」曾把跳一跳和向僵尸开炮都打成 7 分
 | 原型 | 对标 | 证明的命题 | 关键测量 |
 |------|------|-----------|---------|
 | `tile-trio/`（叠叠消） | 羊了个羊 | **榜首休闲游戏的"游戏部分"只是几百行原生 JS**——单文件实现完整循环：层级遮挡、七槽托盘、保证可解的发牌、三种广告门控道具、胜负判定 | 每关 300/300 次生成均含可赢线；贪心求解器通关率 98–100% / 85–92% / 50–60%（难度曲线故意陡峭）；4 项平台闭环断言（看完广告才发奖、跳过不发奖、分享复活走回流、好友榜渲染 8 行） |
-| `sheep-match3/` | 羊了个羊 | **可解性生成是该品类唯一算法难点，且可被解决**：446 行纯核心 + 种子化 PRNG + 位集记忆化 DFS 求解器（生成/提示/自动通关三用） | 14/14 Node 测试；无头 Chrome 驱动 129 瓦片"地狱关"129/129 全清；验证中发现并修复 2 个真实缺陷（槽位差一错误、首帧几何） |
+| `sheep-match3/` | 羊了个羊 | **可解性生成是该品类唯一算法难点，且可被解决**：446 行纯核心 + 种子化 PRNG + 位集记忆化 DFS 求解器（生成/提示/洗牌/自动通关四用） | 17/17 Node 测试（Round 3 把洗牌道具升级为求解器验证的安全重发，修复 G-SM1「看广告换来的洗牌可能把玩家洗死」）；无头 Chrome 驱动 129 瓦片"地狱关"129/129 全清；验证中发现并修复 2 个真实缺陷（槽位差一错误、首帧几何） |
 | `parking-jam/`（错位车库） | 挪了下车 | **求解器就是内容管线**：BFS（核心约 50 行）同时充当难度评级、星级 par、步数预算和提示；Round 1 预测的"1k–1.5k 行核心"被证实（可玩部分约 1,600 行） | 8 关 par 2→34，最难关搜索 <10,000 状态、<100 ms；23 项单测 + 无头验证器以真实指针事件通关全部 8 关；**产量塌方实测**：par 34 的关卡需约 25,000 次生成-测试（par 8–9 只需几十次） |
 | `jump-jump/` | 跳一跳 | 蓄力-起跳-落点循环的画布实现 + Chrome/CDP 冒烟测试 | ⚠️ **诚实标注**：Round 2 审计发现其游戏逻辑存在真实缺陷（有限 20 平台、水平位移帧率相关、自动瞄准反转蓄力技巧、连击不计分，G-JJ1–JJ5），修复为 Round 3 并行验收项。它是四者中唯一低于验收线的原型 |
 
@@ -101,15 +101,16 @@ Round 1 的单轴「复刻分」曾把跳一跳和向僵尸开炮都打成 7 分
 ### 4.3 测试链（最终验证记录）
 
 ```
-commit  bbc0661 · 分支 agent/wechat-minigames-research
+代码树  commit 9c4d0cc · 分支 agent/wechat-minigames-research（本报告为其上的纯文档提交）
 命令    ./scripts/run-all-prototype-tests.sh
 结果    5 套件通过，0 失败：
         PASS jump-jump 浏览器冒烟（Chrome/CDP）
-        PASS sheep-match3 单测与求解器（14 项）
-        PASS tile-trio 真实文件集成验证器
+        PASS sheep-match3 单测与求解器（17 项）
+        PASS tile-trio 种子化真实文件集成验证器（固定种子集 0/1/20260826/tray-overflow 可复现）
         PASS parking-jam 核心单测（23 项）
         PASS parking-jam 验证器（8 关指针事件全通关 + 广告/分享/败局断言）
 环境    Node v22.14.0 · Linux · headless Chromium
+CI      .github/workflows/prototype-tests.yml 在 push/PR 上运行同一命令（Node 22 + Chromium）
 ```
 
 ---
@@ -152,8 +153,8 @@ commit  bbc0661 · 分支 agent/wechat-minigames-research
 | 未成年人防沉迷 | 必需 | 必需（2026 年起弹窗标准强制） |
 
 - **海外团队硬约束**：微信小游戏注册需中国大陆主体（或国内发行合作方）；无主体的替代路线是同一套构建发 H5/海外平台，放弃微信分发换取零牌照负担。
-- **iOS 支付的 2025–26 转折**：2025 年 11 月苹果-腾讯「Mini Apps Partner Program」后，小游戏 iOS 端虚拟支付经 Apple Pay 打通，综合抽成约 12–17%（此前 iOS 端仅能广告变现）——这进一步拉大了微信站内相对站外的变现优势。
-- **平台常量速查**（跨报告归一化，以微信官方文档实时值为准）：主包 ≤ 4 MB；代码包总上限 20 MB、开通虚拟支付后 30 MB（Round 1 两份报告曾出现 20/30 表述不一致，已列为 Round 3 归一化验收项）；本地 KV 存储 10 MB/用户/游戏；缓存 + 用户文件默认 200 MB（可申请 1 GB）；生产网络仅限已备案 HTTPS/WSS 域名；禁止远程执行 JS。
+- **iOS 支付的 2025–26 转折**：2025 年 11 月苹果-腾讯「Mini Apps Partner Program」后，小游戏 iOS 端虚拟支付有条件开通（iOS 15+、微信 8.0.68+、基础库 3.10.3+，须用 `wx.checkIsSupportMidasPayment` 运行时探测，此前 iOS 端仅能广告变现）。按官方小游戏激励政策口径：符合条件的 Apple MAPP 内购收入基础开发者分成 70%，2026-12-31 前促销期预计分成 88%（即平台侧有效抽成约 12%），以苹果结算为准——这进一步拉大了微信站内相对站外的变现优势。小游戏支付的正典 API 命名为 `wx.requestMidasPayment` / `wx.requestMidasPaymentGameItem`（`wx.requestVirtualPayment` 属普通小程序 API 树，不适用于小游戏）。
+- **平台常量速查**（Round 3 已按 2026-08-26 现行官方文档归一化，正典数据文件：[`platform-constants.json`](./platform-constants.json)，每条事实带 `linux-verified` / `source-cited` / `pending-devtools` 验证标签）：主包 ≤ 4 MB；主包 + 全部分包总上限 **30 MB**（旧「默认 20 MB / 开通虚拟支付 30 MB」规则已被现行文档取代，仅作历史保留——这解释了早期报告间的 20/30 出入）；独立分包 ≤ 4 MB；本地 KV 存储 10 MB/用户/游戏；缓存 + 用户文件默认 200 MB（可申请 1 GB）；生产网络仅限已备案 HTTPS/WSS 域名；禁止远程执行 JS。
 
 ---
 
@@ -161,9 +162,16 @@ commit  bbc0661 · 分支 agent/wechat-minigames-research
 
 **本研究已验证的**（Linux 环境，Node/无头浏览器级）：核心规则、可解性生成、求解器正确性、通过 mock 的平台调用闭环、全部四个原型的无头回归。
 
-**本研究无法验证的**（环境硬约束，已如实标注而非回避）：微信开发者工具无 Linux 版，故**包体大小、启动耗时、真机性能、`wx.*` 真实行为、审核资格**均为文档引证而非实测；无 AppID，登录/支付/广告/开放数据域的真实链路未触达。发布前的验收门槛是 Windows/macOS 上的官方 DevTools + 真机矩阵。
+**本研究无法验证的**（环境硬约束，已如实标注而非回避）：微信开发者工具无 Linux 版，故**编译包体核算、启动耗时、真机性能、`wx.*` 真实行为、审核资格**均为文档引证而非实测；无 AppID，登录/支付/广告/开放数据域的真实链路未触达。发布前的验收门槛是 Windows/macOS 上的官方 DevTools + 真机矩阵。Round 3 已新增 [`prototypes/wechat-packaging-skeleton/`](../prototypes/wechat-packaging-skeleton/)（`game.js`/`game.json`/`project.config.json` 结构合规的原生打包骨架，磁盘实测 10,441 字节，远低于 4 MB 主包上限），把「包体可达标」这一断言从「口头声称」推进到「已备好、待 DevTools 验证」。
 
-**Round 3 并行验收项**（本报告定稿时仍在进行，见 `round3/ROUND3_CONTEXT.md`）：jump-jump 逻辑缺陷修复（G-JJ1–JJ5）、sheep-match3 洗牌可解性保证、tile-trio 种子化验证、平台常量全报告归一化、CI 工作流（`.github/workflows/prototype-tests.yml`）。这些项目关闭后，仓库达到既定的「机制平价、研究级」验收标准。
+**Round 3 验收进度**（见 `round3/ROUND3_CONTEXT.md`；本报告定稿时）：
+- ✅ CI 门禁 + tile-trio 种子化回归（`.github/workflows/prototype-tests.yml`，[报告](./round3/gpt-ci-seeded-report.md)）
+- ✅ 平台常量归一化 + 微信打包骨架（`platform-constants.json`，[报告](./round3/gpt-platform-normalize-report.md)）
+- ✅ sheep-match3 洗牌可解性保证（G-SM1）+ 原型角色收敛（[报告](./round3/opus-convergence-report.md)）
+- ⏳ jump-jump 逻辑缺陷修复（G-JJ1–JJ5）——并行进行中
+- ⏳ 终审验收扫尾——并行进行中
+
+已知未闭合的机制缺口：sheep-match3/tile-trio 均未实现原作的暗牌底部队列（G-SM4，两个三消原型中最大的剩余机制缺口）。
 
 ---
 
@@ -179,7 +187,9 @@ commit  bbc0661 · 分支 agent/wechat-minigames-research
 | 机制拆解 | [`round1/opus-mechanics-analysis.md`](./round1/opus-mechanics-analysis.md)（10 款逐游戏算法分解 + LOC 估算） |
 | 原型报告 | [`round1/opus-prototype-report.md`](./round1/opus-prototype-report.md) · [`round2/opus-parking-prototype-report.md`](./round2/opus-parking-prototype-report.md) · [`round2/opus-wx-shim-report.md`](./round2/opus-wx-shim-report.md) |
 | 验收标准 | [`round2/fable-sota-gap-review.md`](./round2/fable-sota-gap-review.md)（Round 3 验收清单 + 10 项合并风险） |
-| 可运行原型 | [`../prototypes/`](../prototypes/)（jump-jump · sheep-match3 · tile-trio · parking-jam · shared/wx-shim） |
+| 平台常量正典 | [`platform-constants.json`](./platform-constants.json)（2026-08-26 现行官方文档核对，逐条验证标签） |
+| Round 3 报告 | [`round3/gpt-ci-seeded-report.md`](./round3/gpt-ci-seeded-report.md) · [`round3/gpt-platform-normalize-report.md`](./round3/gpt-platform-normalize-report.md) · [`round3/opus-convergence-report.md`](./round3/opus-convergence-report.md) |
+| 可运行原型 | [`../prototypes/`](../prototypes/)（jump-jump · sheep-match3 · tile-trio · parking-jam · shared/wx-shim · wechat-packaging-skeleton） |
 | 一键验证 | `./scripts/run-all-prototype-tests.sh` · `python3 scripts/collect_rankings.py --check` |
 
 *—— 全局终审报告完 ——*
