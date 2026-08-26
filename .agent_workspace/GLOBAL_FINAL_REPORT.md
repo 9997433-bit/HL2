@@ -168,7 +168,7 @@ CI      .github/workflows/prototype-tests.yml 在 push/PR 上运行同一命令�
 - ✅ CI 门禁 + tile-trio 种子化回归（`.github/workflows/prototype-tests.yml`，[报告](./round3/gpt-ci-seeded-report.md)）
 - ✅ 平台常量归一化 + 微信打包骨架（`platform-constants.json`，[报告](./round3/gpt-platform-normalize-report.md)）
 - ✅ sheep-match3 洗牌可解性保证（G-SM1）+ 原型角色收敛（[报告](./round3/opus-convergence-report.md)）
-- ✅ jump-jump 重建（G-JJ1–JJ5 全部关闭：无尽世界、固定步长物理、蓄力决定距离、连击计分、种子化；验证器升级为 14 项确定性断言）
+- ✅ jump-jump 重建（G-JJ1–JJ5 全部关闭：无尽世界、固定步长物理、蓄力决定距离、连击计分、种子化；验证器升级为 14 项确定性断言，[报告](./round3/opus-jump-jump-report.md)）
 - ⏳ 终审验收扫尾——并行进行中
 
 已知未闭合的机制缺口：sheep-match3/tile-trio 均未实现原作的暗牌底部队列（G-SM4，两个三消原型中最大的剩余机制缺口）。

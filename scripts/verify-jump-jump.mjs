@@ -316,6 +316,8 @@ try {
     assert.equal(endless.everyJumpAdvancedOne, true, 'a perfect jump did not reach the next block');
     assert.equal(endless.alive, true);
     assert.equal(endless.platformIndex, 60);
+    // 2+4+8+16+32 while the combo climbs, then 55 more capped centre landings.
+    assert.equal(endless.score, 62 + 55 * 32);
     assert.ok(endless.generated >= 69, `only ${endless.generated} platforms were ever generated`);
     assert.ok(
       endless.platformCount <= 13,
