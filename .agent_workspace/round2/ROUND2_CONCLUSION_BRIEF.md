@@ -2,6 +2,11 @@
 
 > Parent Orchestrator 汇总 | 2026-08-26 | 6/6 子代理完成
 
+> **平台常量解决脚注（2026-08-26）：** 下文记录的“20 vs 30MB、支付 API
+> 命名”风险已由
+> [`platform-constants.json`](../platform-constants.json) 统一；该文件的
+> 当前官方来源、适用范围与验证标签取代各旧报告中的冲突表述。
+
 ## 已实现功能
 
 - **双轴评分体系**：22 款游戏 M（机制）/ P（产品）独立评分 → `dual-axis-scores.json`

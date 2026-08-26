@@ -4,6 +4,11 @@
 > 交付物：`prototypes/shared/wx-shim.{js,mjs,d.ts}` + `README.md` + 19 项单测；
 > tile-trio / sheep-match3 / jump-jump 三个原型已接入。
 
+> **平台常量脚注（2026-08-26）：** 本报告记录了 shim 交付时的模拟行为，
+> 不是当前平台能力声明。包体、小游戏支付 API 名称及 iOS 支持条件以
+> [`platform-constants.json`](../platform-constants.json) 为准；尤其是
+> “iOS 一律阻断支付”现为 shim 的旧行为，不是当前小游戏平台事实。
+
 ## 1. 为什么做这一层
 
 Round 1 的核心结论是「机制可复刻 ≠ 产品可复刻」：层叠三消的玩法核心几百行 JS

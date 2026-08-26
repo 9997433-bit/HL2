@@ -1,0 +1,18 @@
+{
+  "description": "Native WeChat Mini Game packaging skeleton for Tile Trio",
+  "compileType": "minigame",
+  "libVersion": "3.10.3",
+  "appid": "touristappid",
+  "projectname": "tile-trio-wechat-skeleton",
+  "packOptions": {
+    "ignore": [],
+    "include": []
+  },
+  "setting": {
+    "urlCheck": true,
+    "es6": true,
+    "minified": true,
+    "postcss": false
+  },
+  "condition": {}
+}

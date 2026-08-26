@@ -2,6 +2,12 @@
 
 Research date: 2026-08-26
 
+> **Platform-constants footnote (2026-08-26):** Package and payment statements
+> in this report are a historical snapshot. The current canonical Mini Game
+> values, API names, scope distinctions, and verification labels are in
+> [`platform-constants.json`](../platform-constants.json); where they differ,
+> that file supersedes this report.
+
 ## Executive verdict
 
 The games' **core mechanics are generally portable**. Canvas/WebGL games, deterministic rules, levels, progression, and a developer-owned backend can be reproduced on the web and in mobile apps. What cannot be reproduced outside WeChat is **WeChat platform parity**: WeChat identity, the same-game friend graph, WeChat share-card distribution, Midas virtual payment, and WeChat ad inventory.

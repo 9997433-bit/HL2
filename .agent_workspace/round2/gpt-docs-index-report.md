@@ -2,6 +2,12 @@ Model slug: gpt-5.6-sol-xhigh-fast
 
 # Round 2 — Documentation Index & Alignment Report
 
+> **Platform-constants resolution footnote (2026-08-26):** The package-limit
+> and payment-name evidence gap recorded below is now normalized in
+> [`platform-constants.json`](../platform-constants.json). Its current official
+> sources, scope distinctions, and verification labels supersede conflicting
+> statements in earlier reports.
+
 ## Result
 
 The repository now has one navigable documentation path from the root README

@@ -11,6 +11,12 @@ calls `wx.createRewardedVideoAd()` by its actual name, gets the actual object
 shape back, and keeps working unchanged inside a real mini game — where
 `installWxShim()` detects the genuine namespace and steps aside.
 
+> **Platform-constants note (2026-08-26):** This README documents the shim's
+> delivered behavior, including its legacy blanket iOS payment failure. Current
+> Mini Game payment API names and capability-gated iOS support are canonicalized
+> in [`.agent_workspace/platform-constants.json`](../../.agent_workspace/platform-constants.json);
+> the mock behavior is not evidence of current platform eligibility.
+
 ```
 prototypes/shared/
 ├── wx-shim.js     UMD implementation — <script>, require(), or a vm sandbox

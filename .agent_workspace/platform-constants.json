@@ -1,0 +1,220 @@
+{
+  "schema_version": 1,
+  "as_of": "2026-08-26",
+  "scope": "WeChat Mini Games (微信小游戏), not ordinary WeChat Mini Programs unless explicitly noted",
+  "canonicalization_rule": "Prefer currently reachable official Mini Game documentation over cached, retired, or ordinary Mini Program pages. Runtime-dependent eligibility remains pending DevTools and production-AppID validation.",
+  "verification_labels": {
+    "linux-verified": "Directly checked in this Linux repository environment; does not imply WeChat runtime validation.",
+    "source-cited": "Supported by a currently reachable official WeChat documentation page, checked on as_of.",
+    "pending-devtools": "Requires WeChat DevTools, an eligible AppID, backend configuration, or a physical WeChat client and was not validated here."
+  },
+  "facts": {
+    "package_limits": {
+      "verification": "source-cited",
+      "values": {
+        "main_package_max_mb": 4,
+        "main_plus_all_subpackages_max_mb": 30,
+        "ordinary_subpackage_individual_max_mb": null,
+        "independent_subpackage_max_mb": 4
+      },
+      "units_note": "Official pages write M/MB; values are preserved in the platform's notation rather than reinterpreted as MiB.",
+      "ordinary_subpackage_individual_max_note": "No separate per-package limit; it still counts toward the 30 MB aggregate.",
+      "sources": [
+        "package-current",
+        "subpackage-current"
+      ],
+      "runtime_validation": "pending-devtools",
+      "normalization_note": "Current live official pages state 30 MB total without a virtual-payment qualifier. The older 20 MB default / 30 MB after virtual-payment rule is retained below only as superseded history."
+    },
+    "package_limit_history": {
+      "verification": "source-cited",
+      "status": "superseded",
+      "values": {
+        "legacy_default_total_mb": 20,
+        "legacy_virtual_payment_total_mb": 30,
+        "unchanged_main_package_max_mb": 4
+      },
+      "sources": [
+        "package-limit-change-announcement"
+      ],
+      "normalization_note": "Do not present 20 MB versus 30 MB as the current rule. It explains why older reports and cached official pages disagree."
+    },
+    "local_key_value_storage": {
+      "verification": "source-cited",
+      "values": {
+        "max_mb_per_wechat_user_per_game": 10,
+        "isolation": "per WeChat user and per Mini Game"
+      },
+      "sources": [
+        "local-storage"
+      ],
+      "runtime_validation": "pending-devtools"
+    },
+    "local_file_storage": {
+      "verification": "source-cited",
+      "values": {
+        "cached_plus_user_files_default_max_mb": 200,
+        "eligible_upgrade_max_gb": 1,
+        "temporary_files": "not assigned a fixed quota on the cited page and may be reclaimed"
+      },
+      "sources": [
+        "file-system",
+        "disk-space-upgrade"
+      ],
+      "runtime_validation": "pending-devtools"
+    },
+    "mini_game_payment_api_names": {
+      "verification": "source-cited",
+      "values": {
+        "game_currency_purchase": "wx.requestMidasPayment",
+        "direct_game_item_purchase": "wx.requestMidasPaymentGameItem",
+        "capability_probe": "wx.checkIsSupportMidasPayment",
+        "capability_probe_min_base_library": "3.10.3",
+        "ordinary_mini_program_api_not_canonical_for_mini_games": "wx.requestVirtualPayment"
+      },
+      "sources": [
+        "midas-payment",
+        "midas-item-payment",
+        "midas-support-check",
+        "mini-program-virtual-payment"
+      ],
+      "runtime_validation": "pending-devtools",
+      "normalization_note": "Midas is the service name and remains part of the canonical Mini Game API names. wx.requestVirtualPayment is documented under the ordinary Mini Program API tree and must not replace the Mini Game names in this repository."
+    },
+    "ios_virtual_payment_support": {
+      "verification": "source-cited",
+      "values": {
+        "status": "conditionally_supported",
+        "minimum_ios": "15",
+        "minimum_wechat_client": "8.0.68",
+        "minimum_base_library": "3.10.3",
+        "sandbox_supported": false,
+        "required_probe": "wx.checkIsSupportMidasPayment",
+        "fallback_if_probe_missing": "treat virtual payment as unsupported"
+      },
+      "sources": [
+        "midas-support-check"
+      ],
+      "runtime_validation": "pending-devtools",
+      "normalization_note": "A blanket statement that iOS Mini Game virtual payment is blocked is stale. Support is environment- and eligibility-dependent, and the production capability result must be checked before showing purchase UI."
+    },
+    "ios_mini_game_payment_economics_2026": {
+      "verification": "source-cited",
+      "values": {
+        "scope": "eligible Apple MAPP Mini Game IAP revenue",
+        "base_developer_share_percent": 70,
+        "promotional_developer_share_estimate_percent": 88,
+        "promotional_effective_take_estimate_percent": 12,
+        "promotion_end_date": "2026-12-31",
+        "settlement_caveat": "Actual amount follows Apple's settlement."
+      },
+      "sources": [
+        "mini-game-virtual-payment-incentive-2026"
+      ],
+      "runtime_validation": "pending-devtools",
+      "normalization_note": "These Mini Game figures supersede the reports' mixed 12–17% shorthand. The ordinary Mini Program iOS fee table is a different product scope and is not used as the canonical Mini Game rate here."
+    },
+    "minimum_project_structure": {
+      "verification": "source-cited",
+      "values": {
+        "runtime_entry": "game.js",
+        "runtime_config": "game.json",
+        "devtools_project_config": "project.config.json",
+        "local_devtools_overrides": "project.private.config.json"
+      },
+      "sources": [
+        "beginner-tutorial",
+        "project-config",
+        "game-config"
+      ],
+      "runtime_validation": "pending-devtools",
+      "normalization_note": "project.private.config.json is local/private and should normally be ignored by version control; a shareable skeleton need not commit it."
+    }
+  },
+  "sources": {
+    "package-current": {
+      "title": "代码包",
+      "url": "https://developers.weixin.qq.com/minigame/dev/guide/base-ability/code-package.html",
+      "publisher": "WeChat Open Documentation",
+      "checked_on": "2026-08-26"
+    },
+    "subpackage-current": {
+      "title": "分包加载",
+      "url": "https://developers.weixin.qq.com/minigame/dev/guide/base-ability/subPackage/useSubPackage.html",
+      "publisher": "WeChat Open Documentation",
+      "checked_on": "2026-08-26"
+    },
+    "package-limit-change-announcement": {
+      "title": "小游戏代码包大小限制调整",
+      "url": "https://developers.weixin.qq.com/community/develop/doc/00088e009103508f3270aaf9c61001",
+      "publisher": "WeChat Open Community, official-selected announcement",
+      "checked_on": "2026-08-26"
+    },
+    "local-storage": {
+      "title": "本地缓存",
+      "url": "https://developers.weixin.qq.com/minigame/dev/guide/base-ability/storage.html",
+      "publisher": "WeChat Open Documentation",
+      "checked_on": "2026-08-26"
+    },
+    "file-system": {
+      "title": "文件系统",
+      "url": "https://developers.weixin.qq.com/minigame/dev/guide/base-ability/file-system.html",
+      "publisher": "WeChat Open Documentation",
+      "checked_on": "2026-08-26"
+    },
+    "disk-space-upgrade": {
+      "title": "空间提升",
+      "url": "https://developers.weixin.qq.com/minigame/dev/guide/performance/diskspace.html",
+      "publisher": "WeChat Open Documentation",
+      "checked_on": "2026-08-26"
+    },
+    "midas-payment": {
+      "title": "wx.requestMidasPayment",
+      "url": "https://developers.weixin.qq.com/minigame/dev/api/midas-payment/wx.requestMidasPayment.html",
+      "publisher": "WeChat Open Documentation",
+      "checked_on": "2026-08-26"
+    },
+    "midas-item-payment": {
+      "title": "wx.requestMidasPaymentGameItem",
+      "url": "https://developers.weixin.qq.com/minigame/dev/api/midas-payment/wx.requestMidasPaymentGameItem.html",
+      "publisher": "WeChat Open Documentation",
+      "checked_on": "2026-08-26"
+    },
+    "midas-support-check": {
+      "title": "wx.checkIsSupportMidasPayment",
+      "url": "https://developers.weixin.qq.com/minigame/dev/api/midas-payment/wx.checkIsSupportMidasPayment.html",
+      "publisher": "WeChat Open Documentation",
+      "checked_on": "2026-08-26"
+    },
+    "mini-program-virtual-payment": {
+      "title": "wx.requestVirtualPayment (ordinary Mini Program API)",
+      "url": "https://developers.weixin.qq.com/miniprogram/dev/api/payment/wx.requestVirtualPayment.html",
+      "publisher": "WeChat Open Documentation",
+      "checked_on": "2026-08-26"
+    },
+    "mini-game-virtual-payment-incentive-2026": {
+      "title": "2026年微信小游戏虚拟支付激励政策",
+      "url": "https://developers.weixin.qq.com/minigame/introduction/commercialization/guide/virtual-payment.html",
+      "publisher": "WeChat Open Documentation",
+      "checked_on": "2026-08-26"
+    },
+    "beginner-tutorial": {
+      "title": "学习新手教程",
+      "url": "https://developers.weixin.qq.com/minigame/dev/guide/develop/start.html",
+      "publisher": "WeChat Open Documentation",
+      "checked_on": "2026-08-26"
+    },
+    "project-config": {
+      "title": "项目配置文件",
+      "url": "https://developers.weixin.qq.com/minigame/dev/devtools/projectconfig",
+      "publisher": "WeChat Open Documentation",
+      "checked_on": "2026-08-26"
+    },
+    "game-config": {
+      "title": "配置项",
+      "url": "https://developers.weixin.qq.com/minigame/dev/reference/configuration/app",
+      "publisher": "WeChat Open Documentation",
+      "checked_on": "2026-08-26"
+    }
+  }
+}

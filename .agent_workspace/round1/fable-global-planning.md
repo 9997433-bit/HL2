@@ -5,6 +5,12 @@
 - **Date:** 2026-08-26
 - **Status:** COMPLETE — research based on live web sources (Dec 2025 / Jan 2026 data)
 
+> **Platform-constants footnote (2026-08-26):** Package and payment statements
+> in this report are a historical snapshot. The current canonical Mini Game
+> values, API names, scope distinctions, and verification labels are in
+> [`platform-constants.json`](../platform-constants.json); where they differ,
+> that file supersedes this report.
+
 ---
 
 ## 1. Ranking Sources (Authoritativeness Assessment)

@@ -5,6 +5,12 @@
 > Tree state at review: branch `agent/wechat-minigames-research`, commit `cc25042` (includes Round 2 harness `3852c61` and docs index `143841d`).
 > Verification performed during this review: `./scripts/run-all-prototype-tests.sh` → **3 suites passed, 0 failed** (jump-jump CDP smoke, sheep-match3 14/14 Node tests, tile-trio real-file checks 300 generations/level + greedy autoplay + conservation + reachability).
 
+> **Platform-constants footnote (2026-08-26):** D1 and the package/payment
+> examples below describe the inconsistency found at audit time, not the final
+> resolution. Current live official pages, canonical values, API scope, and
+> verification labels are recorded in
+> [`platform-constants.json`](../platform-constants.json).
+
 ---
 
 ## 0. Executive Summary

@@ -6,6 +6,12 @@ structures, MVP selection, effort estimates, and a working prototype.
 **Research date:** 2026-08-26. Ranking data is from the July 2026 monthly charts,
 the most recent complete month.
 
+> **Platform-constants footnote (2026-08-26):** Package and payment statements
+> in this report are a historical snapshot. The current canonical Mini Game
+> values, API names, scope distinctions, and verification labels are in
+> [`platform-constants.json`](../platform-constants.json); where they differ,
+> that file supersedes this report.
+
 ---
 
 ## 1. What "top 10" means here

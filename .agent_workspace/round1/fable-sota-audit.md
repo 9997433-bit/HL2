@@ -4,6 +4,12 @@
 > Parent task: Research top 10 WeChat mini games and assess replication feasibility.
 > Scope: SOTA standard audit & multi-dimensional review (engine/SDK/monetization/social; per-game technical audit; open-source stack comparison; WeChat-API gap analysis; replicability scoring).
 
+> **Platform-constants footnote (2026-08-26):** Package and payment statements
+> in this report are a historical snapshot. The current canonical Mini Game
+> values, API names, scope distinctions, and verification labels are in
+> [`platform-constants.json`](../platform-constants.json); where they differ,
+> that file supersedes this report.
+
 ---
 
 ## 0. Executive Summary
