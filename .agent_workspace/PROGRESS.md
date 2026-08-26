@@ -20,12 +20,12 @@ Find top 10 WeChat mini games (微信小游戏) and assess whether they can be r
 ## Subagent Status (Round 3)
 | Agent | Model | Status |
 |-------|-------|--------|
-| fable-r3-final-acceptance | fable | pending |
-| fable-r3-global-report | fable | pending |
-| opus-r3-jump-jump-fix | opus-fast | pending |
-| opus-r3-prototype-convergence | opus-fast | pending |
-| gpt-sol-r3-ci-seeded | gpt-sol | pending |
-| gpt-sol-r3-platform-normalize | gpt-sol | pending |
+| [fable-r3-final-acceptance](bc-a0f382a5-162e-5cd0-ad16-421ee3871a63) | fable | running ☁️ |
+| [fable-r3-global-report](bc-d8a86cc4-f8ca-5dfe-a4a7-eb0ba09306d2) | fable | running ☁️ |
+| [opus-r3-jump-jump-fix](bc-1e456385-9989-5407-891b-aca471af06f7) | opus-fast | running ☁️ |
+| [opus-r3-prototype-convergence](bc-a0563b1b-b789-516e-ab1e-898c17375fdb) | opus-fast | running |
+| [gpt-sol-r3-ci-seeded](bc-670f5081-9e16-5ca6-8a2a-560422d524ec) | gpt-sol | running |
+| [gpt-sol-r3-platform-normalize](bc-d07be4f3-2995-5c7d-b00a-a696c3bb83b1) | gpt-sol | running |
 
 ## Subagent Status (Round 2)
 | Agent | Model | Status |
