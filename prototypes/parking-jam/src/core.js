@@ -485,6 +485,21 @@ export const LEVELS = [
     par: 23,
     moveLimit: 42,
   },
+  {
+    name: '第 8 关 · 地狱层',
+    subtitle: 'The hard one',
+    grid: [
+      '..FFDD',
+      'MGG..I',
+      'MAAH.I',
+      'KKBHC.',
+      '.EBHC.',
+      '.ELLJJ',
+    ],
+    exits: ['R2'],
+    par: 34,
+    moveLimit: 62,
+  },
 ];
 
 export function loadLevel(index) {
