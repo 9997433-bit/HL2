@@ -322,7 +322,7 @@ export function createGame(levelIndex = 0, seed = Date.now()) {
     history: [],
     status: 'playing', // 'playing' | 'won' | 'lost'
     props: { undo: 3, shuffle: 1, remove: 1 },
-    stats: { picks: 0, cleared: 0 },
+    stats: { picks: 0, cleared: 0, shuffles: 0 },
   };
 }
 
@@ -411,22 +411,113 @@ export function removeProp(game) {
   return true;
 }
 
-/** "打乱": redeal the types still on the board, keeping the level solvable. */
+/**
+ * A legal removal order over the tiles still on the board. Tiles already in the
+ * tray or cleared no longer cover anything, so they drop out of the graph.
+ */
+function boardClearOrder(game, boardTiles, rng) {
+  const local = new Map(boardTiles.map((t, i) => [t.id, i]));
+  const graph = boardTiles.map((t) =>
+    game.coverGraph[t.id].filter((cov) => local.has(cov)).map((cov) => local.get(cov))
+  );
+  return randomClearOrder(graph, rng).map((i) => boardTiles[i]);
+}
+
+/**
+ * Paint types onto a removal order: first the tiles the tray is waiting on,
+ * then the rest in consecutive triples. Walking that order drains the tray
+ * before it grows again, which is what makes a redeal winnable rather than
+ * merely different.
+ */
+function dealAlongOrder(order, trayHeld, counts, rng) {
+  const plan = [];
+  const take = (type) => {
+    plan.push(type);
+    counts.set(type, counts.get(type) - 1);
+  };
+
+  // Types the tray holds twice need a single tile and clear on the very next
+  // pick, so they go first and the tray shrinks before anything is added.
+  const held = [...trayHeld.entries()].sort((a, b) => b[1] - a[1]);
+  for (const [type, count] of held) {
+    for (let n = count; n < 3 && counts.get(type) > 0; n++) take(type);
+  }
+
+  // Whole triples of what is left, in a random order; a type whose count is not
+  // a multiple of three can only appear on a board that was already broken, so
+  // its remainder is parked at the tail rather than dropped.
+  const bag = [];
+  const tail = [];
+  for (const [type, count] of counts) {
+    let left = count;
+    for (; left >= 3; left -= 3) bag.push(type);
+    for (; left > 0; left--) tail.push(type);
+  }
+  for (let i = bag.length - 1; i > 0; i--) {
+    const j = Math.floor(rng() * (i + 1));
+    [bag[i], bag[j]] = [bag[j], bag[i]];
+  }
+  for (const type of bag) for (let n = 0; n < 3; n++) plan.push(type);
+  plan.push(...tail);
+
+  return plan.slice(0, order.length);
+}
+
+/** Is there still a full clearing line from where this game stands? */
+export function isSolvable(game) {
+  const picked = game.tiles.filter((t) => t.state !== TILE_STATE.BOARD).map((t) => t.id);
+  const result = solve(game.tiles.map((t) => t.type), game.coverGraph, {
+    ...game.solverOptions,
+    picked,
+  });
+  return result !== null;
+}
+
+/** Redeals tried before a position is called dead. */
+const SHUFFLE_ATTEMPTS = 6;
+
+/**
+ * "打乱": redeal the types still on the board.
+ *
+ * Permuting the multiset in place is the obvious implementation and the wrong
+ * one: it can hand back a board no line clears, so the prop the player just
+ * watched an ad for is what ends their run. Each candidate deal is therefore
+ * laid out along a legal removal order and then proved with the solver. A
+ * position that survives every attempt is unwinnable whatever the tiles say —
+ * the board is left untouched and the prop unspent instead of being scrambled
+ * for nothing.
+ */
 export function shuffleProp(game) {
   if (!game.props.shuffle) return false;
   const boardTiles = game.tiles.filter((t) => t.state === TILE_STATE.BOARD);
-  const pool = boardTiles.map((t) => t.type);
-  const rng = mulberry32((game.seed ^ (game.stats.picks * 2654435761)) >>> 0);
+  if (!boardTiles.length) return false;
 
-  for (let i = pool.length - 1; i > 0; i--) {
-    const j = Math.floor(rng() * (i + 1));
-    [pool[i], pool[j]] = [pool[j], pool[i]];
+  const original = boardTiles.map((t) => t.type);
+  const trayHeld = new Map();
+  for (const tile of game.tray) trayHeld.set(tile.type, (trayHeld.get(tile.type) || 0) + 1);
+  const rng = mulberry32(
+    (game.seed ^ (game.stats.picks * 2654435761) ^ (game.stats.shuffles * 40503)) >>> 0
+  );
+
+  for (let attempt = 0; attempt < SHUFFLE_ATTEMPTS; attempt++) {
+    const counts = new Map();
+    for (const type of original) counts.set(type, (counts.get(type) || 0) + 1);
+    const order = boardClearOrder(game, boardTiles, rng);
+    const plan = dealAlongOrder(order, trayHeld, counts, rng);
+    order.forEach((tile, i) => {
+      tile.type = plan[i];
+    });
+    if (isSolvable(game)) {
+      game.props.shuffle--;
+      game.stats.shuffles++;
+      return true;
+    }
   }
-  boardTiles.forEach((t, i) => {
-    t.type = pool[i];
+
+  boardTiles.forEach((tile, i) => {
+    tile.type = original[i];
   });
-  game.props.shuffle--;
-  return true;
+  return false;
 }
 
 /** Next move on a winning line, or null if the position is already lost. */

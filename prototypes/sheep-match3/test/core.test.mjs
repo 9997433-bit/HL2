@@ -10,6 +10,7 @@ import {
   createGame,
   freeTiles,
   hint,
+  isSolvable,
   mulberry32,
   pick,
   progress,
@@ -18,6 +19,37 @@ import {
   solve,
   undo,
 } from '../src/core.js';
+
+/** A mid-game position: `picks` moves along the solver's own winning line. */
+function playedOut(levelIndex, seed, picks) {
+  const game = createGame(levelIndex, seed);
+  for (let i = 0; i < picks && game.status === 'playing'; i++) {
+    const id = hint(game);
+    if (id === null) break;
+    pick(game, id);
+  }
+  return game;
+}
+
+/** The obvious shuffle — permute the board's types and hope — for comparison. */
+function blindShuffle(game) {
+  const board = game.tiles.filter((t) => t.state === TILE_STATE.BOARD);
+  const pool = board.map((t) => t.type);
+  const rng = mulberry32((game.seed ^ (game.stats.picks * 2654435761)) >>> 0);
+  for (let i = pool.length - 1; i > 0; i--) {
+    const j = Math.floor(rng() * (i + 1));
+    [pool[i], pool[j]] = [pool[j], pool[i]];
+  }
+  board.forEach((t, i) => {
+    t.type = pool[i];
+  });
+}
+
+const boardTypes = (game) =>
+  game.tiles
+    .filter((t) => t.state === TILE_STATE.BOARD)
+    .map((t) => t.type)
+    .sort((a, b) => a - b);
 
 test('mulberry32 is deterministic for a given seed', () => {
   const a = mulberry32(1234);
@@ -162,19 +194,67 @@ test('the remove prop empties up to three tray slots back onto the board', () =>
 });
 
 test('shuffle preserves the multiset of board types', () => {
-  const game = createGame(2, 616);
-  const before = game.tiles
-    .filter((t) => t.state === TILE_STATE.BOARD)
-    .map((t) => t.type)
-    .sort((a, b) => a - b);
+  const game = playedOut(2, 616, 7);
+  const before = boardTypes(game);
 
   assert.equal(shuffleProp(game), true);
 
-  const after = game.tiles
-    .filter((t) => t.state === TILE_STATE.BOARD)
-    .map((t) => t.type)
-    .sort((a, b) => a - b);
-  assert.deepEqual(after, before);
+  assert.deepEqual(boardTypes(game), before);
+  assert.equal(game.props.shuffle, 0);
+});
+
+test('shuffle leaves a board that can still be cleared', () => {
+  for (const levelIndex of [0, 1, 2]) {
+    for (const seed of [616, 1013, 20260826]) {
+      for (const picks of [0, 9]) {
+        const game = playedOut(levelIndex, seed, picks);
+        if (game.status !== 'playing' || !game.props.shuffle) continue;
+        assert.equal(shuffleProp(game), true, `level ${levelIndex} seed ${seed} refused`);
+        assert.ok(isSolvable(game), `level ${levelIndex} seed ${seed} stranded after shuffle`);
+      }
+    }
+  }
+});
+
+test('a blind permutation strands the player where the safe shuffle does not', () => {
+  // Both positions hold six tiles in a seven-slot tray: a deal that does not
+  // finish those groups first is lost on the next pick, whatever it is.
+  for (const seed of [1013, 20260826]) {
+    const blind = playedOut(1, seed, 9);
+    assert.equal(blind.tray.length, 6);
+    blindShuffle(blind);
+    assert.equal(isSolvable(blind), false, `seed ${seed} was expected to strand`);
+
+    const safe = playedOut(1, seed, 9);
+    assert.equal(shuffleProp(safe), true);
+    assert.ok(isSolvable(safe), `seed ${seed} stranded after the safe shuffle`);
+
+    // Not just "a solver line exists" — the game itself plays it out to a win.
+    const picked = safe.tiles.filter((t) => t.state !== TILE_STATE.BOARD).map((t) => t.id);
+    const plan = solve(safe.tiles.map((t) => t.type), safe.coverGraph, {
+      ...safe.solverOptions,
+      picked,
+    });
+    for (const id of plan.order) assert.ok(pick(safe, id).ok, `pick ${id} rejected`);
+    assert.equal(safe.status, 'won');
+  }
+});
+
+test('a position no deal can save keeps its board and its prop', () => {
+  const game = createGame(1, 11);
+  // Six different types in a seven-slot tray: completing any of them needs a
+  // seventh tile in the tray first, so every deal is lost on the next pick.
+  const stuck = freeTiles(game).slice(0, 6);
+  stuck.forEach((t, i) => {
+    t.type = i;
+  });
+  stuck.forEach((t) => pick(game, t.id));
+  assert.equal(game.tray.length, 6);
+
+  const before = boardTypes(game);
+  assert.equal(shuffleProp(game), false);
+  assert.deepEqual(boardTypes(game), before);
+  assert.equal(game.props.shuffle, 1);
 });
 
 test('hint proposes a legal move from mid-game positions', () => {

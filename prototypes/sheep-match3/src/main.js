@@ -94,7 +94,15 @@ const BUTTONS = [
     id: 'shuffle',
     label: (g) => (g.props.shuffle > 0 ? `打乱 ${g.props.shuffle}` : '打乱 🎬'),
     enabled: () => true,
-    run: () => spendOrWatch('shuffle', '打乱牌面', () => shuffleProp(game)),
+    run: () =>
+      spendOrWatch('shuffle', '打乱牌面', () => {
+        if (shuffleProp(game)) return true;
+        // No deal of the remaining tiles wins from here, so the board is left
+        // alone and the prop — possibly just paid for with a video — is not
+        // spent. Scrambling the tiles anyway would only hide the dead end.
+        setPanel('ad', '这一局怎么打乱都解不开了，道具已退回', 2200);
+        return false;
+      }),
   },
   {
     id: 'hint',
