@@ -21,6 +21,29 @@
     .score { font-size: 2rem; font-weight: bold; color: #ffd700; }
     .hint { margin-top: 8px; color: #888; font-size: 0.9rem; }
     .game-over { color: #ff6b6b; font-size: 1.2rem; margin-top: 8px; display: none; }
+    /* wx-shim panel: rewarded-video revive, share, mock friend board */
+    .wx { margin-top: 12px; display: none; }
+    .wx.show { display: block; }
+    .wx button {
+      border: 0; border-radius: 999px; padding: 8px 16px; margin: 0 4px;
+      font-family: inherit; font-size: 0.9rem; cursor: pointer;
+      background: #ffd700; color: #1a1a2e; font-weight: 600;
+    }
+    .wx button.ghost { background: #2a2a44; color: #cfd6e6; }
+    .wx .board { margin-top: 10px; font-size: 0.8rem; color: #9aa4bd; line-height: 1.7; }
+    .wx .board b { color: #ffd700; font-weight: 600; }
+    .wx .note { margin-top: 6px; font-size: 0.72rem; color: #5b6480; }
+    #adOverlay {
+      position: fixed; inset: 0; display: none; align-items: center; justify-content: center;
+      background: rgba(10, 10, 20, .93); z-index: 9; flex-direction: column; gap: 10px;
+    }
+    #adOverlay.show { display: flex; }
+    #adOverlay .box {
+      width: 260px; height: 150px; border-radius: 14px; display: flex;
+      align-items: center; justify-content: center; font-size: 40px;
+      background: linear-gradient(135deg, #35406e, #6b3f7a);
+    }
+    #adOverlay small { color: #9aa4bd; font-size: 0.8rem; }
   </style>
 </head>
 <body>
@@ -29,12 +52,49 @@
     <div class="score">得分: <span id="score">0</span></div>
     <div class="hint">按住蓄力，松开跳跃 | 空格键同样有效</div>
     <div class="game-over" id="gameOver">游戏结束 — 点击重试</div>
+    <div class="wx" id="wxPanel">
+      <button id="btnRevive">🎬 看广告续命</button>
+      <button class="ghost" id="btnShareScore">📤 分享成绩</button>
+      <div class="board" id="board"></div>
+      <div class="note" id="wxNote"></div>
+    </div>
   </div>
+
+  <div id="adOverlay">
+    <div class="box">🎬</div>
+    <small id="adNote"></small>
+  </div>
+
+  <script src="../shared/wx-shim.js"></script>
   <script>
     const canvas = document.getElementById('game');
     const ctx = canvas.getContext('2d');
     const scoreEl = document.getElementById('score');
     const gameOverEl = document.getElementById('gameOver');
+
+    /* WeChat platform, mocked by prototypes/shared/wx-shim.js. 跳一跳's own loop
+       was exactly this: one score, one friend board, one revive. The shim runs
+       ads in 'auto' mode, so it plays and closes the creative itself. */
+    const shim = WxShim.installWxShim({ adBehavior: 'auto', adDurationMs: 1800, seed: 20180101 });
+    const AD_UNIT = 'adunit-jumpjump-revive-3d10';
+    const CLOUD_KEY = 'score';
+
+    const rewardedAd = wx.createRewardedVideoAd({ adUnitId: AD_UNIT });
+    rewardedAd.onClose(res => {
+      document.getElementById('adOverlay').classList.remove('show');
+      if (res && res.isEnded) revive();
+      else note('提前关闭广告，未续命');
+    });
+    rewardedAd.onError(err => {
+      document.getElementById('adOverlay').classList.remove('show');
+      note('广告不可用 errCode ' + err.errCode + ' · ' + err.errMsg);
+    });
+    shim.on('ad:show', s => {
+      document.getElementById('adNote').textContent = s.adUnitId + ' · 模拟激励视频';
+      document.getElementById('adOverlay').classList.add('show');
+    });
+
+    function note(text) { document.getElementById('wxNote').textContent = text; }
 
     // Player (the "jumper")
     const player = { x: 80, y: 0, vy: 0, size: 20, charging: false, chargeStart: 0, jumping: false, jumpVx: 0 };
@@ -155,6 +215,7 @@
         if (player.y - cameraY > canvas.height + 50) {
           alive = false;
           gameOverEl.style.display = 'block';
+          gameOver();
         }
       }
 
@@ -194,12 +255,78 @@
     }
 
     function reset() {
-      score = 0; combo = 0; alive = true; cameraY = 0;
+      score = 0; combo = 0; alive = true; cameraY = 0; revived = false;
       scoreEl.textContent = '0';
       gameOverEl.style.display = 'none';
+      document.getElementById('wxPanel').classList.remove('show');
+      note('');
       player.jumping = false; player.vy = 0; player.jumpVx = 0;
       initPlatforms();
     }
+
+    /* ---- the platform loop: score -> friend board -> revive -> share ---- */
+    let revived = false;
+
+    function gameOver() {
+      wx.setUserCloudStorage({
+        KVDataList: [{
+          key: CLOUD_KEY,
+          value: JSON.stringify({ wxgame: { score, update_time: Math.floor(Date.now() / 1000) } })
+        }]
+      });
+      // On a real device this read only works inside the 开放数据域, which is
+      // why the mock is the only place the main context ever sees it.
+      wx.getFriendCloudStorage({
+        keyList: [CLOUD_KEY],
+        success: res => {
+          const rows = res.data.map(u => ({
+            name: u.nickname,
+            me: u.openid === shim.config.self.openid,
+            score: readScore(u.KVDataList)
+          })).sort((a, b) => b.score - a.score);
+          const mine = rows.findIndex(r => r.me) + 1;
+          document.getElementById('board').innerHTML =
+            '好友榜（wx.getFriendCloudStorage mock）第 <b>' + mine + '/' + rows.length + '</b> 名<br>' +
+            rows.slice(0, 3).map((r, i) => (i + 1) + '. ' + r.name + ' ' + r.score).join(' · ');
+        }
+      });
+      document.getElementById('btnRevive').style.display = revived ? 'none' : '';
+      document.getElementById('wxPanel').classList.add('show');
+    }
+
+    function readScore(kvList) {
+      const kv = kvList.find(k => k.key === CLOUD_KEY);
+      if (!kv) return 0;
+      try { return Number(JSON.parse(kv.value).wxgame.score) || 0; } catch (e) { return 0; }
+    }
+
+    /** Put the jumper back on the platform it fell off, keeping the score. */
+    function revive() {
+      revived = true;
+      const p = platforms[Math.min(score, platforms.length - 1)];
+      player.x = p.x; player.y = p.y - player.size;
+      player.vy = 0; player.jumpVx = 0; player.jumping = false; player.charging = false;
+      alive = true;
+      gameOverEl.style.display = 'none';
+      document.getElementById('wxPanel').classList.remove('show');
+    }
+
+    document.getElementById('btnRevive').addEventListener('click', e => {
+      e.stopPropagation();
+      rewardedAd.show().catch(() =>
+        rewardedAd.load().then(() => rewardedAd.show()).catch(err =>
+          note('暂无广告库存 errCode ' + (err.errCode || 1004))));
+    });
+
+    document.getElementById('btnShareScore').addEventListener('click', e => {
+      e.stopPropagation();
+      wx.shareAppMessage({ title: '我跳了 ' + score + ' 级，你来试试', query: 'from=score' });
+      note('wx.shareAppMessage 已调用 — 平台不返回成功回调，只能等好友回流');
+    });
+
+    shim.on('share:success', info =>
+      note('好友通过分享卡进入（scene ' + info.scene + '，来自 ' +
+           (info.from ? info.from.nickname : '好友') + '）— 这是唯一可观测的“分享成功”'));
 
     canvas.addEventListener('mousedown', startCharge);
     canvas.addEventListener('mouseup', jump);

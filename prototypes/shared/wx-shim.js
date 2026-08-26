@@ -377,15 +377,18 @@
     function jitterValue(selfValue, spread) {
       const scale = () => 0.35 + rng() * 1.5;
       if (selfValue == null || selfValue === '') return String(Math.max(1, Math.round(spread * scale())));
+      // A zero (or missing) reference would make every friend a zero too, which
+      // reads as a broken board rather than a mock one.
+      const around = (n) => Math.max(1, Math.round((n > 0 ? n : spread) * scale()));
       if (/^-?\d+(\.\d+)?$/.test(selfValue)) {
-        return String(Math.max(0, Math.round(Number(selfValue) * scale())));
+        return String(around(Number(selfValue)));
       }
       try {
         const parsed = JSON.parse(selfValue);
         if (parsed && parsed.wxgame && typeof parsed.wxgame.score !== 'undefined') {
           return JSON.stringify({
             wxgame: {
-              score: Math.max(0, Math.round(Number(parsed.wxgame.score) * scale())),
+              score: around(Number(parsed.wxgame.score)),
               update_time: Math.floor(Date.now() / 1000) - Math.floor(rng() * 86400),
             },
           });
