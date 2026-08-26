@@ -13,7 +13,7 @@ Find top 10 WeChat mini games (微信小游戏) and assess whether they can be r
 ## Round Status
 | Round | Status | Summary |
 |-------|--------|---------|
-| Round 1 | in_progress | Initial build & baseline exploration |
+| Round 1 | in_progress | 6 subagents dispatched (3 cloud + 3 local); parent baseline + prototype committed |
 | Round 2 | pending | Targeted refactor & deep optimization |
 | Round 3 | pending | SOTA polish & final acceptance |
 
