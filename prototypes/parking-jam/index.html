@@ -1,0 +1,257 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>错位车库 · Gridlock Garage</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        --ink: #eef1f6;
+        --muted: #8b93a5;
+        --panel: #171b23;
+        --panel-2: #1f242e;
+        --accent: #f2b632;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        height: 100%;
+        margin: 0;
+        background: radial-gradient(120% 80% at 50% 0%, #1d2330 0%, #0b0d12 70%);
+        color: var(--ink);
+        font-family: system-ui, -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+        overscroll-behavior: none;
+        -webkit-user-select: none;
+        user-select: none;
+      }
+      #app {
+        position: fixed;
+        inset: 0;
+        display: flex;
+        justify-content: center;
+      }
+      #frame {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        width: min(100vw, calc(100vh * 720 / 1280));
+        height: min(100vh, calc(100vw * 1280 / 720));
+        padding: 14px;
+      }
+      header {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 10px;
+      }
+      h1 {
+        margin: 0;
+        font-size: clamp(15px, 4.4vmin, 21px);
+        letter-spacing: 0.02em;
+      }
+      h1 small {
+        display: block;
+        font-size: 0.62em;
+        font-weight: 400;
+        color: var(--muted);
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+      }
+      #stats {
+        display: flex;
+        gap: 12px;
+        font-variant-numeric: tabular-nums;
+        font-size: clamp(11px, 3vmin, 13px);
+        color: var(--muted);
+        text-align: right;
+      }
+      #stats b {
+        display: block;
+        font-size: 1.45em;
+        color: var(--ink);
+        font-weight: 600;
+      }
+      #stats .over b {
+        color: var(--accent);
+      }
+      #levels {
+        display: flex;
+        gap: 6px;
+        flex-wrap: wrap;
+      }
+      #levels button {
+        flex: 1 1 0;
+        min-width: 30px;
+        padding: 6px 0;
+        border: 1px solid #2c3341;
+        border-radius: 8px;
+        background: var(--panel);
+        color: var(--muted);
+        font: inherit;
+        font-size: 12px;
+        cursor: pointer;
+      }
+      #levels button.active {
+        border-color: var(--accent);
+        color: #0b0d12;
+        background: var(--accent);
+        font-weight: 600;
+      }
+      #stage {
+        position: relative;
+        flex: 1 1 auto;
+        display: grid;
+        place-items: center;
+        min-height: 0;
+      }
+      canvas {
+        display: block;
+        touch-action: none;
+      }
+      #controls {
+        display: flex;
+        gap: 8px;
+      }
+      #controls button {
+        flex: 1;
+        padding: 11px 0;
+        border: 1px solid #2c3341;
+        border-radius: 11px;
+        background: var(--panel-2);
+        color: var(--ink);
+        font: inherit;
+        font-size: clamp(12px, 3.4vmin, 14px);
+        cursor: pointer;
+      }
+      #controls button:active {
+        background: #2a3140;
+      }
+      #hint-note {
+        margin: 0;
+        font-size: 11px;
+        line-height: 1.5;
+        color: #626b7d;
+        text-align: center;
+      }
+      #overlay[hidden] {
+        display: none;
+      }
+      #overlay {
+        position: absolute;
+        inset: 0;
+        display: grid;
+        place-items: center;
+        background: rgba(9, 11, 15, 0.82);
+        backdrop-filter: blur(3px);
+        z-index: 5;
+      }
+      #overlay > div {
+        width: min(78%, 300px);
+        padding: 22px 20px;
+        border: 1px solid #2c3341;
+        border-radius: 16px;
+        background: var(--panel);
+        text-align: center;
+      }
+      #overlayTitle {
+        margin: 0 0 6px;
+        font-size: 21px;
+      }
+      #overlayStars {
+        font-size: 26px;
+        color: var(--accent);
+        letter-spacing: 4px;
+      }
+      #overlayBody {
+        margin: 8px 0 16px;
+        font-size: 13px;
+        color: var(--muted);
+      }
+      #overlay button {
+        width: 100%;
+        margin-top: 8px;
+        padding: 11px 0;
+        border: 0;
+        border-radius: 10px;
+        background: var(--accent);
+        color: #0b0d12;
+        font: inherit;
+        font-weight: 600;
+        cursor: pointer;
+      }
+      #overlay button#overlayRetry {
+        background: var(--panel-2);
+        color: var(--ink);
+        border: 1px solid #2c3341;
+      }
+      #toast {
+        position: absolute;
+        left: 50%;
+        bottom: 96px;
+        transform: translate(-50%, 8px);
+        padding: 8px 14px;
+        border-radius: 999px;
+        background: rgba(20, 24, 32, 0.95);
+        border: 1px solid #2c3341;
+        font-size: 12px;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.18s, transform 0.18s;
+        z-index: 6;
+      }
+      #toast.show {
+        opacity: 1;
+        transform: translate(-50%, 0);
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app">
+      <div id="frame">
+        <header>
+          <h1>
+            <span id="levelName">错位车库</span>
+            <small id="levelSub">Gridlock Garage</small>
+          </h1>
+          <div id="stats">
+            <div class="over"><b id="moves">0</b>步数 / <span id="limit">–</span></div>
+            <div><b id="par">–</b>最优</div>
+            <div><b id="best">—</b>纪录</div>
+          </div>
+        </header>
+
+        <div id="levels"></div>
+
+        <div id="stage">
+          <canvas id="board"></canvas>
+          <div id="overlay" hidden>
+            <div>
+              <h2 id="overlayTitle">出库成功</h2>
+              <div id="overlayStars"></div>
+              <p id="overlayBody"></p>
+              <button id="overlayNext">下一关</button>
+              <button id="overlayRetry">重玩本关</button>
+            </div>
+          </div>
+          <div id="toast"></div>
+        </div>
+
+        <div id="controls">
+          <button id="btnUndo">撤销</button>
+          <button id="btnRestart">重开</button>
+          <button id="btnHint">提示</button>
+          <button id="btnShare">分享</button>
+        </div>
+        <p id="hint-note">
+          拖动车辆沿自身方向滑动，或点一下让它滑到底。把金色车拖出缺口即过关。
+          键盘：Z 撤销 · R 重开 · H 提示。
+        </p>
+      </div>
+    </div>
+    <script type="module" src="./src/main.js"></script>
+  </body>
+</html>
