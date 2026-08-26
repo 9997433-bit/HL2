@@ -15,14 +15,24 @@ Find top 10 WeChat mini games (微信小游戏) and assess whether they can be r
 |-------|--------|---------|
 | Round 1 | ✅ complete | 6/6 done; 3 prototypes + 8 Markdown reports + 2 JSON datasets; see `ROUND1_CONCLUSION_BRIEF.md` |
 | Round 2 | ✅ complete | 6/6 done; 4 prototypes + wx-shim + dual-axis; see `ROUND2_CONCLUSION_BRIEF.md` |
-| Round 3 | pending | SOTA polish & final acceptance per gap-review checklist |
+| Round 3 | in_progress | 6 subagents dispatched; SOTA acceptance sprint |
+
+## Subagent Status (Round 3)
+| Agent | Model | Status |
+|-------|-------|--------|
+| fable-r3-final-acceptance | fable | pending |
+| fable-r3-global-report | fable | pending |
+| opus-r3-jump-jump-fix | opus-fast | pending |
+| opus-r3-prototype-convergence | opus-fast | pending |
+| gpt-sol-r3-ci-seeded | gpt-sol | pending |
+| gpt-sol-r3-platform-normalize | gpt-sol | pending |
 
 ## Subagent Status (Round 2)
 | Agent | Model | Status |
 |-------|-------|--------|
 | [fable-r2-dual-axis](bc-a372d5e5-0cde-584e-9e47-7e642ca84a1f) | fable | ✅ done → `c0c4241` |
 | [fable-r2-sota-review](bc-5c23743a-4286-5ed8-bd26-633193182140) | fable | ✅ done → `30788a3` |
-| [opus-r2-parking-prototype](bc-67ad5d81-6d12-5144-9093-0f99c9f5883c) | opus-fast | running ☁️ |
+| [opus-r2-parking-prototype](bc-67ad5d81-6d12-5144-9093-0f99c9f5883c) | opus-fast | ✅ done → `7ffa37b` |
 | [opus-r2-wx-shim](bc-977a7fb8-54dd-5b24-a11d-2186e180fcba) | opus-fast | ✅ done → `6fde0eb` |
 | [gpt-sol-r2-test-harness](bc-2ae60e8a-6902-511f-a575-cb7429ba6e03) | gpt-sol | ✅ done → `cc25042` |
 | [gpt-sol-r2-docs-index](bc-17771006-72a3-5a06-809b-f7b79caf8dcf) | gpt-sol | ✅ done → `271c0c4` |
@@ -44,7 +54,7 @@ _(Populated after each round)_
 See [`.agent_workspace/round1/ROUND1_CONCLUSION_BRIEF.md`](round1/ROUND1_CONCLUSION_BRIEF.md)
 
 ### Round 2 Conclusion Brief
-_TBD_
+See [`.agent_workspace/round2/ROUND2_CONCLUSION_BRIEF.md`](round2/ROUND2_CONCLUSION_BRIEF.md)
 
 ### Round 3 Final Report
 _TBD_
