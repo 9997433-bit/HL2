@@ -1,0 +1,12 @@
+# Prototypes
+
+Runnable code produced by the WeChat mini-games replication study. Each
+prototype exists to put a number on a claim made in the analysis rather than to
+be a finished game.
+
+| Prototype | Replicates | Status |
+|---|---|---|
+| [`sheep-match3/`](./sheep-match3) | Stacked tile match-3 (羊了个羊 / 抓大鹅 family) | Playable, 14 headless tests, solver-verified levels |
+
+The written analysis lives in
+[`.agent_workspace/round1/opus-mechanics-analysis.md`](../.agent_workspace/round1/opus-mechanics-analysis.md).

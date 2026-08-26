@@ -25,10 +25,19 @@ function resolveCanvas() {
   return document.getElementById('game');
 }
 
+/** `?level=1&seed=42&autoplay=300` drives the prototype for demos and QA. */
+function debugParams() {
+  if (typeof location === 'undefined') return {};
+  const q = new URLSearchParams(location.search);
+  const num = (k) => (q.has(k) ? Number(q.get(k)) : undefined);
+  return { level: num('level'), seed: num('seed'), autoplay: num('autoplay') };
+}
+
+const params = debugParams();
 const canvas = resolveCanvas();
 const renderer = createRenderer(canvas);
 
-let game = createGame(0, (Math.random() * 1e9) | 0);
+let game = createGame(params.level ?? 0, params.seed ?? ((Math.random() * 1e9) | 0));
 let tweens = [];
 let shake = null;
 let hintUntil = 0;
@@ -124,7 +133,7 @@ function handleTap(px, py) {
   const tile = renderer.hitTest(game, x, y);
   if (!tile) return;
 
-  const from = renderer.boardPos(tile);
+  const from = renderer.boardPos(game, tile);
   const result = pick(game, tile.id);
   if (result.ok) {
     hintId = null;
@@ -163,10 +172,23 @@ function fitCanvas() {
   renderer.resize(Math.round(box.width * dpr), Math.round(box.height * dpr));
 }
 
+let nextAutoplay = 0;
+
+/** Let the solver play itself, so a demo run exercises the real move rules. */
+function stepAutoplay(now) {
+  if (!params.autoplay || game.status !== 'playing' || now < nextAutoplay) return;
+  nextAutoplay = now + params.autoplay;
+  const id = hint(game);
+  if (id === null) return;
+  const from = renderer.boardPos(game, game.tiles[id]);
+  if (pick(game, id).ok) tweenToTray(game.tiles[id], from);
+}
+
 function frame() {
   const now = performance.now();
   if (shake && now > shake.until) shake = null;
   if (hintId !== null && now > hintUntil) hintId = null;
+  stepAutoplay(now);
 
   renderer.draw(game, {
     anim: activeAnimations(now),

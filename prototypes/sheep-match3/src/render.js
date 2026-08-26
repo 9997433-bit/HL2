@@ -10,8 +10,8 @@ import { TILE_SPAN, TILE_STATE, progress } from './core.js';
 
 export const DESIGN = { w: 720, h: 1280 };
 
-const BOARD_AREA = { x: 40, y: 210, w: 640, h: 700 };
-const TRAY = { y: 1010, slot: 84, gap: 8 };
+const BOARD_AREA = { x: 30, y: 196, w: 660, h: 730 };
+const TRAY = { y: 1000, slot: 84, gap: 8 };
 
 const GLYPHS = ['🌿', '🍄', '🌰', '🥕', '🌻', '🍇', '🐑', '🪵', '🧶', '🔔', '🍯', '🥬'];
 const TILE_FILLS = [
@@ -238,7 +238,7 @@ export function createRenderer(canvas) {
 
   /** Topmost pickable-looking tile under a design-space point, or null. */
   function hitTest(game, dx, dy) {
-    if (!geom) return null;
+    if (!geom) measure(game);
     const candidates = game.tiles
       .filter((t) => t.state === TILE_STATE.BOARD)
       .sort((a, b) => b.layer - a.layer);
@@ -249,5 +249,17 @@ export function createRenderer(canvas) {
     return null;
   }
 
-  return { resize, draw, hitTest, toDesign, traySlotPos, boardPos: (t) => boardPos(t), get geom() { return geom; } };
+  return {
+    resize,
+    draw,
+    hitTest,
+    toDesign,
+    traySlotPos,
+    // Callers may ask for a tile position before the first frame has measured
+    // the board, so fall back to measuring on demand.
+    boardPos(game, tile) {
+      if (!geom) measure(game);
+      return boardPos(tile);
+    },
+  };
 }
