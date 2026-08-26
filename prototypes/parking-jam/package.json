@@ -1,0 +1,12 @@
+{
+  "name": "gridlock-garage-prototype",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Vanilla-JS parking-jam puzzle prototype (挪了下车 / Rush Hour family) with a BFS solver used as the level pipeline.",
+  "scripts": {
+    "test": "node --test test/*.test.mjs",
+    "verify": "node verify.js",
+    "serve": "python3 -m http.server 8080"
+  }
+}
