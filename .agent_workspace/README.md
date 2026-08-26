@@ -52,6 +52,7 @@ name, art, code, levels, text, audio, or licensed IP.
 
 - [`round3/ROUND3_CONTEXT.md`](./round3/ROUND3_CONTEXT.md) — Final acceptance mission, blocking implementation items, output convention, and test gate.
 - [`round3/gpt-platform-normalize-report.md`](./round3/gpt-platform-normalize-report.md) — Current package/payment resolution, amended-report inventory, package-skeleton design, and Linux/DevTools verification split.
+- [`round3/opus-convergence-report.md`](./round3/opus-convergence-report.md) — The solvability-preserving shuffle prop (G-SM1), stated prototype roles, and verification of the parking-jam shim and tile-trio seeding that landed in parallel.
 - [`platform-constants.json`](./platform-constants.json) — Cross-round canonical platform facts. Earlier package/payment statements defer to this dataset through explicit footnotes.
 
 ## Playable prototypes
