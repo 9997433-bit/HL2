@@ -1,0 +1,41 @@
+name: Prototype Tests
+
+on:
+  push:
+    branches:
+      - main
+      - "agent/*"
+  pull_request:
+    branches:
+      - main
+      - "agent/*"
+
+permissions:
+  contents: read
+
+jobs:
+  prototype-tests:
+    name: Node 22 + Chromium
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Set up Chromium
+        id: chromium
+        uses: browser-actions/setup-chrome@v2
+        with:
+          chrome-version: latest
+          install-dependencies: true
+
+      - name: Run prototype test gate
+        env:
+          CHROME_PATH: ${{ steps.chromium.outputs.chrome-path }}
+        run: ./scripts/run-all-prototype-tests.sh

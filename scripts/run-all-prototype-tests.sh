@@ -40,8 +40,8 @@ run_test \
   npm --prefix "$ROOT_DIR/prototypes/sheep-match3" test
 
 run_test \
-  "tile-trio real-file integration verifier" \
-  node "$ROOT_DIR/prototypes/tile-trio/verify.js"
+  "tile-trio seeded real-file integration verifier" \
+  node "$ROOT_DIR/prototypes/tile-trio/verify.js" "?seed=20260826"
 
 run_test \
   "parking-jam core unit tests" \

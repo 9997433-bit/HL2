@@ -280,6 +280,34 @@ const LEVELS = [
   { name: 'Level 3 · 深渊', types: 12, pyramid: [[7,5],[6,4],[5,3],[4,2],[3,1]], stack: 11 }
 ];
 
+/* `?seed=` makes generated deals reproducible without changing normal play.
+   Numeric values map directly to uint32; labels are hashed so bug reports can
+   use memorable seeds such as `?seed=tray-overflow`. */
+const query = new URLSearchParams(location.search);
+function normalizeSeed(value) {
+  const text = String(value);
+  if (text.trim() !== '' && Number.isFinite(Number(text))) return Number(text) >>> 0;
+  let hash = 2166136261;
+  for (let i = 0; i < text.length; i++) {
+    hash ^= text.charCodeAt(i);
+    hash = Math.imul(hash, 16777619);
+  }
+  return hash >>> 0;
+}
+function createSeededRandom(seed) {
+  let state = seed >>> 0;
+  return () => {
+    state = (state + 0x6D2B79F5) | 0;
+    let t = state;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+const seedParam = query.get('seed');
+const gameSeed = seedParam === null ? null : normalizeSeed(seedParam);
+const random = gameSeed === null ? Math.random : createSeededRandom(gameSeed);
+
 /* ===== canvas setup ======================================================= */
 const cv = document.getElementById('cv');
 const ctx = cv.getContext('2d');
@@ -343,20 +371,20 @@ function overlaps(a, b) {
 /* Peel the board top-down: repeatedly take a random currently-uncovered tile.
    Because the covering relation is a DAG this always consumes every tile, and
    the resulting sequence is a legal removal order. */
-function peelOrder(pool) {
+function peelOrder(pool, rng = random) {
   const left = pool.slice(), out = [];
   while (left.length) {
     const free = left.filter(t => !left.some(o => o !== t && o.layer > t.layer && overlaps(o, t)));
-    const pick = free[(Math.random() * free.length) | 0];
+    const pick = free[(rng() * free.length) | 0];
     out.push(pick);
     left.splice(left.indexOf(pick), 1);
   }
   return out;
 }
 
-function shuffleArr(a) {
+function shuffleArr(a, rng = random) {
   for (let i = a.length - 1; i > 0; i--) {
-    const j = (Math.random() * (i + 1)) | 0; [a[i], a[j]] = [a[j], a[i]];
+    const j = (rng() * (i + 1)) | 0; [a[i], a[j]] = [a[j], a[i]];
   }
   return a;
 }
@@ -366,10 +394,10 @@ function shuffleArr(a) {
    split each block into two spatially coherent triples: still solvable (the tray
    never exceeds 4 on the intended line), but matching symbols land near each
    other so a human can actually spot them instead of scanning the whole board. */
-function dealSymbols(order, typeCount) {
+function dealSymbols(order, typeCount, rng = random) {
   const bag = [];
   for (let i = 0; i < Math.ceil(order.length / 3); i++) bag.push(i % typeCount);
-  shuffleArr(bag);
+  shuffleArr(bag, rng);
   let bi = 0;
   const dist = (a, b) => Math.hypot(a.bx - b.bx, a.by - b.by) + Math.abs(a.layer - b.layer) * 4;
   const paint = (g, type) => g.forEach(t => { t.type = type; });
@@ -743,8 +771,8 @@ wx.onShow(res => {
   if (res.shareTicket) console.info('[tile-trio] 分享回流 scene=' + res.scene + ' ticket=' + res.shareTicket);
 });
 
-// ?level=2 deep-links straight into a level, for demos and headless testing
-const deep = new URLSearchParams(location.search).get('level');
+// ?level=2 deep-links straight into a level; combine with ?seed= for a replay.
+const deep = query.get('level');
 if (deep !== null && LEVELS[+deep - 1]) startLevel(+deep - 1);
 </script>
 </body>

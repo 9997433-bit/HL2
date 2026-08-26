@@ -14,8 +14,12 @@ Or deep-link straight into a level, which is also how the automated screenshots
 are taken:
 
 ```
-prototypes/tile-trio/index.html?level=2
+prototypes/tile-trio/index.html?level=2&seed=20260826
 ```
+
+`seed` is optional during normal play. When present, it fixes the generator
+sequence so a reported deal can be replayed exactly; numeric and named seeds are
+both supported.
 
 ## Why this game
 
@@ -73,12 +77,13 @@ the groups already sitting in the tray first, so shuffling cannot strand you.
 shipped code — the real generator, the real tray, the real props:
 
 ```
-node prototypes/tile-trio/verify.js
+node prototypes/tile-trio/verify.js '?seed=20260826'
 ```
 
-It drives the generator 300 times per level and replays the exact order each deal
-was built around, then auto-plays 60 rounds per level with a greedy solver that
-has no lookahead.
+It rejects an empty/missing seed, checks a four-seed regression set for stable
+replays and distinct deals, drives the query-seeded generator 300 times per
+level, and replays the exact order each deal was built around. It then auto-plays
+60 query-seeded rounds per level with a greedy solver that has no lookahead.
 
 | Level | Tiles | Intended line winnable | Peak tray on that line | Greedy solver clears |
 |-------|-------|------------------------|------------------------|----------------------|

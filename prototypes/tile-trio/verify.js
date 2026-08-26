@@ -13,6 +13,14 @@ const html = fs.readFileSync(path.join(__dirname, 'index.html'), 'utf8');
 const m = html.match(/<script>([\s\S]*?)<\/script>/);
 if (!m) throw new Error('no <script> found');
 const shimSrc = fs.readFileSync(path.join(__dirname, '..', 'shared', 'wx-shim.js'), 'utf8');
+const verifySearch = process.argv[2] || '?seed=20260826';
+if (!verifySearch.startsWith('?')) {
+  throw new Error('usage: node prototypes/tile-trio/verify.js "?seed=<seed>"');
+}
+const verifyParams = new URLSearchParams(verifySearch);
+if (!verifyParams.has('seed') || verifyParams.get('seed') === '') {
+  throw new Error('tile-trio verification requires a non-empty ?seed= query');
+}
 
 const noop = () => {};
 const ctxStub = new Proxy({}, {
@@ -59,7 +67,7 @@ const sandbox = {
   clearTimeout: noop,
   addEventListener: noop,
   Math, Date, JSON, URLSearchParams,
-  location: { search: '' }
+  location: { search: verifySearch }
 };
 sandbox.globalThis = sandbox;
 sandbox.window.addEventListener = noop;
@@ -69,6 +77,7 @@ const src = m[1] + `
   startLevel, sendToTray, isLocked, useShuffle, usePull, useUndo, draw, check,
   buildPositions, peelOrder, dealSymbols, overlaps, LAYER_OFFSET, TILE,
   end, revive, submitScore, watchAd, shim,
+  normalizeSeed, createSeededRandom, gameSeed,
   get tiles(){return tiles;}, get tray(){return tray;}, get running(){return running;},
   get props(){return props;}, LEVELS, TRAY_SLOTS
 };`;
@@ -115,6 +124,39 @@ function autoplay(levelIdx, useProps) {
 }
 
 let fail = false;
+
+// A fixed query seed makes every existing generation/autoplay assertion below
+// replayable. This separate seed-set check proves the injection point itself:
+// equal seeds must yield identical legal orders and symbol deals, while distinct
+// seeds must not silently collapse to one board.
+const querySeed = verifyParams.get('seed');
+const expectedQuerySeed = api.normalizeSeed(querySeed);
+if (api.gameSeed !== expectedQuerySeed) {
+  console.log(`seed query: expected ${expectedQuerySeed}, got ${api.gameSeed}  !! FAILED`);
+  fail = true;
+} else {
+  console.log(`seed query: ?seed=${querySeed} -> uint32 ${api.gameSeed}`);
+}
+
+function seededDealSignature(spec, seed) {
+  const rng = api.createSeededRandom(api.normalizeSeed(seed));
+  const tiles = api.buildPositions(spec)
+    .map((p, i) => ({ id: i, bx: p.x, by: p.y, layer: p.layer, gone: false }));
+  const order = api.peelOrder(tiles, rng);
+  api.dealSymbols(order, spec.types, rng);
+  return order.map(t => t.id).join(',') + '|' + tiles.map(t => t.type).join(',');
+}
+
+const regressionSeeds = ['0', '1', '20260826', 'tray-overflow'];
+for (const spec of api.LEVELS) {
+  const signatures = regressionSeeds.map(seed => seededDealSignature(spec, seed));
+  const replayed = regressionSeeds.map(seed => seededDealSignature(spec, seed));
+  const stable = signatures.every((signature, i) => signature === replayed[i]);
+  const distinct = new Set(signatures).size === regressionSeeds.length;
+  console.log(`${spec.name}: seeded deal regression ${regressionSeeds.length} seeds, ` +
+              `replay ${stable ? 'stable' : 'CHANGED'}, ${new Set(signatures).size} distinct`);
+  if (!stable || !distinct) fail = true;
+}
 
 // The core claim: symbols painted onto a legal removal order mean that order is
 // always winnable. Drive the shipped generator, then replay the very order it
