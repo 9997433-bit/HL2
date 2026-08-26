@@ -12,11 +12,12 @@ node prototypes/parking-jam/serve.js      # then open http://localhost:8080/
 ```
 
 It needs a server rather than `file://` because the source is split into ES
-modules. Deep-link a level with a hash, which is also how the screenshots are
-taken:
+modules, and it must be served from the **repository root** because the game
+imports the shared `wx` shim from `prototypes/shared/` — which is what
+`serve.js` does. Deep-link a level with a hash:
 
 ```
-prototypes/parking-jam/index.html#8
+http://localhost:8080/prototypes/parking-jam/#8
 ```
 
 ## Why this game
@@ -31,7 +32,7 @@ jam needs a search.
 That makes it the cleanest test of a specific claim: **the difficulty in a
 chart-topping puzzle is not building the game, it is producing thousands of
 levels with a smooth difficulty ramp.** This prototype builds the game in
-roughly 1,400 lines and then spends the rest of its effort on the ramp.
+roughly 1,600 lines and then spends the rest of its effort on the ramp.
 
 ## The rules, as implemented
 
@@ -138,12 +139,13 @@ modes (exhausted vs. node cap), the generator's band and determinism, star
 thresholds, and the loss condition.
 
 `verify.js` goes further and boots the **shipped module graph** — `index.html`'s
-real `main.js` and `render.js` — against a stub DOM, then completes all eight
-levels by synthesising pointer drags through the real event handlers, with a
-virtual clock driving the animations. So the checks cover input handling, the
-HUD, the win and loss overlays, undo, and the hint button, not just the core.
-It also fuzzes ~4,000 random legal moves and asserts no car ever overlaps
-another or leaves the lot.
+real `main.js` and `render.js`, and the shared `wx` shim — against a stub DOM,
+then completes all eight levels by synthesising pointer drags through the real
+event handlers, with a virtual clock driving the animations. So the checks cover
+input handling, the HUD, the win and loss overlays, undo, sharing, and the
+rewarded-video gate on the hint (watched through grants it, skipped denies it),
+not just the core. It also fuzzes ~4,000 random legal moves and asserts no car
+ever overlaps another or leaves the lot.
 
 Writing that harness immediately caught one bug that unit tests on the core
 could not have: the best-score readout refreshed before the win was recorded, so
@@ -159,30 +161,37 @@ optimal-solution search, difficulty-banded level generation, par-based stars,
 move budgets with a real loss state, undo, on-device hints, animation, local
 best scores, and DPR-aware Canvas rendering.
 
-**The game part of a top-3 WeChat parking puzzle is about 1,400 lines of vanilla
-JavaScript**, of which roughly 130 are the solver that makes the whole content
-pipeline possible.
+**The game part of a top-3 WeChat parking puzzle is about 1,600 lines of vanilla
+JavaScript**, of which the breadth-first search that makes the entire content
+pipeline possible is **49**, comments included.
 
 ### Not replicable on the open web — needs WeChat APIs
 
-Everything the platform would own is funnelled through a single `platform`
-object at the bottom of `src/main.js`, so the dependency is visible in the
-source rather than scattered. On the web it grants the effect locally and logs
-what would have happened.
+Rather than inventing private stubs, the platform calls go through the shared
+mock in [`prototypes/shared/`](../shared). `installWxShim()` publishes a
+`globalThis.wx` and **steps aside if a real WeChat host is present**, so the
+calls in `src/main.js` are literally the calls a mini-game build makes.
 
-| Capability | WeChat API | Where it appears here | Why the web can't match it |
+| Capability | WeChat API | How it behaves here | Why the web can't match it |
 |---|---|---|---|
-| Rewarded video for a hint | `wx.createRewardedVideoAd` | `platform.requestHint` | No equivalent ad inventory. In the original this is the genre's entire IAA revenue line — the hint is *the* monetised moment in a puzzle with a move budget |
-| Share card / 分享复活 | `wx.shareAppMessage` | `platform.share` | `navigator.share` cannot target a chat thread or carry board state, and share-into-chat is 30–50% of new installs for top titles |
-| Friend leaderboard | `wx.setUserCloudStorage` + 开放数据域 | `platform.recordWin` (writes `localStorage`) | Friend data is rendered in a sandboxed sub-context the game cannot read. Reproducing it needs an account system and a backend |
-| Identity | `wx.login` → `code2Session` | not stubbed | Requires a registered 小程序 appid and an app server |
-| Banner / interstitial ads | `wx.createBannerAd` | not stubbed | Same as rewarded video |
-| Haptics on a bump | `wx.vibrateShort` | not stubbed | `navigator.vibrate` is close but unsupported on iOS Safari |
+| Rewarded video for a hint | `wx.createRewardedVideoAd` | Real gate: pressing 提示 shows a 3-second player, and the hint only appears if you watch it through. Skipping denies it; no ad fill grants it anyway | No equivalent ad inventory. This is the genre's entire IAA revenue line |
+| Share card | `wx.shareAppMessage` | Fires with the level in `query`; the shim simulates a friend opening the card | `navigator.share` cannot target a chat thread or carry board state, and share-into-chat is 30–50% of new installs for top titles |
+| Best scores | `wx.setUserCloudStorage` / `getUserCloudStorage` | Bests are written to cloud KV and cached locally for the HUD, as a real mini game does | Fine on its own — but the *point* of cloud KV is the next row |
+| Friend leaderboard | `wx.getFriendCloudStorage` + 开放数据域 | Not wired: there is no second player here | Friend data renders in a sandboxed sub-context the game cannot read. Reproducing it needs an account system and a backend |
+| Identity | `wx.login` → `code2Session` | not used | Requires a registered 小程序 appid and an app server |
+| Haptics on a bump | `wx.vibrateShort` | not used | `navigator.vibrate` is close but unsupported on iOS Safari |
 
-Porting this to a mini game means replacing that one object, swapping the DOM
-HUD for canvas-drawn widgets, and adapting `pointerdown/move/up` to
-`wx.onTouchStart/Move/End`. `core.js` compiles unchanged: it touches no DOM, no
-canvas and no `wx.*`.
+The ad gate is worth dwelling on, because it is the structural difference
+between this genre and the tile-matchers. A tile-matcher's monetised moment is
+**分享复活** — a share, which is free inventory and viral by construction. A
+step-limited parking puzzle has no revive to share; when you are stuck, you are
+stuck, and the only thing to sell is the answer. So the hint *is* the business
+model, and the hint is `wx.createRewardedVideoAd`. That is why this prototype
+gates it for real instead of granting it silently: the gate is the product.
+
+Porting the rest to a mini game means swapping the DOM HUD for canvas-drawn
+widgets and mapping `pointerdown/move/up` onto `wx.onTouchStart/Move/End`.
+`core.js` compiles unchanged — it touches no DOM, no canvas and no `wx.*`.
 
 There are also non-API gaps that matter as much: the 4 MB main-package limit,
 review and 版号 requirements for anything monetised, and the fact that
@@ -199,13 +208,13 @@ exercise.
 
 | File | Lines | What |
 |---|---:|---|
-| `src/core.js` | 508 | Rules, BFS solver, generator, level pack. No DOM, no canvas |
-| `src/render.js` | 236 | Canvas drawing. Every car is vector primitives |
-| `src/main.js` | 442 | Input, animation, HUD, level flow, platform adapter |
-| `index.html` | 257 | Shell and styles |
+| `src/core.js` | 508 | Rules, BFS solver, generator, level pack. No DOM, no canvas, no `wx.*` |
+| `src/main.js` | 535 | Input, animation, HUD, level flow, `wx.*` adapter |
+| `index.html` | 318 | Shell and styles |
+| `src/render.js` | 240 | Canvas drawing. Every car is vector primitives |
 | `test/core.test.mjs` | 334 | 23 unit tests |
-| `verify.js` | 274 | Level audit, invariant fuzz, stub-DOM playthrough |
-| `serve.js` | 40 | Static server, so the modules load |
+| `verify.js` | 290 | Level audit, invariant fuzz, stub-DOM playthrough |
+| `serve.js` | 39 | Static server, so the modules load |
 
 ## On IP
 

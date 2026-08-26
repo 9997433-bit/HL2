@@ -181,7 +181,8 @@ globalThis.window = {
 globalThis.localStorage = {
   store: new Map(),
   getItem(k) { return this.store.has(k) ? this.store.get(k) : null; },
-  setItem(k, v) { this.store.set(k, v); },
+  setItem(k, v) { this.store.set(k, String(v)); },
+  removeItem(k) { this.store.delete(k); },
 };
 
 /** Run queued animation frames to completion against a virtual clock. */
@@ -253,9 +254,24 @@ dragMove(solutions[0].moves[0]);
 el('btnUndo').fire('click');
 check('undo rewinds a move', game.state.moves === beforeUndo, `(${game.state.moves})`);
 
+// The hint is the game's only monetised moment, so it must be gated: the ad
+// player appears first, and the reward only lands when the video finishes.
 el('btnHint').fire('click');
+check('asking for a hint opens the rewarded video', el('ad').hidden === false);
 flush();
-check('hint runs without throwing', true);
+check('watching it through closes the ad and reveals the hint', el('ad').hidden === true);
+
+el('btnHint').fire('click');
+el('adSkip').fire('click');
+check(
+  'skipping the video denies the hint',
+  el('ad').hidden === true && el('toast').textContent === '广告未看完，提示未解锁',
+  `("${el('toast').textContent}")`
+);
+flush();
+
+el('btnShare').fire('click');
+check('sharing goes through wx.shareAppMessage', el('toast').textContent.length > 0);
 
 const failing = LEVELS[0];
 game.startLevel(0);

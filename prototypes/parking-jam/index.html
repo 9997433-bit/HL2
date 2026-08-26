@@ -188,6 +188,59 @@
         color: var(--ink);
         border: 1px solid #2c3341;
       }
+      #ad[hidden] {
+        display: none;
+      }
+      #ad {
+        position: absolute;
+        inset: 0;
+        display: grid;
+        place-items: center;
+        background: rgba(6, 8, 11, 0.9);
+        z-index: 7;
+      }
+      #ad > div {
+        width: min(84%, 320px);
+        padding: 20px 18px;
+        border: 1px solid #2c3341;
+        border-radius: 14px;
+        background: #12161d;
+        text-align: center;
+      }
+      #ad p {
+        margin: 0 0 12px;
+        font-size: 14px;
+      }
+      #ad small {
+        display: block;
+        margin-top: 10px;
+        font-size: 10px;
+        color: #626b7d;
+        line-height: 1.5;
+      }
+      #adBar {
+        height: 6px;
+        border-radius: 999px;
+        background: #262d39;
+        overflow: hidden;
+      }
+      #adFill {
+        width: 0%;
+        height: 100%;
+        background: var(--accent);
+      }
+      #ad button {
+        width: 100%;
+        margin-top: 14px;
+        padding: 9px 0;
+        border: 1px solid #2c3341;
+        border-radius: 9px;
+        background: var(--panel-2);
+        color: var(--muted);
+        font: inherit;
+        font-size: 12px;
+        cursor: pointer;
+      }
       #toast {
         position: absolute;
         left: 50%;
@@ -235,6 +288,14 @@
               <p id="overlayBody"></p>
               <button id="overlayNext">下一关</button>
               <button id="overlayRetry">重玩本关</button>
+            </div>
+          </div>
+          <div id="ad" hidden>
+            <div>
+              <p>激励视频 · 看完解锁一次提示</p>
+              <div id="adBar"><div id="adFill"></div></div>
+              <button id="adSkip">跳过</button>
+              <small>由 <code>prototypes/shared/wx-shim.js</code> 模拟 wx.createRewardedVideoAd</small>
             </div>
           </div>
           <div id="toast"></div>

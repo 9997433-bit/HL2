@@ -2,10 +2,10 @@
  * Gridlock Garage — browser shell: input, animation, HUD, level flow.
  *
  * All rules live in core.js; this file only turns pointer gestures into legal
- * moves and draws the result. Anything that a WeChat build would hand to the
- * platform (rewarded video for a hint, share card on a win, cloud storage for
- * best scores) is isolated in `platform` at the bottom of the file so the swap
- * is one adapter rather than a rewrite. See README.md.
+ * moves and draws the result. Everything the WeChat platform would own —
+ * rewarded video for a hint, the share card, cloud-stored bests — goes through
+ * the shared `wx.*` mock in `prototypes/shared/`, so the calls here are the
+ * calls a mini-game build would make. See README.md.
  */
 
 import {
@@ -23,6 +23,7 @@ import {
   starsFor,
 } from './core.js';
 import { draw, layoutFor } from './render.js';
+import { installWxShim } from '../../shared/wx-shim.mjs';
 
 const canvas = document.getElementById('board');
 const ctx = canvas.getContext('2d');
@@ -42,6 +43,9 @@ const ui = {
   overlayNext: document.getElementById('overlayNext'),
   overlayRetry: document.getElementById('overlayRetry'),
   toast: document.getElementById('toast'),
+  ad: document.getElementById('ad'),
+  adFill: document.getElementById('adFill'),
+  adSkip: document.getElementById('adSkip'),
 };
 
 let levelIndex = 0;
@@ -53,9 +57,16 @@ const view = { dragging: null, animation: null, hint: null, hintPulse: 0 };
 /* Level flow                                                          */
 /* ------------------------------------------------------------------ */
 
+/** `#3` in the URL opens level 3, which makes a level linkable in a demo. */
+function levelFromHash() {
+  const n = Number(globalThis.location?.hash?.slice(1));
+  return Number.isInteger(n) && n >= 1 && n <= LEVELS.length ? n - 1 : 0;
+}
+
 function startLevel(index) {
   levelIndex = ((index % LEVELS.length) + LEVELS.length) % LEVELS.length;
   state = loadLevel(levelIndex);
+  if (globalThis.location) globalThis.location.hash = String(levelIndex + 1);
   history = [];
   view.dragging = null;
   view.animation = null;
@@ -325,12 +336,26 @@ function undo() {
   render();
 }
 
+/**
+ * The monetised moment. A step-limited puzzle has no share-to-revive, so the
+ * hint is where the rewarded video goes — which is why it runs through the ad
+ * gate here rather than just solving and flashing a car.
+ */
 function showHint() {
-  const move = platform.requestHint(() => solveHint(state, { nodeCap: 250000 }));
+  const move = solveHint(state, { nodeCap: 250000 });
   if (!move) {
     toast('这一步已经解不开了，撤销试试');
     return;
   }
+  platform.watchRewardedAd({
+    onReward: () => flashHint(move),
+    onSkip: () => toast('广告未看完，提示未解锁'),
+    // No ad fill is not the player's fault, so grant it anyway.
+    onUnavailable: () => flashHint(move),
+  });
+}
+
+function flashHint(move) {
   view.hint = move.vehicle;
   const start = performance.now();
   (function pulse(now) {
@@ -351,7 +376,7 @@ document.getElementById('btnRestart').addEventListener('click', () => startLevel
 document.getElementById('btnHint').addEventListener('click', showHint);
 document.getElementById('btnShare').addEventListener('click', () => {
   platform.share({ title: `${LEVELS[levelIndex].name} — ${state.moves} 步`, level: levelIndex });
-  toast('已生成分享卡（本地模拟）');
+  toast('分享卡已发出（模拟）');
 });
 ui.overlayRetry.addEventListener('click', () => startLevel(levelIndex));
 ui.overlayNext.addEventListener('click', () => startLevel(levelIndex + 1));
@@ -370,40 +395,115 @@ LEVELS.forEach((def, i) => {
 /* ------------------------------------------------------------------ */
 
 /**
- * The three places a WeChat build would call `wx.*`. Kept behind one object so
- * the mini-game port replaces this block and nothing else:
- *   requestHint -> wx.createRewardedVideoAd(...).show()
- *   share       -> wx.shareAppMessage({ title, imageUrl })
- *   recordWin   -> wx.setUserCloudStorage (friend leaderboard, open data domain)
+ * `installWxShim` publishes a mock `globalThis.wx` and steps aside if a real
+ * WeChat host is present, so every call below is the call the mini-game build
+ * makes. `manual` ad behaviour means the shim reports that an ad is on screen
+ * and this file draws the player — which is how the real SDK behaves too.
  */
+const shim = installWxShim({ adBehavior: 'manual', seed: 20260826 });
+const wx = globalThis.wx;
+
+const AD_UNIT = 'adunit-parking-hint';
+const AD_SECONDS = 3;
+const bestKey = (index) => `best_level_${index + 1}`;
+const bests = new Map();
+
+const hintAd = wx.createRewardedVideoAd({ adUnitId: AD_UNIT });
+let adOutcome = null;
+
+hintAd.onClose((res) => {
+  closeAdOverlay();
+  const done = adOutcome;
+  adOutcome = null;
+  if (!done) return;
+  if (res.isEnded) done.onReward();
+  else done.onSkip();
+});
+hintAd.onError(() => {
+  closeAdOverlay();
+  const done = adOutcome;
+  adOutcome = null;
+  done?.onUnavailable();
+});
+
+// The shim hands the host a session; drawing the fake player is the host's job.
+shim.on('ad:show', (session) => openAdOverlay(session));
+
+function openAdOverlay(session) {
+  ui.ad.hidden = false;
+  const start = performance.now();
+  (function tick(now) {
+    if (ui.ad.hidden) return;
+    const t = Math.min(1, (now - start) / (AD_SECONDS * 1000));
+    ui.adFill.style.width = `${(t * 100).toFixed(1)}%`;
+    ui.adSkip.textContent = t < 1 ? `${Math.ceil((1 - t) * AD_SECONDS)} 秒后可关闭` : '关闭并领取';
+    if (t < 1) requestAnimationFrame(tick);
+    else session.complete();
+  })(start);
+}
+
+function closeAdOverlay() {
+  ui.ad.hidden = true;
+  ui.adFill.style.width = '0%';
+}
+
+ui.adSkip.addEventListener('click', () => shim.skipAd());
+
 const platform = {
-  requestHint(compute) {
-    return compute();
+  /** wx.createRewardedVideoAd — the game's only revenue surface. */
+  watchRewardedAd(callbacks) {
+    if (adOutcome) return;
+    adOutcome = callbacks;
+    hintAd
+      .show()
+      .catch(() => hintAd.load().then(() => hintAd.show()))
+      .catch(() => {
+        const pending = adOutcome;
+        adOutcome = null;
+        closeAdOverlay();
+        pending?.onUnavailable();
+      });
   },
+
+  /** wx.shareAppMessage — callback-less on the real platform, as here. */
   share(payload) {
-    console.info('[share stub]', payload);
+    wx.shareAppMessage({
+      title: payload.title,
+      query: `level=${payload.level + 1}`,
+      imageUrl: 'wxshim://share/parking-jam',
+    });
   },
+
+  /** wx.setUserCloudStorage — what the 开放数据域 friend leaderboard reads. */
   recordWin(index, moves) {
-    const best = platform.readBest(index);
-    if (best == null || moves < best) {
-      try {
-        localStorage.setItem(bestKey(index), String(moves));
-      } catch {
-        /* private mode: best scores are simply not persisted */
-      }
-    }
+    const key = bestKey(index);
+    const previous = bests.get(key);
+    if (previous != null && previous <= moves) return;
+    bests.set(key, moves);
+    wx.setUserCloudStorage({
+      KVDataList: [{ key, value: String(moves) }],
+      fail: () => bests.delete(key),
+    });
   },
+
   readBest(index) {
-    try {
-      const raw = localStorage.getItem(bestKey(index));
-      return raw == null ? null : Number(raw);
-    } catch {
-      return null;
-    }
+    const value = bests.get(bestKey(index));
+    return value == null ? null : value;
   },
 };
 
-const bestKey = (index) => `gridlock-garage:best:${index}`;
+// Bests are cached locally because the HUD reads them every frame-ish, while
+// cloud storage is a round trip. Same shape a real mini game uses.
+wx.getUserCloudStorage({
+  keyList: LEVELS.map((_, i) => bestKey(i)),
+  success: (res) => {
+    for (const kv of res.KVDataList ?? []) bests.set(kv.key, Number(kv.value));
+    if (state) syncHud();
+  },
+  fail: () => {},
+});
+
+shim.on('share:success', () => toast('好友已从分享卡进入（模拟）'));
 
 /* ------------------------------------------------------------------ */
 /* Boot                                                                */
@@ -428,7 +528,7 @@ window.addEventListener('keydown', (event) => {
 });
 
 resize();
-startLevel(0);
+startLevel(levelFromHash());
 resize();
 
 // Handy in the console: solve(state) to inspect the optimal line.

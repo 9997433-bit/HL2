@@ -12,12 +12,16 @@ import { HORIZONTAL, cellsOf } from './core.js';
 const LOT = {
   tarmac: '#2b3240',
   tarmacAlt: '#2f3747',
-  stall: 'rgba(255,255,255,0.10)',
+  stall: 'rgba(255,255,255,0.16)',
   wall: '#1b2028',
   wallEdge: '#3c4553',
 };
 
-/** Blocker paints, picked by label so a car keeps its colour across a restart. */
+/**
+ * Blocker paints, picked by label so a car keeps its colour across a restart.
+ * None of them sit near the target's gold, so the car you are steering never
+ * has to be found twice.
+ */
 const PAINTS = [
   { body: '#5b7cfa', roof: '#7d97ff' },
   { body: '#3fa9a0', roof: '#5fc7be' },
@@ -26,7 +30,7 @@ const PAINTS = [
   { body: '#8d93a8', roof: '#a8aec2' },
   { body: '#c06b8f', roof: '#d98cab' },
   { body: '#6a8f4a', roof: '#88ad64' },
-  { body: '#a9793f', roof: '#c79a5f' },
+  { body: '#c9564f', roof: '#e07a72' },
 ];
 
 const TARGET_PAINT = { body: '#f2b632', roof: '#ffd166' };
@@ -40,7 +44,7 @@ export function paintFor(vehicle) {
 
 /** Geometry shared by the renderer and by hit-testing in main.js. */
 export function layoutFor(canvas, state) {
-  const pad = Math.round(Math.min(canvas.width, canvas.height) * 0.085);
+  const pad = Math.round(Math.min(canvas.width, canvas.height) * 0.05);
   const cell = Math.floor(Math.min((canvas.width - pad * 2) / state.cols, (canvas.height - pad * 2) / state.rows));
   const boardW = cell * state.cols;
   const boardH = cell * state.rows;
