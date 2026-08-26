@@ -32,7 +32,7 @@ command -v npm >/dev/null 2>&1 || {
 }
 
 run_test \
-  "jump-jump browser smoke test" \
+  "jump-jump deterministic browser verifier" \
   node "$ROOT_DIR/scripts/verify-jump-jump.mjs"
 
 run_test \

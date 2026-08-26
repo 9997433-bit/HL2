@@ -16,10 +16,14 @@
       font-family: system-ui, sans-serif;
       color: #fff;
     }
-    canvas { border-radius: 12px; box-shadow: 0 8px 32px rgba(0,0,0,0.4); cursor: pointer; }
-    .hud { margin-top: 16px; text-align: center; }
+    canvas { border-radius: 12px; box-shadow: 0 8px 32px rgba(0,0,0,0.4); cursor: pointer; touch-action: none; }
+    .hud { margin-top: 16px; text-align: center; width: 400px; }
     .score { font-size: 2rem; font-weight: bold; color: #ffd700; }
+    .combo { font-size: 0.85rem; font-weight: 600; color: #7ee787; margin-left: 8px; vertical-align: middle; }
+    .charge { margin: 10px auto 0; width: 240px; height: 6px; border-radius: 999px; background: #2a2a44; overflow: hidden; }
+    .charge i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, #7ee787, #ffd700, #ff6b6b); }
     .hint { margin-top: 8px; color: #888; font-size: 0.9rem; }
+    .meta { margin-top: 4px; color: #5b6480; font-size: 0.72rem; }
     .game-over { color: #ff6b6b; font-size: 1.2rem; margin-top: 8px; display: none; }
     /* wx-shim panel: rewarded-video revive, share, mock friend board */
     .wx { margin-top: 12px; display: none; }
@@ -49,8 +53,10 @@
 <body>
   <canvas id="game" width="400" height="600"></canvas>
   <div class="hud">
-    <div class="score">得分: <span id="score">0</span></div>
-    <div class="hint">按住蓄力，松开跳跃 | 空格键同样有效</div>
+    <div class="score">得分: <span id="score">0</span><span class="combo" id="combo"></span></div>
+    <div class="charge"><i id="chargeFill"></i></div>
+    <div class="hint">按住蓄力，松开起跳 | 空格键同样有效</div>
+    <div class="meta" id="meta"></div>
     <div class="game-over" id="gameOver">游戏结束 — 点击重试</div>
     <div class="wx" id="wxPanel">
       <button id="btnRevive">🎬 看广告续命</button>
@@ -70,14 +76,27 @@
     const canvas = document.getElementById('game');
     const ctx = canvas.getContext('2d');
     const scoreEl = document.getElementById('score');
+    const comboEl = document.getElementById('combo');
+    const metaEl = document.getElementById('meta');
+    const chargeFill = document.getElementById('chargeFill');
     const gameOverEl = document.getElementById('gameOver');
 
     /* WeChat platform, mocked by prototypes/shared/wx-shim.js. 跳一跳's own loop
        was exactly this: one score, one friend board, one revive. The shim runs
-       ads in 'auto' mode, so it plays and closes the creative itself. */
-    const shim = WxShim.installWxShim({ adBehavior: 'auto', adDurationMs: 1800, seed: 20180101 });
+       ads in 'auto' mode, so it plays and closes the creative itself.
+       persistStorage is off because a file:// page has no usable localStorage. */
+    const shim = WxShim.installWxShim({
+      adBehavior: 'auto',
+      adDurationMs: 1800,
+      seed: 20180101,
+      persistStorage: false,
+      /* The card comes back a beat later, so the two notes read as a sequence:
+         "no callback exists" first, then the only observable signal there is. */
+      shareReturnMs: 1200,
+    });
     const AD_UNIT = 'adunit-jumpjump-revive-3d10';
     const CLOUD_KEY = 'score';
+    const BEST_KEY = 'jumpjump:best';
 
     const rewardedAd = wx.createRewardedVideoAd({ adUnitId: AD_UNIT });
     rewardedAd.onClose(res => {
@@ -96,178 +115,397 @@
 
     function note(text) { document.getElementById('wxNote').textContent = text; }
 
-    // Player (the "jumper")
-    const player = { x: 80, y: 0, vy: 0, size: 20, charging: false, chargeStart: 0, jumping: false, jumpVx: 0 };
+    /* ------------------------------------------------------------------ */
+    /* Tuning                                                              */
+    /* ------------------------------------------------------------------ */
 
-    // Platforms
+    /** Every number the simulation depends on, so a test can reason about it. */
+    const CFG = {
+      gravity: 1600,
+      /** Physics runs on this fixed step; the render loop only feeds it time. */
+      fixedStep: 1 / 120,
+      /** Holding past this adds nothing — the original caps the charge too. */
+      maxCharge: 1.2,
+      speedX: [110, 340],
+      speedY: [260, 560],
+      platformWidth: [52, 88],
+      /** Centre-to-centre spacing, before the edge-gap floor is applied. */
+      gap: [112, 195],
+      /** Bare air between two blocks, so a short hop can always fall through. */
+      edgeGap: 24,
+      /** Height change between neighbours; the reachability margin assumes it. */
+      stepY: [-34, 34],
+      topBand: [180, 520],
+      /** Landing this close to the centre keeps the combo alive. */
+      centerTolerance: 12,
+      /** Combo n scores 2^n, so 2, 4, 8, 16, 32 and then flat. */
+      comboCap: 5,
+      /** Platforms kept ready ahead of / behind the jumper. */
+      ahead: 8,
+      behind: 3,
+      deathY: 720,
+      cameraLerp: 7,
+      playerRadius: 18,
+    };
+
+    const clamp = (v, lo, hi) => (v < lo ? lo : v > hi ? hi : v);
+    const now = () => (typeof performance !== 'undefined' ? performance.now() : Date.now());
+
+    /* ------------------------------------------------------------------ */
+    /* World state                                                         */
+    /* ------------------------------------------------------------------ */
+
+    const urlSeed = (() => {
+      const raw = Number(new URLSearchParams(location.search).get('seed'));
+      return Number.isFinite(raw) && raw > 0 ? raw >>> 0 : null;
+    })();
+
+    let seed = 0;
+    let rng = WxShim.mulberry32(1);
     let platforms = [];
+    let nextIndex = 0;
     let score = 0;
-    let cameraY = 0;
-    let alive = true;
     let combo = 0;
+    let best = Number(wx.getStorageSync(BEST_KEY)) || 0;
+    let alive = true;
+    let revived = false;
+    let cameraX = 0;
+    let accumulator = 0;
+    /** When true the rAF loop only renders; a test drives the physics itself. */
+    let driven = false;
+    let lastLanding = null;
 
-    function rand(min, max) { return min + Math.random() * (max - min); }
+    const player = {
+      x: 0, y: 0, vx: 0, vy: 0,
+      size: CFG.playerRadius,
+      jumping: false,
+      charging: false,
+      chargeStart: 0,
+      /** Index of the platform last landed on — survives pruning and revive. */
+      platformIndex: 0,
+    };
 
-    function initPlatforms() {
-      platforms = [];
-      let px = 60, py = canvas.height - 80;
-      for (let i = 0; i < 20; i++) {
-        const w = rand(50, 90);
-        const gap = rand(60, 140);
-        px += gap;
-        py += rand(-40, 40);
-        py = Math.max(100, Math.min(canvas.height - 60, py));
-        platforms.push({ x: px, y: py, w, h: 16, color: `hsl(${rand(200,280)},60%,55%)` });
+    function rand(range) { return range[0] + rng() * (range[1] - range[0]); }
+
+    function platformAt(index) {
+      for (const p of platforms) if (p.index === index) return p;
+      return null;
+    }
+
+    /**
+     * Append one platform after the current tail. The gap is floored so two
+     * blocks never touch (a short hop must be able to fall between them) and
+     * capped so a full charge can always clear it, even uphill.
+     */
+    function appendPlatform() {
+      const prev = platforms[platforms.length - 1];
+      const w = rand(CFG.platformWidth);
+      const gap = Math.max(rand(CFG.gap), prev.w / 2 + w / 2 + CFG.edgeGap);
+      const y = clamp(prev.y + rand(CFG.stepY), CFG.topBand[0], CFG.topBand[1]);
+      platforms.push({
+        index: nextIndex++,
+        x: prev.x + gap,
+        y,
+        w,
+        h: 18,
+        hue: 200 + Math.floor(rng() * 80),
+      });
+    }
+
+    /** G-JJ1: the world is generated on demand, so it never runs out. */
+    function ensureAhead() {
+      while (nextIndex - 1 < player.platformIndex + CFG.ahead) appendPlatform();
+    }
+
+    function prune() {
+      const keepFrom = player.platformIndex - CFG.behind;
+      while (platforms.length && platforms[0].index < keepFrom) platforms.shift();
+    }
+
+    function reset(explicitSeed) {
+      seed = (explicitSeed === undefined || explicitSeed === null)
+        ? (urlSeed !== null ? urlSeed : (Date.now() >>> 0))
+        : (explicitSeed >>> 0);
+      rng = WxShim.mulberry32(seed);
+      platforms = [{ index: 0, x: 90, y: 400, w: 80, h: 18, hue: 220 }];
+      nextIndex = 1;
+      score = 0;
+      combo = 0;
+      alive = true;
+      revived = false;
+      lastLanding = null;
+      accumulator = 0;
+      player.x = platforms[0].x;
+      player.y = platforms[0].y;
+      player.vx = 0;
+      player.vy = 0;
+      player.jumping = false;
+      player.charging = false;
+      player.platformIndex = 0;
+      cameraX = Math.max(0, player.x - canvas.width * 0.32);
+      ensureAhead();
+      gameOverEl.style.display = 'none';
+      document.getElementById('wxPanel').classList.remove('show');
+      document.getElementById('adOverlay').classList.remove('show');
+      note('');
+      document.getElementById('board').innerHTML = '';
+      syncHud();
+    }
+
+    function syncHud() {
+      scoreEl.textContent = String(score);
+      comboEl.textContent = combo > 0
+        ? '连击 ' + combo + ' · 下次居中 +' + (1 << Math.min(combo + 1, CFG.comboCap))
+        : '';
+      metaEl.textContent = '种子 ' + seed + ' · 最高 ' + best + ' · 已生成 ' + nextIndex + ' 块';
+    }
+
+    /* ------------------------------------------------------------------ */
+    /* Jump model — G-JJ3: charge alone decides how far you go              */
+    /* ------------------------------------------------------------------ */
+
+    /**
+     * Charge maps to a launch velocity. Nothing here looks at the platforms:
+     * the player aims by holding the button, and lands short or long.
+     */
+    function launchParams(charge) {
+      const power = clamp(charge, 0, CFG.maxCharge) / CFG.maxCharge;
+      return {
+        power,
+        vx: CFG.speedX[0] + power * (CFG.speedX[1] - CFG.speedX[0]),
+        vy: -(CFG.speedY[0] + power * (CFG.speedY[1] - CFG.speedY[0])),
+      };
+    }
+
+    /** Horizontal distance covered before dropping `dy` below the take-off. */
+    function rangeFor(charge, dy) {
+      const { vx, vy } = launchParams(charge);
+      const disc = vy * vy + 2 * CFG.gravity * (dy || 0);
+      if (disc < 0) return null; // the arc never climbs that high
+      return vx * ((-vy + Math.sqrt(disc)) / CFG.gravity);
+    }
+
+    /** Inverse of `rangeFor` — the charge a perfect player would hold. */
+    function chargeForDistance(dx, dy) {
+      let lo = 0;
+      let hi = CFG.maxCharge;
+      if ((rangeFor(hi, dy) || 0) < dx) return hi;
+      for (let i = 0; i < 60; i++) {
+        const mid = (lo + hi) / 2;
+        const reach = rangeFor(mid, dy);
+        if (reach === null || reach < dx) lo = mid; else hi = mid;
       }
-      player.x = platforms[0].x + platforms[0].w / 2;
-      player.y = platforms[0].y - player.size;
+      return (lo + hi) / 2;
     }
 
-    function drawPlatform(p) {
-      const sy = p.y - cameraY;
-      ctx.fillStyle = p.color;
-      ctx.beginPath();
-      ctx.roundRect(p.x - p.w/2, sy, p.w, p.h, 4);
-      ctx.fill();
-      ctx.fillStyle = 'rgba(255,255,255,0.15)';
-      ctx.fillRect(p.x - p.w/2, sy, p.w, 4);
+    function launch(charge) {
+      if (!alive || player.jumping) return false;
+      const { vx, vy } = launchParams(charge);
+      player.vx = vx;
+      player.vy = vy;
+      player.jumping = true;
+      player.charging = false;
+      lastLanding = null;
+      return true;
     }
 
-    function drawPlayer() {
-      const sy = player.y - cameraY;
-      // Shadow
-      ctx.fillStyle = 'rgba(0,0,0,0.2)';
-      ctx.beginPath();
-      ctx.ellipse(player.x, sy + player.size + 4, player.size * 0.8, 4, 0, 0, Math.PI * 2);
-      ctx.fill();
-      // Body
-      ctx.fillStyle = '#ffd700';
-      ctx.beginPath();
-      ctx.arc(player.x, sy, player.size, 0, Math.PI * 2);
-      ctx.fill();
-      // Charge indicator
-      if (player.charging) {
-        const charge = Math.min((Date.now() - player.chargeStart) / 1000, 1.5);
-        ctx.strokeStyle = `rgba(255,255,255,${charge / 1.5})`;
-        ctx.lineWidth = 3;
-        ctx.beginPath();
-        ctx.arc(player.x, sy, player.size + charge * 20, 0, Math.PI * 2);
-        ctx.stroke();
-      }
-    }
+    /* ------------------------------------------------------------------ */
+    /* Physics — G-JJ2: fixed step, so dt never changes the outcome         */
+    /* ------------------------------------------------------------------ */
 
-    function getCurrentPlatform() {
-      for (const p of platforms) {
-        if (Math.abs(player.x - p.x) < p.w / 2 + 10) return p;
+    /** Time within the step at which the fall crosses `targetY`, or null. */
+    function solveCross(y0, v0, targetY, h) {
+      const a = 0.5 * CFG.gravity;
+      const c = -(targetY - y0);
+      const disc = v0 * v0 - 4 * a * c;
+      if (disc < 0) return null;
+      const root = Math.sqrt(disc);
+      const candidates = [(-v0 - root) / (2 * a), (-v0 + root) / (2 * a)];
+      for (const s of candidates) {
+        if (s >= -1e-9 && s <= h + 1e-9) return clamp(s, 0, h);
       }
       return null;
     }
 
-    function jump() {
-      if (!player.charging || player.jumping) return;
-      const charge = Math.min((Date.now() - player.chargeStart) / 1000, 1.5);
-      player.charging = false;
-      player.jumping = true;
-      const power = charge * 280;
-      // Find next platform direction
-      const idx = platforms.findIndex(p => Math.abs(player.x - p.x) < p.w);
-      const next = platforms[idx + 1];
-      if (next) {
-        const dx = next.x - player.x;
-        player.jumpVx = dx / (power / 400);
-      } else {
-        player.jumpVx = power / 400;
+    function findLanding(prevX, prevY, prevVy, h) {
+      let hit = null;
+      for (const p of platforms) {
+        if (prevY > p.y + 1e-9) continue;   // already below this block's top
+        if (player.y < p.y) continue;       // did not reach it during the step
+        const s = solveCross(prevY, prevVy, p.y, h);
+        if (s === null) continue;
+        const x = prevX + player.vx * s;
+        if (Math.abs(x - p.x) > p.w / 2) continue;
+        if (!hit || s < hit.s) hit = { p, s, x };
       }
-      player.vy = -power;
+      return hit;
+    }
+
+    /** G-JJ4: a centred landing doubles the payout, an off-centre one resets it. */
+    function land(hit) {
+      const p = hit.p;
+      player.x = hit.x;
+      player.y = p.y;
+      player.vx = 0;
+      player.vy = 0;
+      player.jumping = false;
+
+      const advanced = p.index - player.platformIndex;
+      const offset = hit.x - p.x;
+      let centered = false;
+      let points = 0;
+
+      if (advanced > 0) {
+        centered = Math.abs(offset) <= CFG.centerTolerance;
+        if (centered) {
+          combo += 1;
+          points = 1 << Math.min(combo, CFG.comboCap);
+        } else {
+          combo = 0;
+          points = 1;
+        }
+        score += points;
+      } else {
+        combo = 0; // hopped back onto the block you started from
+      }
+
+      player.platformIndex = p.index;
+      lastLanding = { index: p.index, advanced, offset, centered, points, score, combo };
+      ensureAhead();
+      prune();
+      syncHud();
+      if (centered) wx.vibrateShort({ type: 'light' });
+    }
+
+    function die() {
+      if (!alive) return;
+      alive = false;
+      player.jumping = false;
+      gameOverEl.style.display = 'block';
+      gameOver();
+    }
+
+    /** One deterministic physics tick. Exact kinematics, so h cannot skew it. */
+    function step(h) {
+      if (alive && player.jumping) {
+        const prevX = player.x;
+        const prevY = player.y;
+        const prevVy = player.vy;
+        player.y = prevY + prevVy * h + 0.5 * CFG.gravity * h * h;
+        player.vy = prevVy + CFG.gravity * h;
+        player.x = prevX + player.vx * h;
+
+        if (player.vy > 0) {
+          const hit = findLanding(prevX, prevY, prevVy, h);
+          if (hit) land(hit);
+        }
+        if (player.jumping && player.y > CFG.deathY) die();
+      }
+
+      const target = Math.max(0, player.x - canvas.width * 0.32);
+      cameraX += (target - cameraX) * (1 - Math.exp(-CFG.cameraLerp * h));
     }
 
     function update(dt) {
-      if (!alive) return;
-
-      if (player.jumping) {
-        player.vy += 900 * dt;
-        player.y += player.vy * dt;
-        player.x += player.jumpVx;
-
-        // Land check
-        for (const p of platforms) {
-          const onPlatform = player.vy > 0 &&
-            player.x > p.x - p.w/2 && player.x < p.x + p.w/2 &&
-            player.y + player.size >= p.y && player.y + player.size <= p.y + p.h + 10;
-          if (onPlatform) {
-            player.y = p.y - player.size;
-            player.vy = 0;
-            player.jumping = false;
-            player.jumpVx = 0;
-            // Score if landed on new platform
-            const idx = platforms.indexOf(p);
-            if (idx > score) {
-              const centerBonus = Math.abs(player.x - p.x) < 8;
-              combo = centerBonus ? combo + 1 : 0;
-              score = idx;
-              scoreEl.textContent = score + (combo > 1 ? ` (+${combo}连击)` : '');
-            }
-            break;
-          }
-        }
-
-        // Fall off screen
-        if (player.y - cameraY > canvas.height + 50) {
-          alive = false;
-          gameOverEl.style.display = 'block';
-          gameOver();
-        }
+      accumulator += clamp(dt, 0, 0.25);
+      let guard = 0;
+      while (accumulator >= CFG.fixedStep && guard++ < 600) {
+        step(CFG.fixedStep);
+        accumulator -= CFG.fixedStep;
       }
+    }
 
-      // Camera follow
-      const targetCam = player.y - canvas.height * 0.6;
-      cameraY += (targetCam - cameraY) * 0.08;
+    /* ------------------------------------------------------------------ */
+    /* Render                                                              */
+    /* ------------------------------------------------------------------ */
+
+    function heldCharge() {
+      return player.charging ? clamp((now() - player.chargeStart) / 1000, 0, CFG.maxCharge) : 0;
+    }
+
+    function drawPlatform(p) {
+      const sx = p.x - cameraX;
+      if (sx + p.w / 2 < -40 || sx - p.w / 2 > canvas.width + 40) return;
+      ctx.fillStyle = 'hsl(' + p.hue + ',35%,22%)';
+      ctx.fillRect(sx - p.w / 2, p.y + p.h, p.w, canvas.height);
+      ctx.fillStyle = 'hsl(' + p.hue + ',60%,55%)';
+      ctx.beginPath();
+      ctx.roundRect(sx - p.w / 2, p.y, p.w, p.h, 4);
+      ctx.fill();
+      ctx.fillStyle = 'rgba(255,255,255,0.15)';
+      ctx.fillRect(sx - p.w / 2, p.y, p.w, 4);
+      // The combo target: land inside this mark and the payout doubles.
+      ctx.fillStyle = 'rgba(255,215,0,0.55)';
+      ctx.fillRect(sx - CFG.centerTolerance, p.y + 6, CFG.centerTolerance * 2, 3);
+    }
+
+    function drawPlayer() {
+      const sx = player.x - cameraX;
+      const cy = player.y - player.size;
+      ctx.fillStyle = 'rgba(0,0,0,0.25)';
+      ctx.beginPath();
+      ctx.ellipse(sx, player.y + 3, player.size * 0.8, 4, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#ffd700';
+      ctx.beginPath();
+      ctx.arc(sx, cy, player.size, 0, Math.PI * 2);
+      ctx.fill();
+      const charge = heldCharge();
+      if (charge > 0) {
+        const t = charge / CFG.maxCharge;
+        ctx.strokeStyle = 'rgba(255,255,255,' + (0.25 + t * 0.6) + ')';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.arc(sx, cy, player.size + t * 22, 0, Math.PI * 2);
+        ctx.stroke();
+      }
     }
 
     function render() {
-      ctx.fillStyle = '#1a1a2e';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-      // Background gradient
       const grad = ctx.createLinearGradient(0, 0, 0, canvas.height);
       grad.addColorStop(0, '#16213e');
       grad.addColorStop(1, '#1a1a2e');
       ctx.fillStyle = grad;
       ctx.fillRect(0, 0, canvas.width, canvas.height);
-
       platforms.forEach(drawPlatform);
       drawPlayer();
+      chargeFill.style.width = (heldCharge() / CFG.maxCharge * 100).toFixed(1) + '%';
     }
 
     let lastTime = 0;
     function loop(t) {
-      const dt = Math.min((t - lastTime) / 1000, 0.05);
+      const dt = lastTime ? (t - lastTime) / 1000 : 0;
       lastTime = t;
-      update(dt);
+      if (!driven) update(dt);
       render();
       requestAnimationFrame(loop);
     }
 
+    /* ------------------------------------------------------------------ */
+    /* Input                                                               */
+    /* ------------------------------------------------------------------ */
+
     function startCharge() {
-      if (!alive || player.jumping) return;
+      if (!alive || player.jumping || player.charging) return;
       player.charging = true;
-      player.chargeStart = Date.now();
+      player.chargeStart = now();
     }
 
-    function reset() {
-      score = 0; combo = 0; alive = true; cameraY = 0; revived = false;
-      scoreEl.textContent = '0';
-      gameOverEl.style.display = 'none';
-      document.getElementById('wxPanel').classList.remove('show');
-      note('');
-      player.jumping = false; player.vy = 0; player.jumpVx = 0;
-      initPlatforms();
+    function releaseCharge() {
+      if (!player.charging) return;
+      const held = (now() - player.chargeStart) / 1000;
+      player.charging = false;
+      launch(held);
     }
 
     /* ---- the platform loop: score -> friend board -> revive -> share ---- */
-    let revived = false;
 
     function gameOver() {
+      if (score > best) {
+        best = score;
+        wx.setStorageSync(BEST_KEY, best);
+      }
+      syncHud();
       wx.setUserCloudStorage({
         KVDataList: [{
           key: CLOUD_KEY,
@@ -300,15 +538,23 @@
       try { return Number(JSON.parse(kv.value).wxgame.score) || 0; } catch (e) { return 0; }
     }
 
-    /** Put the jumper back on the platform it fell off, keeping the score. */
+    /** Put the jumper back on the block it fell from, keeping the score. */
     function revive() {
       revived = true;
-      const p = platforms[Math.min(score, platforms.length - 1)];
-      player.x = p.x; player.y = p.y - player.size;
-      player.vy = 0; player.jumpVx = 0; player.jumping = false; player.charging = false;
+      const p = platformAt(player.platformIndex) || platforms[0];
+      player.x = p.x;
+      player.y = p.y;
+      player.vx = 0;
+      player.vy = 0;
+      player.jumping = false;
+      player.charging = false;
+      combo = 0;
       alive = true;
+      accumulator = 0;
+      ensureAhead();
       gameOverEl.style.display = 'none';
       document.getElementById('wxPanel').classList.remove('show');
+      syncHud();
     }
 
     document.getElementById('btnRevive').addEventListener('click', e => {
@@ -320,8 +566,8 @@
 
     document.getElementById('btnShareScore').addEventListener('click', e => {
       e.stopPropagation();
-      wx.shareAppMessage({ title: '我跳了 ' + score + ' 级，你来试试', query: 'from=score' });
       note('wx.shareAppMessage 已调用 — 平台不返回成功回调，只能等好友回流');
+      wx.shareAppMessage({ title: '我跳了 ' + score + ' 分，你来试试', query: 'from=score' });
     });
 
     shim.on('share:success', info =>
@@ -329,22 +575,129 @@
            (info.from ? info.from.nickname : '好友') + '）— 这是唯一可观测的“分享成功”'));
 
     canvas.addEventListener('mousedown', startCharge);
-    canvas.addEventListener('mouseup', jump);
+    canvas.addEventListener('mouseup', releaseCharge);
     canvas.addEventListener('touchstart', e => { e.preventDefault(); startCharge(); });
-    canvas.addEventListener('touchend', e => { e.preventDefault(); jump(); });
+    canvas.addEventListener('touchend', e => { e.preventDefault(); releaseCharge(); });
     canvas.addEventListener('click', () => { if (!alive) reset(); });
     document.addEventListener('keydown', e => {
       if (e.code === 'Space') {
         e.preventDefault();
         if (!alive) { reset(); return; }
-        if (!player.charging) startCharge();
+        startCharge();
       }
     });
     document.addEventListener('keyup', e => {
-      if (e.code === 'Space') jump();
+      if (e.code === 'Space') releaseCharge();
     });
 
-    initPlatforms();
+    /* ------------------------------------------------------------------ */
+    /* Test surface — scripts/verify-jump-jump.mjs drives the game here     */
+    /* ------------------------------------------------------------------ */
+
+    /** Flight of a jump over empty space, straight from the integrator. */
+    function freeFlight(charge) {
+      const { vx, vy } = launchParams(charge);
+      const h = CFG.fixedStep;
+      let x = 0;
+      let y = 0;
+      let v = vy;
+      for (let i = 0; i < 20000; i++) {
+        const prevY = y;
+        const prevV = v;
+        y = prevY + prevV * h + 0.5 * CFG.gravity * h * h;
+        v = prevV + CFG.gravity * h;
+        if (v > 0 && y >= 0 && prevY <= 0) {
+          const s = solveCross(prevY, prevV, 0, h);
+          if (s !== null) return x + vx * s;
+        }
+        x += vx * h;
+      }
+      return x;
+    }
+
+    const testApi = {
+      CFG,
+      snapshot() {
+        return {
+          seed, score, combo, best, alive, revived,
+          x: player.x, y: player.y, vx: player.vx, vy: player.vy,
+          jumping: player.jumping, charging: player.charging,
+          platformIndex: player.platformIndex,
+          platformCount: platforms.length,
+          generated: nextIndex,
+          scoreText: scoreEl.textContent,
+          comboText: comboEl.textContent,
+          landing: lastLanding,
+        };
+      },
+      /** Take the physics away from requestAnimationFrame so runs replay. */
+      setDriven(value) { driven = !!value; accumulator = 0; return driven; },
+      restart(nextSeed) {
+        driven = true;
+        reset(nextSeed === undefined ? seed : nextSeed);
+        return this.snapshot();
+      },
+      platforms() {
+        return platforms.map(p => ({ index: p.index, x: p.x, y: p.y, w: p.w }));
+      },
+      fingerprint(count) {
+        return this.platforms().slice(0, count)
+          .map(p => [p.index, p.x.toFixed(6), p.y.toFixed(6), p.w.toFixed(6)].join(':'))
+          .join('|');
+      },
+      next() {
+        const p = platformAt(player.platformIndex + 1);
+        return p ? { index: p.index, x: p.x, y: p.y, w: p.w } : null;
+      },
+      rangeFor: (charge, dy) => rangeFor(charge, dy || 0),
+      chargeForDistance: (dx, dy) => chargeForDistance(dx, dy || 0),
+      freeFlight,
+      launch,
+      advance(dt) { update(dt); return this.snapshot(); },
+      /** Run fixed steps until the jumper is resting again (or dead). */
+      settle(maxSeconds) {
+        const limit = Math.round((maxSeconds || 6) / CFG.fixedStep);
+        let steps = 0;
+        while (steps < limit && alive && player.jumping) { step(CFG.fixedStep); steps++; }
+        return Object.assign({ steps }, this.snapshot());
+      },
+      jump(charge, maxSeconds) {
+        launch(charge);
+        return this.settle(maxSeconds);
+      },
+      /** Aim at the next block's centre, offset by `offset` pixels. */
+      aim(offset) {
+        const p = platformAt(player.platformIndex + 1);
+        if (!p) return null;
+        const charge = chargeForDistance(p.x + (offset || 0) - player.x, p.y - player.y);
+        return Object.assign({ charge, target: { index: p.index, x: p.x, y: p.y, w: p.w } },
+          this.jump(charge));
+      },
+      perfect() { return this.aim(0); },
+      autoPlay(count) {
+        const out = [];
+        for (let i = 0; i < count && alive; i++) out.push(this.perfect());
+        return out;
+      },
+      /** Drop into the bare air between this block and the next one. */
+      fallShort() {
+        const here = platformAt(player.platformIndex);
+        const p = platformAt(player.platformIndex + 1);
+        if (!here || !p) return null;
+        const nearEdge = here.w / 2;
+        const farEdge = (p.x - here.x) - p.w / 2;
+        return this.jump(chargeForDistance((nearEdge + farEdge) / 2, 0), 4);
+      },
+      shim,
+      calls(api) { return shim.calls(api).length; },
+      completeAd() { return shim.completeAd(); },
+      board() { return document.getElementById('board').textContent; },
+      panelVisible() { return document.getElementById('wxPanel').classList.contains('show'); },
+      adVisible() { return document.getElementById('adOverlay').classList.contains('show'); },
+    };
+    window.__jj = testApi;
+
+    reset();
     requestAnimationFrame(loop);
   </script>
 </body>
