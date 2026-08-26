@@ -1,0 +1,837 @@
+{
+  "schema_version": "1.0",
+  "research_date": "2026-08-26",
+  "scope": {
+    "purpose": "Mechanic-level replication feasibility for the game categories represented in the parent baseline's revenue and popularity lists.",
+    "replication_definition": "An original implementation of a gameplay pattern, using distinct branding, code, art, audio, text, levels, characters, and economy.",
+    "ratings": {
+      "easy": "Local deterministic core with modest original content and no required backend.",
+      "medium": "Core is straightforward but needs richer content, performance work, progression, or optional online services.",
+      "hard": "Production parity depends on substantial content, an authoritative backend, live operations, security, or platform-controlled capabilities.",
+      "very_hard": "Large persistent service with complex economy/social systems and ongoing operations."
+    }
+  },
+  "environment_probe": {
+    "os": "Linux 6.12",
+    "node": "22.14.0",
+    "npm": "10.9.7",
+    "python": "3.12.3",
+    "official_wechat_devtools_installed": false,
+    "official_wechat_devtools_linux_distribution": false,
+    "appid_available": false,
+    "can_validate": [
+      "platform-neutral game rules",
+      "browser Canvas/WebGL rendering",
+      "TypeScript builds",
+      "backend contracts",
+      "deterministic tests",
+      "asset and bundle budgets"
+    ],
+    "cannot_validate_here": [
+      "WeChat DevTools compile, preview, upload, or simulator behavior",
+      "real-device WeChat performance",
+      "wx.login and code2Session",
+      "Midas payment",
+      "WeChat ads",
+      "open-data-domain friend APIs",
+      "share-card behavior",
+      "review or release eligibility"
+    ],
+    "release_gate": "Run the official Stable WeChat DevTools on Windows or macOS, then test production-eligible APIs and representative physical devices."
+  },
+  "wechat_requirements": {
+    "account": [
+      "Register a Mini Program account with the Game first-level category.",
+      "Obtain an AppID; a test account cannot validate commercial features or upload/release.",
+      "Complete platform identity, qualification, privacy, content review, and capability eligibility requirements applicable to the game."
+    ],
+    "toolchain": [
+      "Use the official Stable WeChat DevTools on Windows or macOS.",
+      "Import a native project or an engine export.",
+      "Test both DevTools and physical WeChat clients."
+    ],
+    "project_files": [
+      "game.js",
+      "game.json",
+      "project.config.json",
+      "project.private.config.json"
+    ],
+    "runtime": {
+      "entry": "game.js",
+      "configuration": "game.json",
+      "rendering": "Full-screen Canvas 2D or WebGL-family host rendering",
+      "dom_available": false,
+      "css_available": false,
+      "complete_bom_available": false,
+      "native_api_namespace": "wx",
+      "adapter_warning": "weapp-adapter is user code, is not part of the base library, and does not emulate a complete browser."
+    },
+    "limits": {
+      "main_package_mb": 4,
+      "all_code_packages_mb": 30,
+      "independent_subpackage_mb": 4,
+      "local_key_value_storage_mb_per_user_game": 10,
+      "cached_plus_user_files_default_mb": 200,
+      "cached_plus_user_files_eligible_upgrade_mb": 1024,
+      "production_network": [
+        "Registered server domains",
+        "HTTPS for request/upload/download",
+        "WSS for WebSocket",
+        "Valid TLS certificate",
+        "No direct IP address or localhost",
+        "ICP-filed domain"
+      ]
+    }
+  },
+  "hard_blockers": [
+    {
+      "id": "wechat_identity",
+      "capability": "WeChat login identity",
+      "exact_parity_outside_wechat": false,
+      "severity": "hard_for_exact_parity",
+      "reason": "wx.login issues a short-lived code under a WeChat AppID for server-side exchange to openid and session data.",
+      "substitute": "Guest account, passkey, Apple/Google/OAuth, and optional account linking.",
+      "blocks_core_gameplay": false
+    },
+    {
+      "id": "wechat_social_graph",
+      "capability": "Same-game WeChat friend data and ranking",
+      "exact_parity_outside_wechat": false,
+      "severity": "hard_for_exact_parity",
+      "reason": "Friend cloud storage is authorization-gated, restricted to the open-data domain, and the WeChat graph is not exportable.",
+      "substitute": "Developer-owned friends/follows, invite codes, and global or cohort leaderboards.",
+      "blocks_core_gameplay": false
+    },
+    {
+      "id": "wechat_payment",
+      "capability": "Midas virtual currency or item payment",
+      "exact_parity_outside_wechat": false,
+      "severity": "hard_for_exact_parity",
+      "reason": "wx.requestMidasPayment requires WeChat/Midas runtime eligibility, offer configuration, and compliant server-side order handling.",
+      "substitute": "Web checkout where permitted or Apple/Google in-app purchase with a developer-owned entitlement ledger.",
+      "blocks_core_gameplay": false
+    },
+    {
+      "id": "wechat_sharing",
+      "capability": "WeChat share cards, conversation selection, launch query, and group context",
+      "exact_parity_outside_wechat": false,
+      "severity": "hard_for_exact_parity",
+      "reason": "These are WeChat-owned distribution surfaces exposed through wx sharing and launch APIs.",
+      "substitute": "Web Share, URLs, QR/referral codes, Universal Links, and App Links.",
+      "blocks_core_gameplay": false
+    },
+    {
+      "id": "wechat_ads",
+      "capability": "WeChat rewarded, interstitial, and banner inventory",
+      "exact_parity_outside_wechat": false,
+      "severity": "hard_for_monetization_parity",
+      "reason": "Ad APIs require approved WeChat ad units, runtime inventory, and policy compliance.",
+      "substitute": "A web/mobile ad network or a non-ad economy.",
+      "blocks_core_gameplay": false
+    },
+    {
+      "id": "wechat_publication",
+      "capability": "WeChat review and formal release",
+      "exact_parity_outside_wechat": false,
+      "severity": "hard_for_wechat_distribution",
+      "reason": "AppID category, qualifications, privacy disclosures, content review, and API permissions are controlled by the platform.",
+      "substitute": "Publish on the web or app stores under their independent rules.",
+      "blocks_core_gameplay": false
+    },
+    {
+      "id": "wechat_network_domain",
+      "capability": "Production backend connectivity in WeChat",
+      "exact_parity_outside_wechat": true,
+      "severity": "conditional_hard_for_online_wechat_build",
+      "reason": "Production requests require registered HTTPS/WSS domains, valid certificates, and an ICP-filed domain.",
+      "substitute": "Provision compliant China-facing domains and infrastructure.",
+      "blocks_core_gameplay": false
+    }
+  ],
+  "engine_options": [
+    {
+      "name": "Cocos / Cocos Creator",
+      "license_note": "The engine is open source; verify the exact editor and engine version terms selected for production.",
+      "dimensions": "2D and 3D",
+      "wechat_support": "first_class_export",
+      "web_support": "strong",
+      "mobile_support": "strong",
+      "recommended_for": [
+        "cross-target production",
+        "WeChat-required delivery",
+        "puzzle",
+        "tower defense",
+        "action",
+        "RPG"
+      ],
+      "verdict": "default"
+    },
+    {
+      "name": "LayaAir",
+      "license_note": "MIT-licensed engine.",
+      "dimensions": "2D and 3D",
+      "wechat_support": "officially_adapted_export",
+      "web_support": "strong",
+      "mobile_support": "supported",
+      "recommended_for": [
+        "TypeScript teams",
+        "web-first cross-target production"
+      ],
+      "verdict": "credible_alternative"
+    },
+    {
+      "name": "Phaser",
+      "license_note": "MIT license.",
+      "dimensions": "2D",
+      "wechat_support": "custom_adapter_and_real_client_validation_required",
+      "web_support": "first_class",
+      "mobile_support": "web_wrapper_or_third_party_packaging",
+      "recommended_for": [
+        "fast web prototypes",
+        "PWA puzzle games",
+        "browser-only 2D"
+      ],
+      "verdict": "web_probe_only_when_wechat_is_mandatory"
+    },
+    {
+      "name": "Three.js",
+      "license_note": "MIT license.",
+      "dimensions": "3D renderer",
+      "wechat_support": "possible_with_adapter_but_not_beginner_friendly",
+      "web_support": "first_class",
+      "mobile_support": "browser_or_web_wrapper",
+      "recommended_for": [
+        "custom web 3D renderer workloads"
+      ],
+      "missing_game_engine_features": [
+        "gameplay framework",
+        "physics selection",
+        "UI system",
+        "scene workflow",
+        "content authoring",
+        "platform services"
+      ],
+      "verdict": "not_default_for_this_portfolio"
+    }
+  ],
+  "categories": [
+    {
+      "id": "tile_match_casual_logic",
+      "category": "Tile match and casual logic puzzle",
+      "examples": [
+        "羊了个羊：星球",
+        "猪了个猪",
+        "套住那只羊"
+      ],
+      "core_mvp": {
+        "web": true,
+        "mobile": true,
+        "wechat": true,
+        "offline_capable": true,
+        "difficulty": "easy"
+      },
+      "full_product_difficulty": "medium",
+      "backend_trust_model": "local for core; optional server-validated events and leaderboard",
+      "required_for_core": [],
+      "parity_dependencies": [
+        "leaderboard",
+        "share/referral",
+        "rewarded ads",
+        "analytics"
+      ],
+      "recommended_engine": "Phaser for web probe; Cocos for WeChat production",
+      "dominant_risks": [
+        "solvable level generation",
+        "content cadence",
+        "difficulty tuning",
+        "viral and ad economy"
+      ],
+      "acceptance_checks": [
+        "Deterministic board model has replayable tests.",
+        "Every generated or authored level passes solvability policy.",
+        "Touch selection and occlusion work on small screens.",
+        "Offline play survives pause, kill, and cold restart."
+      ]
+    },
+    {
+      "id": "hidden_object",
+      "category": "Hidden object puzzle",
+      "examples": [
+        "抓大鹅",
+        "一找一个准"
+      ],
+      "core_mvp": {
+        "web": true,
+        "mobile": true,
+        "wechat": true,
+        "offline_capable": true,
+        "difficulty": "easy"
+      },
+      "full_product_difficulty": "medium",
+      "backend_trust_model": "local for core; optional cloud save, events, and leaderboard",
+      "required_for_core": [],
+      "parity_dependencies": [
+        "hint economy",
+        "rewarded ads",
+        "share/referral",
+        "analytics"
+      ],
+      "recommended_engine": "Cocos or Phaser",
+      "dominant_risks": [
+        "large original art pipeline",
+        "hit-region authoring",
+        "asset download and cache",
+        "visual accessibility"
+      ],
+      "acceptance_checks": [
+        "Scene authoring exports stable hit regions and z-order.",
+        "Asset bundles meet cold-start and cache budgets.",
+        "Hints never expose an invalid or already-found target.",
+        "Zoom, pan, and touch targets pass small-device tests."
+      ]
+    },
+    {
+      "id": "parking_sliding",
+      "category": "Parking and sliding-block puzzle",
+      "examples": [
+        "挪了下车"
+      ],
+      "core_mvp": {
+        "web": true,
+        "mobile": true,
+        "wechat": true,
+        "offline_capable": true,
+        "difficulty": "easy"
+      },
+      "full_product_difficulty": "medium",
+      "backend_trust_model": "local; optional cloud events and leaderboard",
+      "required_for_core": [],
+      "parity_dependencies": [
+        "rewarded hints",
+        "ads",
+        "analytics"
+      ],
+      "recommended_engine": "Phaser for web probe; Cocos for WeChat production",
+      "dominant_risks": [
+        "level authoring",
+        "solvability and minimum-move validation",
+        "input feel"
+      ],
+      "acceptance_checks": [
+        "Solver verifies every level and records a solution bound.",
+        "Drag collision cannot create overlapping or impossible state.",
+        "Undo and save restore exact board state.",
+        "Hint logic advances toward a valid solution."
+      ]
+    },
+    {
+      "id": "arrow_spatial",
+      "category": "Arrow and spatial-order puzzle",
+      "examples": [
+        "箭了又箭"
+      ],
+      "core_mvp": {
+        "web": true,
+        "mobile": true,
+        "wechat": true,
+        "offline_capable": true,
+        "difficulty": "easy"
+      },
+      "full_product_difficulty": "medium",
+      "backend_trust_model": "local",
+      "required_for_core": [],
+      "parity_dependencies": [
+        "hints",
+        "ads",
+        "analytics"
+      ],
+      "recommended_engine": "Phaser or Cocos",
+      "dominant_risks": [
+        "level validation",
+        "visual clarity",
+        "difficulty curve"
+      ],
+      "acceptance_checks": [
+        "A solver validates all levels.",
+        "Direction, collision, and release order are deterministic.",
+        "Color and shape cues remain understandable without relying on color alone.",
+        "Undo and restart are lossless."
+      ]
+    },
+    {
+      "id": "block_puzzle",
+      "category": "Falling-block or block-placement puzzle",
+      "examples": [
+        "俄罗斯方块拼图"
+      ],
+      "core_mvp": {
+        "web": true,
+        "mobile": true,
+        "wechat": true,
+        "offline_capable": true,
+        "difficulty": "easy"
+      },
+      "full_product_difficulty": "medium",
+      "backend_trust_model": "local; server validation for competitive score",
+      "required_for_core": [],
+      "parity_dependencies": [
+        "leaderboard",
+        "anti-cheat",
+        "ads"
+      ],
+      "recommended_engine": "Phaser or Cocos",
+      "dominant_risks": [
+        "input latency",
+        "score cheating",
+        "trade dress and intellectual-property confusion"
+      ],
+      "acceptance_checks": [
+        "Grid transitions and scoring are deterministic.",
+        "Replay input can reproduce a submitted score.",
+        "Touch controls remain responsive at frame drops.",
+        "Presentation and rule variations receive legal review."
+      ]
+    },
+    {
+      "id": "timing_platform",
+      "category": "Timing and minimalist platformer",
+      "examples": [
+        "跳一跳"
+      ],
+      "core_mvp": {
+        "web": true,
+        "mobile": true,
+        "wechat": true,
+        "offline_capable": true,
+        "difficulty": "easy"
+      },
+      "full_product_difficulty": "medium",
+      "backend_trust_model": "local core; replay-validated competitive score",
+      "required_for_core": [],
+      "parity_dependencies": [
+        "friend ranking",
+        "share/referral",
+        "anti-cheat"
+      ],
+      "recommended_engine": "Phaser or Cocos",
+      "dominant_risks": [
+        "control feel",
+        "physics consistency",
+        "score cheating",
+        "overly close visual imitation"
+      ],
+      "acceptance_checks": [
+        "Fixed-step simulation gives consistent landings across frame rates.",
+        "Press duration and interruption behavior are tested.",
+        "Pause/background cannot advance or corrupt a run.",
+        "Competitive submissions include replay or server-verifiable evidence."
+      ]
+    },
+    {
+      "id": "word_tower_defense",
+      "category": "Word puzzle plus tower defense",
+      "examples": [
+        "赵云与阿斗"
+      ],
+      "core_mvp": {
+        "web": true,
+        "mobile": true,
+        "wechat": true,
+        "offline_capable": true,
+        "difficulty": "medium"
+      },
+      "full_product_difficulty": "hard",
+      "backend_trust_model": "local campaign; server-owned events, economy, and competitive results",
+      "required_for_core": [],
+      "parity_dependencies": [
+        "cloud save",
+        "events",
+        "ads or payment",
+        "leaderboard"
+      ],
+      "recommended_engine": "Cocos",
+      "dominant_risks": [
+        "word-content quality and localization",
+        "combat balance",
+        "progression economy",
+        "content volume"
+      ],
+      "acceptance_checks": [
+        "Dictionary and answer data have editorial and licensing provenance.",
+        "Combat simulation is deterministic and data-driven.",
+        "Balance tools can simulate waves and upgrades.",
+        "Purchases and event rewards are server-authoritative."
+      ]
+    },
+    {
+      "id": "tower_defense_roguelike_shooter",
+      "category": "Tower defense and roguelike shooter",
+      "examples": [
+        "向僵尸开炮",
+        "永远的蔚蓝星球"
+      ],
+      "core_mvp": {
+        "web": true,
+        "mobile": true,
+        "wechat": true,
+        "offline_capable": true,
+        "difficulty": "medium"
+      },
+      "full_product_difficulty": "hard",
+      "backend_trust_model": "local deterministic combat; authoritative progression, economy, events, and purchases",
+      "required_for_core": [],
+      "parity_dependencies": [
+        "cloud save",
+        "live events",
+        "ads",
+        "payment",
+        "anti-cheat"
+      ],
+      "recommended_engine": "Cocos",
+      "dominant_risks": [
+        "entity-count performance",
+        "build combinatorics",
+        "content and effects volume",
+        "economy balance"
+      ],
+      "acceptance_checks": [
+        "Low-tier devices sustain the target frame budget at worst-case entity count.",
+        "Seeded combat replays reproduce results.",
+        "Object pooling prevents avoidable frame-time and memory spikes.",
+        "Progression grants and purchases are idempotent and auditable."
+      ]
+    },
+    {
+      "id": "merge_casual",
+      "category": "Merge casual game",
+      "examples": [
+        "疯狂水世界"
+      ],
+      "core_mvp": {
+        "web": true,
+        "mobile": true,
+        "wechat": true,
+        "offline_capable": true,
+        "difficulty": "medium"
+      },
+      "full_product_difficulty": "hard",
+      "backend_trust_model": "local board with server-authoritative timers, events, economy, and purchases for production",
+      "required_for_core": [],
+      "parity_dependencies": [
+        "cloud save",
+        "timed events",
+        "ads",
+        "payment"
+      ],
+      "recommended_engine": "Cocos or LayaAir",
+      "dominant_risks": [
+        "state migration",
+        "timer manipulation",
+        "event economy",
+        "content cadence"
+      ],
+      "acceptance_checks": [
+        "Every merge transition preserves inventory invariants.",
+        "Save schema is versioned and migration-tested.",
+        "Authoritative time is used for valuable timers.",
+        "Offline and server state reconcile without duplication."
+      ]
+    },
+    {
+      "id": "simulation_merge",
+      "category": "Simulation plus merge",
+      "examples": [
+        "我的花园世界"
+      ],
+      "core_mvp": {
+        "web": true,
+        "mobile": true,
+        "wechat": true,
+        "offline_capable": true,
+        "difficulty": "medium"
+      },
+      "full_product_difficulty": "hard",
+      "backend_trust_model": "local prototype; authoritative cloud economy and events for production",
+      "required_for_core": [],
+      "parity_dependencies": [
+        "cloud save",
+        "social visits",
+        "timed events",
+        "payment",
+        "ads"
+      ],
+      "recommended_engine": "Cocos or LayaAir",
+      "dominant_risks": [
+        "large persistent state",
+        "asset volume",
+        "economy and timers",
+        "save conflict resolution"
+      ],
+      "acceptance_checks": [
+        "State snapshot and event-log recovery are tested.",
+        "Remote assets follow versioned cache and eviction policy.",
+        "Device clock changes cannot create valuable resources.",
+        "Cloud conflict policy is explicit and observable."
+      ]
+    },
+    {
+      "id": "idle_cultivation_rpg",
+      "category": "Idle or cultivation RPG",
+      "examples": [
+        "灵画师",
+        "寻道大千"
+      ],
+      "core_mvp": {
+        "web": true,
+        "mobile": true,
+        "wechat": true,
+        "offline_capable": true,
+        "difficulty": "medium"
+      },
+      "full_product_difficulty": "hard",
+      "backend_trust_model": "authoritative account, inventory, progression, event, and payment services",
+      "required_for_core": [],
+      "parity_dependencies": [
+        "login",
+        "cloud save",
+        "live events",
+        "leaderboard",
+        "payment",
+        "ads"
+      ],
+      "recommended_engine": "Cocos",
+      "dominant_risks": [
+        "economy inflation",
+        "content volume",
+        "fraud and duplication",
+        "live-ops tooling"
+      ],
+      "acceptance_checks": [
+        "All valuable grants are server-authoritative and idempotent.",
+        "Offline rewards use authoritative elapsed time and caps.",
+        "Economy simulations cover sources, sinks, and event overlap.",
+        "Inventory and purchase changes have immutable audit records."
+      ]
+    },
+    {
+      "id": "action_casual",
+      "category": "Action casual",
+      "examples": [
+        "跃动小子"
+      ],
+      "core_mvp": {
+        "web": true,
+        "mobile": true,
+        "wechat": true,
+        "offline_capable": true,
+        "difficulty": "medium"
+      },
+      "full_product_difficulty": "hard",
+      "backend_trust_model": "local core; server validation for economy and competitive results",
+      "required_for_core": [],
+      "parity_dependencies": [
+        "cloud save",
+        "leaderboard",
+        "ads",
+        "events"
+      ],
+      "recommended_engine": "Cocos or LayaAir",
+      "dominant_risks": [
+        "input latency",
+        "broad-device performance",
+        "animation and effects polish",
+        "competitive cheating"
+      ],
+      "acceptance_checks": [
+        "Controls are tested across touch sampling rates and aspect ratios.",
+        "Worst-case effects meet low-tier frame and memory budgets.",
+        "Pause/resume restores simulation and audio safely.",
+        "Competitive results have replay or server-side validation."
+      ]
+    },
+    {
+      "id": "deep_rpg",
+      "category": "Deep RPG",
+      "examples": [
+        "西游降妖记"
+      ],
+      "core_mvp": {
+        "web": true,
+        "mobile": true,
+        "wechat": true,
+        "offline_capable": false,
+        "difficulty": "hard"
+      },
+      "full_product_difficulty": "very_hard",
+      "backend_trust_model": "authoritative account, character, inventory, combat result, guild, event, and payment services",
+      "required_for_core": [],
+      "parity_dependencies": [
+        "login",
+        "cloud save",
+        "social/guild",
+        "live events",
+        "payment",
+        "anti-cheat"
+      ],
+      "recommended_engine": "Cocos",
+      "dominant_risks": [
+        "original content and asset scale",
+        "system interactions",
+        "economy security",
+        "live operations",
+        "download and memory footprint"
+      ],
+      "acceptance_checks": [
+        "Content schemas and migration tools support versioned live data.",
+        "Combat inputs and rewards are validated by the server.",
+        "Asset bundles meet startup, download, cache, and memory budgets.",
+        "Operations include rollback, audit, moderation, and incident controls."
+      ]
+    },
+    {
+      "id": "persistent_slg",
+      "category": "Persistent strategy and SLG",
+      "examples": [
+        "三国：冰河时代",
+        "无尽冬日"
+      ],
+      "core_mvp": {
+        "web": true,
+        "mobile": true,
+        "wechat": true,
+        "offline_capable": false,
+        "difficulty": "hard"
+      },
+      "full_product_difficulty": "very_hard",
+      "backend_trust_model": "fully authoritative persistent world, economy, alliance, combat, event, chat, moderation, and payment services",
+      "required_for_core": [],
+      "parity_dependencies": [
+        "login",
+        "persistent server",
+        "alliances/social",
+        "chat and moderation",
+        "payment",
+        "live operations",
+        "anti-cheat"
+      ],
+      "recommended_engine": "Cocos client plus purpose-built authoritative backend",
+      "dominant_risks": [
+        "world simulation scale",
+        "sharding and migration",
+        "alliance concurrency",
+        "economy exploits",
+        "fraud and abuse",
+        "continuous operations"
+      ],
+      "acceptance_checks": [
+        "Server is authoritative for time, movement, combat, inventory, and currency.",
+        "Load tests cover peak world and alliance events.",
+        "Commands are idempotent and resilient to retries and reconnects.",
+        "Shard migration, rollback, disaster recovery, moderation, and audit are rehearsed."
+      ]
+    }
+  ],
+  "global_acceptance_checklist": [
+    "Core simulation runs without importing wx, DOM, payment, social, or ad APIs.",
+    "Platform services are injected behind typed interfaces.",
+    "All names, art, audio, text, levels, characters, and economy are original or properly licensed.",
+    "Main package, total code package, remote asset, local cache, memory, and cold-start budgets are measured.",
+    "Lifecycle tests cover hide, show, memory warning, process destruction, and cold recovery.",
+    "Network tests cover weak connection, timeout, retry, duplicate delivery, reconnect, and version skew.",
+    "Optional wx APIs use capability detection and a safe fallback.",
+    "Production login, ads, payment, share, privacy, and open-data behavior is tested with an eligible AppID.",
+    "Real-device tests cover representative low, middle, and high tiers.",
+    "Competitive scores and valuable economy mutations have an explicit trust and anti-cheat model."
+  ],
+  "recommended_stack": {
+    "wechat_required": {
+      "client": "TypeScript and Cocos Creator/Cocos",
+      "architecture": "Renderer-independent deterministic core plus typed platform adapters",
+      "content": "Versioned remote asset bundles on a China-appropriate CDN with a minimal main package",
+      "casual_backend": "HTTPS API, PostgreSQL, object storage/CDN, with Redis only when ranking or rate limits justify it",
+      "rpg_slg_backend": "Authoritative services, PostgreSQL, Redis, queue/event pipeline, WebSocket gateway where required, immutable economy audit, observability, and anti-cheat",
+      "quality_gates": [
+        "Linux browser and unit CI",
+        "Official Stable DevTools export on Windows or macOS",
+        "Physical WeChat device matrix",
+        "Production-eligible API smoke tests"
+      ]
+    },
+    "web_feasibility_only": {
+      "client": "TypeScript and Phaser",
+      "architecture": "Keep rules and level data independent from Phaser",
+      "platform_services": "Mock identity, payment, social, ads, and share until gameplay is validated"
+    },
+    "first_target": "An original tile, parking, or timing puzzle",
+    "avoid_as_first_probe": [
+      "Persistent SLG",
+      "Deep RPG"
+    ]
+  },
+  "sources": [
+    {
+      "topic": "Beginner setup and project structure",
+      "url": "https://developers.weixin.qq.com/minigame/dev/guide/develop/start.html"
+    },
+    {
+      "topic": "Runtime model",
+      "url": "https://developers.weixin.qq.com/minigame/dev/guide/develop/develop.html"
+    },
+    {
+      "topic": "Engine adaptation and missing DOM/BOM",
+      "url": "https://developers.weixin.qq.com/minigame/dev/guide/game-engine/cocos-laya-egret.html"
+    },
+    {
+      "topic": "Adapter limitations",
+      "url": "https://developers.weixin.qq.com/minigame/dev/guide/runtime/adapter.html"
+    },
+    {
+      "topic": "Package limits",
+      "url": "https://developers.weixin.qq.com/minigame/dev/guide/base-ability/subPackage/useSubPackage.html"
+    },
+    {
+      "topic": "Networking restrictions",
+      "url": "https://developers.weixin.qq.com/minigame/dev/guide/base-ability/network.html"
+    },
+    {
+      "topic": "Local storage",
+      "url": "https://developers.weixin.qq.com/minigame/dev/guide/base-ability/storage.html"
+    },
+    {
+      "topic": "File system",
+      "url": "https://developers.weixin.qq.com/minigame/dev/guide/base-ability/file-system.html"
+    },
+    {
+      "topic": "Login API",
+      "url": "https://developers.weixin.qq.com/minigame/dev/api/open-api/login/wx.login.html"
+    },
+    {
+      "topic": "Friend cloud storage",
+      "url": "https://developers.weixin.qq.com/minigame/dev/api/open-api/data/wx.getFriendCloudStorage.html"
+    },
+    {
+      "topic": "Midas payment",
+      "url": "https://developers.weixin.qq.com/minigame/dev/api/midas-payment/wx.requestMidasPayment.html"
+    },
+    {
+      "topic": "Sharing",
+      "url": "https://developers.weixin.qq.com/minigame/dev/api/share/wx.shareAppMessage.html"
+    },
+    {
+      "topic": "Rewarded ads",
+      "url": "https://developers.weixin.qq.com/minigame/dev/api/ad/RewardedVideoAd.html"
+    },
+    {
+      "topic": "Official DevTools downloads",
+      "url": "https://developers.weixin.qq.com/miniprogram/dev/devtools/download_backup.html"
+    },
+    {
+      "topic": "Phaser scope and platform focus",
+      "url": "https://docs.phaser.io/phaser/getting-started/what-is-phaser"
+    },
+    {
+      "topic": "Three.js scope",
+      "url": "https://threejs.org/manual/en/fundamentals.html"
+    }
+  ]
+}
