@@ -4,7 +4,7 @@
 Find top 10 WeChat mini games (微信小游戏) and assess whether they can be replicated.
 
 ## Branch
-`agent/wechat-minigames-research`
+`cursor/wechat-minigames-research-fa72`
 
 ## Orchestration
 - Parent Orchestrator: multi-round loop (Round 1–3)
