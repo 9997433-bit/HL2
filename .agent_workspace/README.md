@@ -52,16 +52,18 @@ name, art, code, levels, text, audio, or licensed IP.
 ## Round 3 — SOTA acceptance
 
 - [`round3/ROUND3_CONTEXT.md`](./round3/ROUND3_CONTEXT.md) — Final acceptance mission, blocking implementation items, output convention, and test gate.
+- [`round3/gpt-ci-seeded-report.md`](./round3/gpt-ci-seeded-report.md) — The GitHub Actions gate on the aggregate harness and the seeded tile-trio regression set that makes its checks replayable.
 - [`round3/gpt-platform-normalize-report.md`](./round3/gpt-platform-normalize-report.md) — Current package/payment resolution, amended-report inventory, package-skeleton design, and Linux/DevTools verification split.
 - [`round3/opus-convergence-report.md`](./round3/opus-convergence-report.md) — The solvability-preserving shuffle prop (G-SM1), stated prototype roles, and verification of the parking-jam shim and tile-trio seeding that landed in parallel.
 - [`round3/opus-jump-jump-report.md`](./round3/opus-jump-jump-report.md) — The five jump-jump game-logic defects (G-JJ1–G-JJ5), the rebuilt charge/physics model with its fairness constraints and measured timing windows, and the verifier upgrade from smoke test to 14 deterministic assertions.
+- [`round3/fable-final-acceptance.md`](./round3/fable-final-acceptance.md) — Final acceptance sign-off: pass/fail per gap-review gate, post-Round-3 prototype rescoring, the residual register, and the test-gate record for the merged tree.
 - [`platform-constants.json`](./platform-constants.json) — Cross-round canonical platform facts. Earlier package/payment statements defer to this dataset through explicit footnotes.
 
 ## Playable prototypes
 
-- [`../prototypes/jump-jump/`](../prototypes/jump-jump/) — Single-file Canvas hold-to-charge jumping demo with randomized platforms, scoring, and combo feedback, covered by a Chrome/CDP smoke test.
-- [`../prototypes/sheep-match3/`](../prototypes/sheep-match3/) — Modular stacked match-3 prototype with a guaranteed-solvable generator, live solver/hints, props, debug autoplay, and 14 Node tests.
-- [`../prototypes/tile-trio/`](../prototypes/tile-trio/) — Single-file layered three-match game with three levels, three ad-shaped props, an inline platform shim, and a dependency-free verification script.
+- [`../prototypes/jump-jump/`](../prototypes/jump-jump/) — Single-file Canvas hold-to-charge jumper with an endless seeded world, fixed-step physics, and centre-landing combo scoring, covered by 14 deterministic Chrome/CDP checks.
+- [`../prototypes/sheep-match3/`](../prototypes/sheep-match3/) — Modular stacked match-3 prototype with a guaranteed-solvable generator, a solver-proven shuffle prop, live solver/hints, debug autoplay, and 17 Node tests.
+- [`../prototypes/tile-trio/`](../prototypes/tile-trio/) — Single-file layered three-match game with three levels, three ad-gated props behind the shared shim, seedable deals, and a dependency-free real-file verifier.
 - [`../prototypes/parking-jam/`](../prototypes/parking-jam/) — Parking-jam sliding puzzle whose BFS solver doubles as the level pipeline, with eight solver-rated levels, a rewarded-video-gated hint, 23 unit tests, and a verifier that plays every level through the shipped input handlers.
 - [`../prototypes/wechat-packaging-skeleton/`](../prototypes/wechat-packaging-skeleton/) — Native Canvas Tile Trio smoke package with `game.js`, `game.json`, `project.config.json`, and a thin `wx` adapter; structurally checked on Linux and pending DevTools/device validation.
 - [`../prototypes/shared/`](../prototypes/shared/) — `wx-shim`, the shared mock of the 微信小游戏 `wx.*` surface that every prototype's platform calls run through.
