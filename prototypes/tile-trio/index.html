@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>叠叠消 Tile Trio — 羊了个羊-style mechanic prototype</title>
+<style>
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    margin: 0; padding: 0; height: 100%;
+    background: #17212b;
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", "Segoe UI", sans-serif;
+    color: #e8eef5;
+    overflow: hidden;
+    display: flex; align-items: center; justify-content: center;
+    touch-action: manipulation;
+  }
+  #stage { position: relative; height: 100vh; aspect-ratio: 480 / 820; max-width: 100vw; }
+  canvas { display: block; width: 100%; height: 100%; }
+
+  .overlay {
+    position: absolute; inset: 0; display: none;
+    flex-direction: column; align-items: center; justify-content: center; gap: 14px;
+    background: rgba(14, 20, 27, .88); backdrop-filter: blur(3px); text-align: center; padding: 24px;
+  }
+  .overlay.show { display: flex; }
+  .overlay h2 { margin: 0; font-size: 30px; letter-spacing: 2px; }
+  .overlay p { margin: 0; font-size: 14px; line-height: 1.7; color: #9fb3c8; max-width: 320px; }
+  .btn {
+    border: 0; border-radius: 999px; padding: 12px 30px; font-size: 16px; font-weight: 600;
+    background: linear-gradient(180deg, #56c271, #3da75a); color: #fff; cursor: pointer;
+    box-shadow: 0 4px 0 #2d7f44; font-family: inherit;
+  }
+  .btn:active { transform: translateY(2px); box-shadow: 0 2px 0 #2d7f44; }
+  .btn.ghost { background: #2b3a4a; box-shadow: 0 4px 0 #1d2833; }
+  .btn.ghost:active { box-shadow: 0 2px 0 #1d2833; }
+  .row { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+
+  #toast {
+    position: absolute; left: 50%; top: 12%; transform: translateX(-50%);
+    background: rgba(0,0,0,.82); color: #fff; padding: 9px 16px; border-radius: 10px;
+    font-size: 13px; opacity: 0; transition: opacity .25s; pointer-events: none;
+    max-width: 90%; text-align: center; line-height: 1.5;
+  }
+  #toast.show { opacity: 1; }
+  .tag { display:inline-block; font-size: 11px; color:#8fa3b8; border:1px solid #33475c; border-radius:6px; padding:2px 7px; }
+</style>
+</head>
+<body>
+<div id="stage">
+  <canvas id="cv"></canvas>
+  <div id="toast"></div>
+
+  <div class="overlay show" id="ovStart">
+    <h2>叠叠消 · Tile Trio</h2>
+    <p><span class="tag">mechanic prototype</span><br>
+      Tap tiles to send them to the tray. Three of a kind clear.<br>
+      Tiles covered by an upper layer are locked.<br>
+      Fill all 7 tray slots with no match and you lose.</p>
+    <div class="row">
+      <button class="btn" data-level="0">第一关 Level 1</button>
+      <button class="btn ghost" data-level="1">第二关 Level 2</button>
+      <button class="btn ghost" data-level="2">第三关 Level 3</button>
+    </div>
+  </div>
+
+  <div class="overlay" id="ovEnd">
+    <h2 id="endTitle"></h2>
+    <p id="endText"></p>
+    <div class="row">
+      <button class="btn" id="btnAgain">再来一次 Retry</button>
+      <button class="btn ghost" id="btnMenu">选关 Levels</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ------------------------------------------------------------------
+   叠叠消 (Tile Trio) — an original re-implementation of the layered
+   3-tile-matching mechanic popularised by 羊了个羊 / 猪了个猪, the games
+   that have topped WeChat's 畅玩榜 (DAU chart) through 2025-2026.
+
+   Everything here is plain HTML5 Canvas + vanilla JS. Anything that would
+   require a WeChat-only API is routed through the WX shim below so the
+   platform dependency is explicit rather than hidden.
+------------------------------------------------------------------- */
+
+/* ===== WeChat platform shim =================================================
+   In a real 微信小游戏 these calls hit wx.* globals. On the open web they do
+   not exist, so we stub them and surface what would have happened. This is the
+   full set of platform hooks this genre actually depends on. */
+const WX = {
+  available: typeof wx !== 'undefined',
+  // wx.createRewardedVideoAd({adUnitId}) -> .load()/.show()/.onClose(cb)
+  rewardedAd(reason, onReward) {
+    if (this.available) { /* wx.createRewardedVideoAd(...).show() */ }
+    toast('🎬 ' + reason + '\n（微信端为激励视频广告 wx.createRewardedVideoAd，此处直接发放）');
+    onReward(true);
+  },
+  // wx.shareAppMessage({title, imageUrl}) — the viral loop of 羊了个羊
+  share(title) {
+    if (this.available) { /* wx.shareAppMessage({title}) */ }
+    toast('📤 分享给好友复活\n（微信端 wx.shareAppMessage，Web 无等价能力）');
+  },
+  // wx.setUserCloudStorage + 开放数据域 for the friend leaderboard
+  submitScore(kv) {
+    if (this.available) { /* wx.setUserCloudStorage({KVDataList:[...]}) */ }
+    console.info('[WX shim] setUserCloudStorage', kv);
+  },
+  vibrate(long) {
+    if (navigator.vibrate) navigator.vibrate(long ? 30 : 12);
+    // 微信端: wx.vibrateShort({type:'light'}) / wx.vibrateLong()
+  }
+};
+
+/* ===== constants ========================================================== */
+const W = 480, H = 820;
+const TILE = 44;              // logical tile edge
+const LAYER_OFFSET = 3;       // px each layer is nudged up-left, for depth
+const TRAY_SLOTS = 7;
+const TRAY_Y = 636;
+const TRAY_TILE = 46;
+const BOARD_TOP = 104;
+const CX = W / 2;
+
+const SYMBOLS = ['🌿','🍄','🌰','🍁','🌻','🪵','🍇','🐚','🌸','🍋','🥕','⭐'];
+const COLORS  = ['#cfe8b6','#f3c9c0','#e2cdaa','#f0c9a0','#ffe9a8','#d8c3a5',
+                 '#d3bde8','#bcdce8','#f6c9dd','#f7eeaa','#f8cfa4','#cfe3f7'];
+
+const LEVELS = [
+  { name: 'Level 1 · 入门', types: 6,  pyramid: [[5,3],[4,2],[3,1]], stack: 4  },
+  { name: 'Level 2 · 地狱', types: 9,  pyramid: [[6,4],[5,3],[4,2],[3,1]], stack: 7 },
+  { name: 'Level 3 · 深渊', types: 12, pyramid: [[7,5],[6,4],[5,3],[4,2],[3,1]], stack: 11 }
+];
+
+/* ===== canvas setup ======================================================= */
+const cv = document.getElementById('cv');
+const ctx = cv.getContext('2d');
+function resize() {
+  const dpr = Math.min(window.devicePixelRatio || 1, 3);
+  cv.width = W * dpr; cv.height = H * dpr;
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+}
+resize();
+addEventListener('resize', resize);
+
+/* ===== state ============================================================== */
+let tiles = [];      // every tile ever dealt this level
+let tray = [];       // tile refs currently in the tray, in display order
+let history = [];    // tile refs, for undo
+let props = { shuffle: 0, pull: 0, undo: 0 };
+let levelIdx = 0;
+let running = false;
+let shakeUntil = 0, shakeTile = null;
+
+/* ===== layout generation ==================================================
+   A pyramid of half-step-offset layers plus one deep single-column stack —
+   the "you can only ever see the top of it" pile that makes 羊了个羊 level 2
+   infamous. */
+function buildPositions(spec) {
+  const pos = [];
+  spec.pyramid.forEach((dim, L) => {
+    const [cols, rows] = dim;
+    const startX = CX - (cols * TILE) / 2;
+    const startY = BOARD_TOP + L * (TILE / 2);
+    for (let r = 0; r < rows; r++)
+      for (let c = 0; c < cols; c++)
+        pos.push({ x: startX + c * TILE, y: startY + r * TILE, layer: L });
+  });
+  const pyramidBottom = BOARD_TOP + spec.pyramid[0][1] * TILE;
+  const sx = CX - TILE / 2, sy = pyramidBottom + 46;
+  for (let L = 0; L < spec.stack; L++) pos.push({ x: sx, y: sy, layer: L });
+
+  // Centre whatever we built in the play area so small levels aren't stranded
+  // at the top of the screen.
+  const top = Math.min(...pos.map(p => p.y - p.layer * LAYER_OFFSET));
+  const bottom = Math.max(...pos.map(p => p.y)) + TILE;
+  const shift = (BOARD_TOP + (TRAY_Y - 44 - BOARD_TOP - (bottom - top)) / 2) - top;
+  pos.forEach(p => { p.y += shift; });
+  return pos;
+}
+
+/* Two tiles collide when their drawn rects overlap. A tile is locked while any
+   *higher* layer tile still overlaps it. */
+function rect(t) {
+  const o = t.layer * LAYER_OFFSET;
+  return { x: t.bx - o, y: t.by - o, w: TILE, h: TILE };
+}
+function overlaps(a, b) {
+  const ra = rect(a), rb = rect(b);
+  return ra.x < rb.x + rb.w && rb.x < ra.x + ra.w &&
+         ra.y < rb.y + rb.h && rb.y < ra.y + ra.h;
+}
+
+/* Peel the board top-down: repeatedly take a random currently-uncovered tile.
+   Because the covering relation is a DAG this always consumes every tile, and
+   the resulting sequence is a legal removal order. */
+function peelOrder(pool) {
+  const left = pool.slice(), out = [];
+  while (left.length) {
+    const free = left.filter(t => !left.some(o => o !== t && o.layer > t.layer && overlaps(o, t)));
+    const pick = free[(Math.random() * free.length) | 0];
+    out.push(pick);
+    left.splice(left.indexOf(pick), 1);
+  }
+  return out;
+}
+
+function shuffleArr(a) {
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = (Math.random() * (i + 1)) | 0; [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+/* Painting symbols onto a legal removal order makes the deal solvable by
+   construction — there are no dead layouts. We take the order six at a time and
+   split each block into two spatially coherent triples: still solvable (the tray
+   never exceeds 4 on the intended line), but matching symbols land near each
+   other so a human can actually spot them instead of scanning the whole board. */
+function dealSymbols(order, typeCount) {
+  const bag = [];
+  for (let i = 0; i < Math.ceil(order.length / 3); i++) bag.push(i % typeCount);
+  shuffleArr(bag);
+  let bi = 0;
+  const dist = (a, b) => Math.hypot(a.bx - b.bx, a.by - b.by) + Math.abs(a.layer - b.layer) * 4;
+  const paint = (g, type) => g.forEach(t => { t.type = type; });
+  for (let b = 0; b < order.length; b += 6) {
+    const block = order.slice(b, b + 6);
+    if (block.length === 6) {
+      const a = block[0];
+      const rest = block.slice(1).sort((p, q) => dist(a, p) - dist(a, q));
+      paint([a, rest[0], rest[1]], bag[bi++]);
+      paint(rest.slice(2), bag[bi++]);
+    } else {
+      paint(block, bag[bi++]);
+    }
+  }
+}
+
+function startLevel(idx) {
+  levelIdx = idx;
+  const spec = LEVELS[idx];
+  const pos = buildPositions(spec);
+  if (pos.length % 3 !== 0) console.warn('layout not divisible by 3:', pos.length);
+
+  tiles = pos.map((p, i) => ({
+    id: i, bx: p.x, by: p.y, layer: p.layer, type: 0,
+    state: 'board',           // board | tray | gone
+    x: p.x - p.layer * LAYER_OFFSET, y: p.y - p.layer * LAYER_OFFSET,
+    tx: 0, ty: 0, scale: 1, pop: 0
+  }));
+  dealSymbols(peelOrder(tiles), spec.types);
+  tiles.forEach(t => { t.tx = t.x; t.ty = t.y; });
+
+  tray = []; history = [];
+  props = { shuffle: 1, pull: 1, undo: 1 };
+  running = true;
+  hide('ovStart'); hide('ovEnd');
+  layoutTray();
+}
+
+/* ===== tray =============================================================== */
+function trayX(i) { return CX - (TRAY_SLOTS * TRAY_TILE) / 2 + i * TRAY_TILE; }
+function layoutTray() {
+  tray.forEach((t, i) => { t.tx = trayX(i) + (TRAY_TILE - TILE) / 2; t.ty = TRAY_Y + 3; });
+}
+
+function sendToTray(t) {
+  t.state = 'tray';
+  // Same symbols group together, exactly like the real thing.
+  let at = -1;
+  for (let i = tray.length - 1; i >= 0; i--) if (tray[i].type === t.type) { at = i; break; }
+  if (at >= 0) tray.splice(at + 1, 0, t); else tray.push(t);
+  history.push(t);
+  layoutTray();
+  WX.vibrate(false);
+
+  const same = tray.filter(x => x.type === t.type);
+  if (same.length >= 3) {
+    setTimeout(() => {
+      same.slice(0, 3).forEach(x => {
+        x.state = 'gone'; x.pop = 1;
+        tray.splice(tray.indexOf(x), 1);
+        const h = history.indexOf(x); if (h >= 0) history.splice(h, 1);
+      });
+      layoutTray();
+      WX.vibrate(true);
+      check();
+    }, 130);
+  } else {
+    check();
+  }
+}
+
+function check() {
+  if (!running) return;
+  if (tiles.every(t => t.state === 'gone')) {
+    running = false;
+    WX.submitScore({ key: 'level', value: String(levelIdx + 1) });
+    setTimeout(() => end(true), 350);
+  } else if (tray.length >= TRAY_SLOTS) {
+    running = false;
+    setTimeout(() => end(false), 250);
+  }
+}
+
+/* ===== props (rewarded-ad gated in the real game) ========================= */
+function useShuffle() {
+  if (!running) return;
+  if (props.shuffle <= 0) return toast('本关洗牌已用完');
+  WX.rewardedAd('洗牌 Shuffle', () => {
+    props.shuffle--;
+    const board = tiles.filter(t => t.state === 'board');
+    const order = peelOrder(board);
+    const need = {};                                     // finish what's in the tray first
+    tray.forEach(t => { need[t.type] = (need[t.type] || 0) + 1; });
+    const counts = {};
+    board.forEach(t => { counts[t.type] = (counts[t.type] || 0) + 1; });
+    let i = 0;
+    for (const k in need) {
+      const type = +k;
+      for (let n = 0; n < 3 - need[k] && i < order.length; n++, i++) {
+        order[i].type = type; counts[type]--;
+      }
+    }
+    const bag = [];
+    for (const k in counts) for (let n = 0; n < counts[k] / 3; n++) bag.push(+k);
+    shuffleArr(bag);
+    let bi = 0;
+    while (i < order.length) {
+      const type = bag[bi++];
+      for (let n = 0; n < 3 && i < order.length; n++) order[i++].type = type;
+    }
+  });
+}
+
+function usePull() {
+  if (!running) return;
+  if (props.pull <= 0) return toast('本关移出已用完');
+  if (tray.length === 0) return toast('槽位是空的');
+  WX.rewardedAd('移出 Pull out — 取回槽内 3 张', () => {
+    props.pull--;
+    const top = Math.max(...tiles.map(t => t.layer)) + 1;
+    tray.splice(0, 3).forEach((t, i) => {
+      t.state = 'board'; t.layer = top;                  // returned tiles land on top, always free
+      t.bx = CX - TILE * 1.5 + i * TILE; t.by = TRAY_Y - 92;
+      const h = history.indexOf(t); if (h >= 0) history.splice(h, 1);
+    });
+    layoutTray();
+  });
+}
+
+function useUndo() {
+  if (!running) return;
+  if (props.undo <= 0) return toast('本关撤销已用完');
+  if (!history.length) return toast('没有可撤销的操作');
+  WX.rewardedAd('撤销 Undo', () => {
+    props.undo--;
+    const t = history.pop();
+    tray.splice(tray.indexOf(t), 1);
+    t.state = 'board';
+    t.tx = t.bx - t.layer * LAYER_OFFSET; t.ty = t.by - t.layer * LAYER_OFFSET;
+    layoutTray();
+  });
+}
+
+/* ===== input ============================================================== */
+function pointFromEvent(e) {
+  const r = cv.getBoundingClientRect();
+  const p = e.touches ? e.touches[0] : e;
+  return { x: (p.clientX - r.left) / r.width * W, y: (p.clientY - r.top) / r.height * H };
+}
+function hit(pt) {
+  const board = tiles.filter(t => t.state === 'board').sort((a, b) => b.layer - a.layer);
+  for (const t of board) {
+    const r = rect(t);
+    if (pt.x >= r.x && pt.x <= r.x + r.w && pt.y >= r.y && pt.y <= r.y + r.h) return t;
+  }
+  return null;
+}
+function isLocked(t) {
+  return tiles.some(o => o.state === 'board' && o.layer > t.layer && overlaps(o, t));
+}
+
+const BTNS = [
+  { x: CX - 168, y: 726, w: 104, h: 46, label: '🔀 洗牌', key: 'shuffle', fn: useShuffle },
+  { x: CX - 52,  y: 726, w: 104, h: 46, label: '⤴️ 移出', key: 'pull',    fn: usePull },
+  { x: CX + 64,  y: 726, w: 104, h: 46, label: '↩️ 撤销', key: 'undo',    fn: useUndo }
+];
+
+function onTap(e) {
+  e.preventDefault();
+  const pt = pointFromEvent(e);
+  for (const b of BTNS)
+    if (pt.x >= b.x && pt.x <= b.x + b.w && pt.y >= b.y && pt.y <= b.y + b.h) return b.fn();
+  if (!running) return;
+  const t = hit(pt);
+  if (!t) return;
+  if (isLocked(t)) { shakeTile = t; shakeUntil = performance.now() + 260; return; }
+  sendToTray(t);
+}
+cv.addEventListener('pointerdown', onTap);
+
+/* ===== drawing ============================================================ */
+function roundRect(x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.arcTo(x + w, y, x + w, y + h, r);
+  ctx.arcTo(x + w, y + h, x, y + h, r);
+  ctx.arcTo(x, y + h, x, y, r);
+  ctx.arcTo(x, y, x + w, y, r);
+  ctx.closePath();
+}
+
+function drawTile(t, size, locked) {
+  const s = size * t.scale;
+  const x = t.x + (size - s) / 2, y = t.y + (size - s) / 2;
+  ctx.save();
+  if (t === shakeTile && performance.now() < shakeUntil)
+    ctx.translate(Math.sin(performance.now() / 18) * 4, 0);
+
+  ctx.fillStyle = 'rgba(0,0,0,.38)';
+  roundRect(x + 2, y + 4, s, s, 9); ctx.fill();
+
+  // Covered tiles keep their own colour and are shaded instead of blanked out,
+  // so the eye can still read the depth of a stack.
+  ctx.fillStyle = COLORS[t.type % COLORS.length];
+  roundRect(x, y, s, s, 9); ctx.fill();
+  if (locked) { ctx.fillStyle = 'rgba(11,18,26,.55)'; roundRect(x, y, s, s, 9); ctx.fill(); }
+  ctx.lineWidth = 2;
+  ctx.strokeStyle = locked ? 'rgba(255,255,255,.12)' : 'rgba(255,255,255,.62)';
+  ctx.stroke();
+
+  ctx.globalAlpha = locked ? 0.5 : 1;
+  ctx.font = (s * 0.58) + 'px "Segoe UI Emoji","Apple Color Emoji","Noto Color Emoji",sans-serif';
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText(SYMBOLS[t.type % SYMBOLS.length], x + s / 2, y + s / 2 + 1);
+  ctx.restore();
+}
+
+function draw() {
+  const g = ctx.createLinearGradient(0, 0, 0, H);
+  g.addColorStop(0, '#1d2c3a'); g.addColorStop(1, '#121a23');
+  ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+
+  // header
+  const left = tiles.filter(t => t.state !== 'gone').length;
+  ctx.fillStyle = '#e8eef5'; ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+  ctx.font = '600 20px sans-serif';
+  ctx.fillText(LEVELS[levelIdx].name, 22, 44);
+  ctx.font = '13px sans-serif'; ctx.fillStyle = '#8fa8bf';
+  ctx.fillText('剩余 ' + left + ' 张 · 槽位 ' + tray.length + '/' + TRAY_SLOTS, 22, 66);
+  ctx.textAlign = 'right'; ctx.fillStyle = '#617d99';
+  ctx.font = '11px sans-serif';
+  ctx.fillText('mechanic prototype · no WeChat SDK', W - 22, 66);
+
+  // board, painted bottom layer first
+  const board = tiles.filter(t => t.state === 'board').sort((a, b) => a.layer - b.layer || a.by - b.by);
+  board.forEach(t => drawTile(t, TILE, isLocked(t)));
+
+  // tray
+  ctx.fillStyle = 'rgba(255,255,255,.06)';
+  roundRect(CX - (TRAY_SLOTS * TRAY_TILE) / 2 - 8, TRAY_Y - 8, TRAY_SLOTS * TRAY_TILE + 16, TRAY_TILE + 16, 14);
+  ctx.fill();
+  for (let i = 0; i < TRAY_SLOTS; i++) {
+    ctx.strokeStyle = 'rgba(255,255,255,.13)'; ctx.lineWidth = 1.5;
+    roundRect(trayX(i) + 2, TRAY_Y + 1, TRAY_TILE - 4, TRAY_TILE - 4, 8); ctx.stroke();
+  }
+  tray.forEach(t => drawTile(t, TILE, false));
+
+  // pop animation for cleared tiles
+  tiles.filter(t => t.pop > 0).forEach(t => {
+    ctx.save(); ctx.globalAlpha = t.pop;
+    ctx.strokeStyle = '#7ee08f'; ctx.lineWidth = 3;
+    const r = (1 - t.pop) * 26 + 8;
+    ctx.beginPath(); ctx.arc(t.x + TILE / 2, t.y + TILE / 2, r, 0, 6.284); ctx.stroke();
+    ctx.restore();
+    t.pop = Math.max(0, t.pop - 0.05);
+  });
+
+  // prop buttons
+  BTNS.forEach(b => {
+    const n = props[b.key];
+    ctx.fillStyle = n > 0 ? '#2f4358' : '#232f3b';
+    roundRect(b.x, b.y, b.w, b.h, 12); ctx.fill();
+    ctx.fillStyle = n > 0 ? '#e8eef5' : '#5b6b7c';
+    ctx.font = '14px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(b.label + ' ×' + n, b.x + b.w / 2, b.y + b.h / 2);
+  });
+}
+
+function tick() {
+  tiles.forEach(t => {
+    t.x += (t.tx - t.x) * 0.30;
+    t.y += (t.ty - t.y) * 0.30;
+  });
+  draw();
+  requestAnimationFrame(tick);
+}
+tick();
+
+/* ===== ui glue ============================================================ */
+function show(id) { document.getElementById(id).classList.add('show'); }
+function hide(id) { document.getElementById(id).classList.remove('show'); }
+
+let toastTimer;
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg; el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 2400);
+}
+
+function end(win) {
+  document.getElementById('endTitle').textContent = win ? '通关！ 🎉' : '槽位满了 💀';
+  document.getElementById('endText').innerHTML = win
+    ? LEVELS[levelIdx].name + ' 全部消除。<br>微信端此处会调用 wx.shareAppMessage 发起炫耀分享，并把成绩写入开放数据域好友榜。'
+    : '七个槽位被占满且无法凑齐三张。<br>微信端此处会弹出激励视频广告或“分享给好友”以复活 —— 这正是该品类的核心变现与传播闭环。';
+  show('ovEnd');
+}
+
+document.querySelectorAll('[data-level]').forEach(b =>
+  b.addEventListener('click', () => startLevel(+b.dataset.level)));
+document.getElementById('btnAgain').addEventListener('click', () => startLevel(levelIdx));
+document.getElementById('btnMenu').addEventListener('click', () => { hide('ovEnd'); show('ovStart'); });
+
+// ?level=2 deep-links straight into a level, for demos and headless testing
+const deep = new URLSearchParams(location.search).get('level');
+if (deep !== null && LEVELS[+deep - 1]) startLevel(+deep - 1);
+</script>
+</body>
+</html>
