@@ -1,0 +1,13 @@
+{
+  "name": "wx-shim",
+  "version": "0.2.0",
+  "private": true,
+  "type": "module",
+  "description": "Mock of the 微信小游戏 wx.* platform APIs (rewarded video, share, cloud storage, login, system info) so prototypes can run the product loop off-device.",
+  "main": "wx-shim.js",
+  "module": "wx-shim.mjs",
+  "types": "wx-shim.d.ts",
+  "scripts": {
+    "test": "node --test wx-shim.test.mjs"
+  }
+}
