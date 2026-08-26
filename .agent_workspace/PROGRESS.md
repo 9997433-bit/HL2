@@ -14,7 +14,7 @@ Find top 10 WeChat mini games (微信小游戏) and assess whether they can be r
 | Round | Status | Summary |
 |-------|--------|---------|
 | Round 1 | ✅ complete | 6/6 done; 3 prototypes + 8 Markdown reports + 2 JSON datasets; see `ROUND1_CONCLUSION_BRIEF.md` |
-| Round 2 | in_progress | 1/6 subagents done (test harness PASS) |
+| Round 2 | in_progress | 2/6 subagents done (test harness + docs index) |
 | Round 3 | pending | SOTA polish & final acceptance |
 
 ## Subagent Status (Round 2)
@@ -25,7 +25,7 @@ Find top 10 WeChat mini games (微信小游戏) and assess whether they can be r
 | [opus-r2-parking-prototype](bc-67ad5d81-6d12-5144-9093-0f99c9f5883c) | opus-fast | running ☁️ |
 | [opus-r2-wx-shim](bc-977a7fb8-54dd-5b24-a11d-2186e180fcba) | opus-fast | running |
 | [gpt-sol-r2-test-harness](bc-2ae60e8a-6902-511f-a575-cb7429ba6e03) | gpt-sol | ✅ done → `cc25042` |
-| [gpt-sol-r2-docs-index](bc-17771006-72a3-5a06-809b-f7b79caf8dcf) | gpt-sol | running |
+| [gpt-sol-r2-docs-index](bc-17771006-72a3-5a06-809b-f7b79caf8dcf) | gpt-sol | ✅ done → `271c0c4` |
 
 ## Subagent Status (Round 1)
 | Agent | Status |
