@@ -14,7 +14,7 @@ Find top 10 WeChat mini games (微信小游戏) and assess whether they can be r
 | Round | Status | Summary |
 |-------|--------|---------|
 | Round 1 | ✅ complete | 6/6 done; 3 prototypes + 8 Markdown reports + 2 JSON datasets; see `ROUND1_CONCLUSION_BRIEF.md` |
-| Round 2 | in_progress | 2/6 subagents done (test harness + docs index) |
+| Round 2 | in_progress | 3/6 done; SOTA gap review sets Round 3 acceptance checklist |
 | Round 3 | pending | SOTA polish & final acceptance |
 
 ## Subagent Status (Round 2)
