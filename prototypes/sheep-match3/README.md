@@ -5,8 +5,9 @@ underpins the most-played casual games on WeChat. It exists to answer one
 question from the replication study: *how much code is actually required to get
 the core loop of the simplest top-10 mini game running and provably fair?*
 
-Answer, measured on this tree: **446 lines of game logic**, 265 lines of
-rendering, 205 lines of host glue, plus 195 lines of tests.
+Answer, measured on this tree: **537 lines of game logic**, 265 lines of
+rendering, 390 lines of host glue (the platform loop included), plus 275 lines
+of tests.
 
 ## Run it
 
@@ -34,6 +35,8 @@ interval. That is how the loop is verified end to end without a human.
 - Taken tiles go into a 7-slot tray. Any three of a kind in the tray clear.
 - Filling the last slot without a clear loses the run.
 - Props: undo, "move out" (return three tray tiles to the board), shuffle, hint.
+  A spent prop is not gone, it is for sale: tapping it plays a rewarded video
+  and grants one back, which is the genre's whole IAA loop.
 
 ## The part that matters: guaranteed-solvable generation
 
@@ -55,6 +58,24 @@ Step 3 alone yields a board that is easy and visually clustered, so a scramble
 pass swaps types between random positions and keeps a swap only if a bounded
 depth-first search still finds a win. The number of accepted swaps is the
 difficulty knob: level 1 uses none, level 2 attempts 140.
+
+### The shuffle prop is generated, not permuted
+
+The same guarantee has to survive the shuffle prop, and this is where the
+obvious implementation is wrong. Permuting the types already on the board
+preserves the multiset and nothing else: it can hand back a board with no
+winning line, so a prop the player may have watched a rewarded video for is
+what ends the run. `shuffleProp` therefore re-runs generation on what is left —
+a random topological order of the remaining cover graph, the tiles the tray is
+waiting on dealt first so the tray drains before it grows, then the rest in
+consecutive triples — and puts each candidate deal through `solve()` before
+showing it. Six candidates are tried; if none is winnable the position is dead
+whatever the tiles say, so the board is left untouched and the prop unspent.
+
+That last branch is a real state, not a defensive nicety: a tray holding six
+tiles in seven slots loses to the next pick unless it completes a triple, and
+`test/core.test.mjs` pins two seeds where a blind permutation strands the player
+in exactly that position while the generated deal plays out to a win.
 
 The search itself relies on one observation that collapses the state space:
 **the set of picked tiles fully determines the game state.** Clearing is
@@ -78,11 +99,23 @@ whatever canvas it is given, so no layout work is needed per device. Total
 payload is well under the 4 MB main-package limit because there are no image
 assets — tiles are rounded rectangles with an emoji glyph.
 
+Everything else the platform owns goes through
+[`../shared/wx-shim.js`](../shared/), which mocks `wx.*` off-device and stands
+aside on a real one, so these are the calls a mini-game build would make: a
+spent prop stays tappable and buys itself back with `wx.createRewardedVideoAd`,
+a win writes the 排行榜模板 envelope to `wx.setUserCloudStorage` and reads
+`wx.getFriendCloudStorage` for the friend board, and a loss shares a card whose
+revive hangs off the friend coming back rather than off the callback-less
+`wx.shareAppMessage`.
+
 ## Deliberately out of scope
 
-The shipping games add a large amount of product surface on top of this loop:
-the face-down bottom queue that hides upcoming tiles, ad-gated revives and
-extra props, share-to-continue, regional leaderboards via the WeChat open data
-domain, daily level rotation driven by a server, and a hand-authored level
-pipeline. Those, not the loop, are where the real effort sits — see the effort
-table in `.agent_workspace/round1/opus-mechanics-analysis.md`.
+The shipping games add a large amount of product surface on top of this loop.
+The face-down bottom queue that hides upcoming tiles is the missing *mechanic*;
+the missing *product* is everything the shim can only imitate — real ad fill and
+revenue, the 开放数据域 sub-context that actually holds friend data (this
+prototype reads it in the main context, which a real build cannot), the server
+half of `wx.login`, daily level rotation, and a hand-authored level pipeline.
+Those, not the loop, are where the real effort sits — see the effort table in
+`.agent_workspace/round1/opus-mechanics-analysis.md` and the gap matrix in
+`.agent_workspace/round2/opus-wx-shim-report.md`.
