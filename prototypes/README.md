@@ -6,9 +6,11 @@ be a finished game.
 
 | Prototype | Mechanic and implementation | Verification | WeChat status |
 |---|---|---|---|
-| [`jump-jump/`](./jump-jump/) | Hold-to-charge jumping, randomized platforms, scoring, and combos in one Canvas/DOM HTML file | Chrome/CDP smoke test covers loading, rendering, initialization, keyboard charge/release, jump motion, and reset state | Browser-only; no `wx` adapter or Mini Game project files |
-| [`sheep-match3/`](./sheep-match3/) | Modular stacked match-3 with cover-graph rules, a guaranteed-solvable generator, solver/hints, four props, and debug autoplay | 14 Node tests covering generation, solvability, rules, and props | Core and renderer are platform-neutral; the entry point has limited canvas/input/size `wx` branches, but this is not a deployable WeChat package |
-| [`tile-trio/`](./tile-trio/) | Single-file layered three-match with three levels, seven tray slots, and shuffle/pull/undo props | `verify.js` checks constructed winning lines, solver clears, state conservation, and reachability | Includes an inline explanatory/mock shim that grants rewards locally; real `wx.*` integrations and Mini Game project files are absent |
+| [`jump-jump/`](./jump-jump/) | Hold-to-charge jumping, randomized platforms, scoring, and combos in one Canvas/DOM HTML file | Chrome/CDP smoke test covers loading, rendering, initialization, keyboard charge/release, jump motion, and reset state | Calls `wx.*` through [`shared/wx-shim.js`](./shared/): rewarded-video revive, share, cloud score and friend board. No Mini Game project files |
+| [`sheep-match3/`](./sheep-match3/) | Modular stacked match-3 with cover-graph rules, a guaranteed-solvable generator, solver/hints, four props, and debug autoplay | 14 Node tests covering generation, solvability, rules, and props | Core and renderer are platform-neutral; the host shell detects the host with `isRealWx()` and runs the ad-gated props, cloud score and friend board through the shim. Not a deployable package |
+| [`tile-trio/`](./tile-trio/) | Single-file layered three-match with three levels, seven tray slots, and shuffle/pull/undo props | `verify.js` checks constructed winning lines, solver clears, state conservation, reachability, and four platform-loop assertions | Fullest shim integration: props cost a rewarded video after one free use, a mock video player with a working skip path, ad- and share-revive, and a rendered friend leaderboard |
+| [`parking-jam/`](./parking-jam/) | Sliding-block parking puzzle with a BFS solver as the level pipeline | `verify.js` plus Node unit tests | Platform calls are isolated behind a `platform` adapter but still local stubs; see the [shim report](../.agent_workspace/round2/opus-wx-shim-report.md) for the drop-in diff |
+| [`shared/`](./shared/) | `wx-shim` — one mock of the 微信小游戏 `wx.*` surface (ads, share, cloud storage, login, system info, storage, haptics, payment) shared by every prototype | 19 Node tests | Stands aside when a genuine WeChat host is present, so the call sites above are the ones that would ship |
 
 ## Run
 
@@ -43,6 +45,7 @@ From the repository root:
 
 ```bash
 ./scripts/run-all-prototype-tests.sh
+node --test prototypes/shared/wx-shim.test.mjs   # the platform mock itself
 ```
 
 The aggregate runner requires Node 22+, npm, and Chrome/Chromium. It runs the
@@ -54,10 +57,13 @@ coverage matrix and known exclusions.
 
 ## Scope
 
-All three are browser mechanic probes. None is a release-ready WeChat Mini
-Game: production ads, sharing, identity, payment, friend leaderboards,
-compliance, package configuration, review, and real-device performance remain
-outside their validated scope.
+These are browser mechanic probes. None is a release-ready WeChat Mini Game.
+The platform loop is exercised against a mock, not the platform: real ad fill
+and revenue, the 开放数据域 sub-context that actually holds friend data, the
+server half of `wx.login`, iOS 虚拟支付, in-chat distribution, 版号 and
+real-device performance all remain outside their validated scope. The gap
+matrix is in
+[`opus-wx-shim-report.md`](../.agent_workspace/round2/opus-wx-shim-report.md).
 
 See the [master research index](../.agent_workspace/README.md) for every report
 and dataset, especially the
