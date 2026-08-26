@@ -21,7 +21,7 @@ Find top 10 WeChat mini games (微信小游戏) and assess whether they can be r
 | Agent | Status |
 |-------|--------|
 | [fable 全局规划](bc-027d9a13-1d3a-51c7-b8dd-7b144a48d407) | ✅ done → `4b18984` |
-| [fable-sota-audit](bc-05e9b606-f2f7-5c45-a5f5-fc34f07f3d99) | running |
+| [fable-sota-audit](bc-05e9b606-f2f7-5c45-a5f5-fc34f07f3d99) | ✅ done → `round1/fable-sota-audit.md` |
 | [opus-mechanics-analysis](bc-ad6b1de4-f45e-5af5-afce-60158020f712) | running |
 | [opus-prototype](bc-0d9294d4-9a47-5d9b-8bdd-53b0a9bf32e8) | running |
 | [gpt-sol 排名探针](bc-ae3783dd-d36f-50a3-b44d-5531dbe90dde) | ✅ done → `08fb77f` |
