@@ -92,14 +92,14 @@ From the repository root:
 
 ```bash
 ./scripts/run-all-prototype-tests.sh
-node --test prototypes/shared/wx-shim.test.mjs   # the platform mock itself
 ```
 
 The aggregate runner requires Node 22+, npm, and Chrome/Chromium. It runs the
-Jump Jump browser smoke test, all 17 Sheep Match-3 tests, the Tile Trio
-real-file verifier, the 23 Parking Jam unit tests, and every
-`prototypes/*/verify.js` it can find; it continues after individual failures and
-returns a failing exit status if any suite fails. See the
+14-assertion Jump Jump deterministic browser verifier, all 17 Sheep Match-3
+tests, the seeded Tile Trio real-file verifier, the 23 Parking Jam unit tests,
+the 19 shared wx-shim platform-mock tests, and every `prototypes/*/verify.js`
+it can find; it continues after individual failures and returns a failing exit
+status if any suite fails. See the
 [harness report](../.agent_workspace/round2/gpt-test-harness-report.md) for the
 coverage matrix and known exclusions.
 

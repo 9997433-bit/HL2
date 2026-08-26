@@ -47,6 +47,10 @@ run_test \
   "parking-jam core unit tests" \
   npm --prefix "$ROOT_DIR/prototypes/parking-jam" test
 
+run_test \
+  "shared wx-shim platform-mock tests" \
+  npm --prefix "$ROOT_DIR/prototypes/shared" test
+
 # Automatically include verification entry points added by future prototypes.
 shopt -s nullglob
 for verifier in "$ROOT_DIR"/prototypes/*/verify.js "$ROOT_DIR"/prototypes/*/verify.mjs; do

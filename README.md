@@ -43,15 +43,14 @@ python3 -m http.server 8080
 ### 一键验证全部证据
 
 ```bash
-./scripts/run-all-prototype-tests.sh          # 5 个测试套件（需 Node 22+、npm、Chrome/Chromium）
-node --test prototypes/shared/wx-shim.test.mjs # 平台 mock 自身的 19 项测试
+./scripts/run-all-prototype-tests.sh          # 6 个测试套件（需 Node 22+、npm、Chrome/Chromium）
 python3 scripts/collect_rankings.py --check    # 校验榜单数据快照
 ```
 
 聚合测试链覆盖：jump-jump 的 14 项确定性物理/计分断言（Chrome/CDP）、
 sheep-match3 的 17 项单测、tile-trio 的种子化真实文件验证器、parking-jam 的
-23 项单测 + 8 关全通关验证器。同一命令由 CI（GitHub Actions）在每次
-push/PR 时执行。
+23 项单测 + 8 关全通关验证器、共享 wx-shim 平台 mock 的 19 项自测。
+同一命令由 CI（GitHub Actions）在每次 push/PR 时执行。
 
 ## 仓库结构
 
