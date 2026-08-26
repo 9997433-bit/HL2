@@ -93,7 +93,7 @@ rAF loop, so the deterministic mode cannot mask a broken input path.
 ## 5. Verification record
 
 ```
-代码树  commit b4d48bc(rebased) · 分支 agent/wechat-minigames-research
+代码树  commit 6a2cbcf（jump-jump 重建 + 验证器）· 分支 agent/wechat-minigames-research
 命令    ./scripts/run-all-prototype-tests.sh
 结果    5 套件通过，0 失败 (jump-jump 14 checks · sheep-match3 17 · tile-trio seeded ·
         parking-jam 23 单测 + 验证器)
