@@ -7,6 +7,7 @@ be a finished game.
 | Prototype | Replicates | Status |
 |---|---|---|
 | [`sheep-match3/`](./sheep-match3) | Stacked tile match-3 (羊了个羊 / 抓大鹅 family) | Playable, 14 headless tests, solver-verified levels |
+| [`jump-jump/`](./jump-jump) | 跳一跳 hold-to-charge hop | Playable single-file canvas demo |
 
 The written analysis lives in
 [`.agent_workspace/round1/opus-mechanics-analysis.md`](../.agent_workspace/round1/opus-mechanics-analysis.md).
