@@ -20,6 +20,9 @@ the Round 2 context, and supporting reproduction tools.
 - Expanded [`prototypes/README.md`](../../prototypes/README.md) from a short
   table into an accurate runbook covering all three prototypes, controls,
   debug URLs, automated coverage, and WeChat integration status.
+- Incorporated the concurrently delivered unified headless runner and
+  [`gpt-test-harness-report.md`](./gpt-test-harness-report.md), replacing the
+  earlier “manual only” Jump Jump status with its Chrome/CDP smoke coverage.
 - Corrected the live progress summary from an ambiguous “9 reports” to the
   checked-in inventory: 8 Markdown reports plus 2 JSON datasets.
 - Resolved the Round 1 brief's stale note that Tile Trio was absent from the
@@ -55,13 +58,19 @@ the Round 2 context, and supporting reproduction tools.
 │   └── ROUND1_CONCLUSION_BRIEF.md
 └── round2/
     ├── ROUND2_CONTEXT.md
-    └── gpt-docs-index-report.md
+    ├── gpt-docs-index-report.md
+    └── gpt-test-harness-report.md
 
 prototypes/
 ├── README.md
 ├── jump-jump/
 ├── sheep-match3/
 └── tile-trio/
+
+scripts/
+├── collect_rankings.py
+├── run-all-prototype-tests.sh
+└── verify-jump-jump.mjs
 ```
 
 ## Still missing
@@ -73,8 +82,7 @@ not yet present in the working tree:
    product replication.
 2. A parking-puzzle prototype or 3D physics benchmark.
 3. A shared `prototypes/shared/wx-shim.js` used consistently by the prototypes.
-4. A unified headless runner that includes Jump Jump and all other prototypes.
-5. The planned Round 2 SOTA review/final synthesis.
+4. The planned Round 2 SOTA review/final synthesis.
 
 They should be added to the Round 2 section of the master index when merged.
 

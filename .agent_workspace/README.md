@@ -11,6 +11,7 @@ name, art, code, levels, text, audio, or licensed IP.
 - [`round1/ROUND1_CONCLUSION_BRIEF.md`](./round1/ROUND1_CONCLUSION_BRIEF.md) — Consolidated Round 1 findings, prototype outcomes, shared conclusions, and remaining gaps.
 - [`round1/rankings.json`](./round1/rankings.json) — Machine-readable July 2026 IAP/IAA rankings, historical snapshots, source provenance, and confidence labels.
 - [`round2/gpt-docs-index-report.md`](./round2/gpt-docs-index-report.md) — Documentation merged in Round 2 and the research, platform, and implementation gaps still open.
+- [`round2/gpt-test-harness-report.md`](./round2/gpt-test-harness-report.md) — Unified harness results and a per-prototype matrix of automated coverage and remaining test gaps.
 - [`../prototypes/README.md`](../prototypes/README.md) — Runnable-prototype catalog with launch, input, test, and platform-scope guidance.
 
 ## Round 1 — Research and feasibility
@@ -35,6 +36,7 @@ name, art, code, levels, text, audio, or licensed IP.
 
 - [`round2/ROUND2_CONTEXT.md`](./round2/ROUND2_CONTEXT.md) — Shared Round 2 mission, mandatory deliverables, existing-prototype inventory, branch, and output convention.
 - [`round2/gpt-docs-index-report.md`](./round2/gpt-docs-index-report.md) — Documentation alignment record, resolved navigation issues, and still-missing evidence or deliverables.
+- [`round2/gpt-test-harness-report.md`](./round2/gpt-test-harness-report.md) — Test-run evidence for the aggregate runner, including detailed coverage and exclusions for all three current prototypes.
 
 Round 2 implementation and analysis artifacts should be added to this section
 as they land; the gap report records which planned outputs were absent when
@@ -42,7 +44,7 @@ this index was prepared.
 
 ## Playable prototypes
 
-- [`../prototypes/jump-jump/`](../prototypes/jump-jump/) — Single-file Canvas hold-to-charge jumping demo with randomized platforms, scoring, and combo feedback; browser-only and untested by an automated harness.
+- [`../prototypes/jump-jump/`](../prototypes/jump-jump/) — Single-file Canvas hold-to-charge jumping demo with randomized platforms, scoring, and combo feedback, covered by a Chrome/CDP smoke test.
 - [`../prototypes/sheep-match3/`](../prototypes/sheep-match3/) — Modular stacked match-3 prototype with a guaranteed-solvable generator, live solver/hints, props, debug autoplay, and 14 Node tests.
 - [`../prototypes/tile-trio/`](../prototypes/tile-trio/) — Single-file layered three-match game with three levels, three ad-shaped props, an inline platform shim, and a dependency-free verification script.
 
@@ -54,6 +56,8 @@ compliance, release configuration, or real-device WeChat validation.
 
 - [`PROGRESS.md`](./PROGRESS.md) — Parent orchestration status for the multi-round, multi-agent research effort.
 - [`../scripts/collect_rankings.py`](../scripts/collect_rankings.py) — Zero-dependency generator/checker for the checked-in ranking snapshot, with an optional live-source probe.
+- [`../scripts/run-all-prototype-tests.sh`](../scripts/run-all-prototype-tests.sh) — Aggregate test runner for every current prototype and discoverable future verifier.
+- [`../scripts/verify-jump-jump.mjs`](../scripts/verify-jump-jump.mjs) — Dependency-free Node 22 CDP smoke test for the shipped Jump Jump browser file.
 - [`../README.md`](../README.md) — Repository overview and quick-start commands.
 
 ## Aligned interpretation

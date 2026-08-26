@@ -6,7 +6,7 @@ be a finished game.
 
 | Prototype | Mechanic and implementation | Verification | WeChat status |
 |---|---|---|---|
-| [`jump-jump/`](./jump-jump/) | Hold-to-charge jumping, randomized platforms, scoring, and combos in one Canvas/DOM HTML file | Manual browser play only; no automated tests | Browser-only; no `wx` adapter or Mini Game project files |
+| [`jump-jump/`](./jump-jump/) | Hold-to-charge jumping, randomized platforms, scoring, and combos in one Canvas/DOM HTML file | Chrome/CDP smoke test covers loading, rendering, initialization, keyboard charge/release, jump motion, and reset state | Browser-only; no `wx` adapter or Mini Game project files |
 | [`sheep-match3/`](./sheep-match3/) | Modular stacked match-3 with cover-graph rules, a guaranteed-solvable generator, solver/hints, four props, and debug autoplay | 14 Node tests covering generation, solvability, rules, and props | Core and renderer are platform-neutral; the entry point has limited canvas/input/size `wx` branches, but this is not a deployable WeChat package |
 | [`tile-trio/`](./tile-trio/) | Single-file layered three-match with three levels, seven tray slots, and shuffle/pull/undo props | `verify.js` checks constructed winning lines, solver clears, state conservation, and reachability | Includes an inline explanatory/mock shim that grants rewards locally; real `wx.*` integrations and Mini Game project files are absent |
 
@@ -42,12 +42,15 @@ directly. `sheep-match3` uses JavaScript modules and should be served over HTTP.
 From the repository root:
 
 ```bash
-node --test prototypes/sheep-match3/test/core.test.mjs
-node prototypes/tile-trio/verify.js
+./scripts/run-all-prototype-tests.sh
 ```
 
-The scripts require Node 18+ and install no dependencies. There is no
-automated check for `jump-jump` in Round 1.
+The aggregate runner requires Node 22+, npm, and Chrome/Chromium. It runs the
+Jump Jump browser smoke test, all 14 Sheep Match-3 tests, and the Tile Trio
+real-file verifier, continues after individual failures, and returns a failing
+exit status if any suite fails. See the
+[harness report](../.agent_workspace/round2/gpt-test-harness-report.md) for the
+coverage matrix and known exclusions.
 
 ## Scope
 

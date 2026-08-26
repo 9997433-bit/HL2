@@ -37,16 +37,20 @@ served over HTTP.
 
 ## Verify the checked-in evidence
 
-Node 18+ and Python 3 are sufficient:
+Run every prototype check with one command:
 
 ```bash
-node --test prototypes/sheep-match3/test/core.test.mjs
-node prototypes/tile-trio/verify.js
-python3 scripts/collect_rankings.py --check
+./scripts/run-all-prototype-tests.sh
 ```
 
-There is currently no automated harness for `jump-jump`; use its browser demo
-for manual verification.
+The aggregate runner requires Node 22+, npm, and Chrome/Chromium; it exercises
+Jump Jump through the Chrome DevTools Protocol, runs the 14 Sheep Match-3 Node
+tests, and invokes the Tile Trio verifier. The ranking snapshot has a separate
+Python 3 check:
+
+```bash
+python3 scripts/collect_rankings.py --check
+```
 
 ## Scope
 
