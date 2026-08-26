@@ -1,5 +1,5 @@
 {
-  "schema_version": "1.0",
+  "schema_version": "1.1",
   "generated_at": "2026-08-26T00:00:00Z",
   "scope": "中国大陆微信小游戏，2025-2026公开榜单探针",
   "primary_definition": {
@@ -543,5 +543,37 @@
     "high": "排名可由原始榜单图表直接读取，且至少一处正文/镜像交叉印证",
     "medium": "正文提及或单一可信二次来源，但缺少可读原图逐位核验",
     "low": "仅搜索摘要、推断或来源口径不清；不用于主榜"
+  },
+  "round2_dual_axis": {
+    "updated_at": "2026-08-26",
+    "change_note": "Additive change (schema 1.0 -> 1.1): Round 2 split the single replication axis into Mechanic (M: 核心玩法能否用原生JS/HTML5复刻) and Product (P: 全量商业产品能否脱离微信/抖音平台达到同等水平). 1-10, 高分=易复刻. Per-game rationale, sub-scores and methodology live in the referenced artifacts; this block is a lookup map only.",
+    "artifacts": [
+      ".agent_workspace/round2/fable-dual-axis-scoring.md",
+      ".agent_workspace/round2/dual-axis-scores.json"
+    ],
+    "scores": {
+      "赵云与阿斗": { "M": 7, "P": 4 },
+      "羊了个羊：星球": { "M": 10, "P": 3 },
+      "挪了下车": { "M": 10, "P": 5 },
+      "抓大鹅": { "M": 6, "P": 4 },
+      "一找一个准": { "M": 9, "P": 4 },
+      "沙画消消": { "M": 9, "P": 4 },
+      "躺平发育": { "M": 6, "P": 3 },
+      "挪了个挪": { "M": 9, "P": 5 },
+      "搬砖没我快": { "M": 9, "P": 4 },
+      "打个螺丝": { "M": 8, "P": 4 },
+      "向僵尸开炮": { "M": 7, "P": 4 },
+      "三国：冰河时代": { "M": 4, "P": 2 },
+      "灵画师": { "M": 7, "P": 3 },
+      "疯狂水世界": { "M": 6, "P": 3 },
+      "我的花园世界": { "M": 8, "P": 4 },
+      "跃动小子": { "M": 7, "P": 3 },
+      "镇邪人": { "M": 7, "P": 3 },
+      "无尽冬日": { "M": 4, "P": 2 },
+      "永远的蔚蓝星球": { "M": 8, "P": 3 },
+      "向往的生活": { "M": 9, "P": 2 },
+      "跳一跳": { "M": 10, "P": 2 },
+      "寻道大千": { "M": 7, "P": 3 }
+    }
   }
 }
