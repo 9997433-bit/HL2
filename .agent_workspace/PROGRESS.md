@@ -14,8 +14,18 @@ Find top 10 WeChat mini games (微信小游戏) and assess whether they can be r
 | Round | Status | Summary |
 |-------|--------|---------|
 | Round 1 | ✅ complete | 6/6 done; 3 prototypes + 9 reports; see `ROUND1_CONCLUSION_BRIEF.md` |
-| Round 2 | pending | Inject Round 1 brief → targeted refactor |
+| Round 2 | in_progress | 6 subagents dispatched; inject Round 1 brief |
 | Round 3 | pending | SOTA polish & final acceptance |
+
+## Subagent Status (Round 2)
+| Agent | Status |
+|-------|--------|
+| fable-r2-dual-axis | pending |
+| fable-r2-sota-review | pending |
+| opus-r2-parking-prototype | pending |
+| opus-r2-wx-shim | pending |
+| gpt-sol-r2-test-harness | pending |
+| gpt-sol-r2-docs-index | pending |
 
 ## Subagent Status (Round 1)
 | Agent | Status |
