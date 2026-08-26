@@ -22,7 +22,7 @@ Find top 10 WeChat mini games (微信小游戏) and assess whether they can be r
 |-------|-------|--------|
 | [fable-r3-final-acceptance](bc-a0f382a5-162e-5cd0-ad16-421ee3871a63) | fable | running ☁️ |
 | [fable-r3-global-report](bc-d8a86cc4-f8ca-5dfe-a4a7-eb0ba09306d2) | fable | ✅ done → `7a51b40` |
-| [opus-r3-jump-jump-fix](bc-1e456385-9989-5407-891b-aca471af06f7) | opus-fast | ✅ done → `6a2cbcf` |
+| [opus-r3-jump-jump-fix](bc-1e456385-9989-5407-891b-aca471af06f7) | opus-fast | ✅ done → `5344dca` |
 | [opus-r3-prototype-convergence](bc-a0563b1b-b789-516e-ab1e-898c17375fdb) | opus-fast | ✅ done → `88136a1` |
 | [gpt-sol-r3-ci-seeded](bc-670f5081-9e16-5ca6-8a2a-560422d524ec) | gpt-sol | ✅ done → `90c16cf` |
 | [gpt-sol-r3-platform-normalize](bc-d07be4f3-2995-5c7d-b00a-a696c3bb83b1) | gpt-sol | ✅ done → `829290f` |
