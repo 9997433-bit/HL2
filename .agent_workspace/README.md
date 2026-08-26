@@ -8,6 +8,7 @@ name, art, code, levels, text, audio, or licensed IP.
 
 ## Start here
 
+- [`GLOBAL_FINAL_REPORT.md`](./GLOBAL_FINAL_REPORT.md) — Round 3 全局终审报告：双榜 Top 10、机制/产品双轴结论、4 原型证明、独立开发者建议与法律摘要（简体中文）。
 - [`round1/ROUND1_CONCLUSION_BRIEF.md`](./round1/ROUND1_CONCLUSION_BRIEF.md) — Consolidated Round 1 findings, prototype outcomes, shared conclusions, and remaining gaps.
 - [`round1/rankings.json`](./round1/rankings.json) — Machine-readable July 2026 IAP/IAA rankings, historical snapshots, source provenance, and confidence labels.
 - [`round2/gpt-docs-index-report.md`](./round2/gpt-docs-index-report.md) — Documentation merged in Round 2 and the research, platform, and implementation gaps still open.

@@ -57,4 +57,4 @@ See [`.agent_workspace/round1/ROUND1_CONCLUSION_BRIEF.md`](round1/ROUND1_CONCLUS
 See [`.agent_workspace/round2/ROUND2_CONCLUSION_BRIEF.md`](round2/ROUND2_CONCLUSION_BRIEF.md)
 
 ### Round 3 Final Report
-_TBD_
+See [`.agent_workspace/GLOBAL_FINAL_REPORT.md`](GLOBAL_FINAL_REPORT.md)
