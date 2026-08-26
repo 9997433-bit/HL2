@@ -1,0 +1,558 @@
+{
+  "schema_version": "2.0",
+  "artifact": "round2-dual-axis-scores",
+  "generated_at": "2026-08-26T08:00:00Z",
+  "author_agent": "fable-r2-dual-axis (claude-fable-5-thinking-xhigh)",
+  "methodology_ref": ".agent_workspace/round2/fable-dual-axis-scoring.md",
+  "rankings_ref": ".agent_workspace/round1/rankings.json (2026-07 DataEye-ADX x 引力引擎联合月榜, both charts)",
+  "round1_single_axis_ref": ".agent_workspace/round1/fable-sota-audit.md section 6",
+  "axes": {
+    "mechanic_score": {
+      "question": "Can the core gameplay loop (one complete session) be replicated in vanilla JS/HTML5 (Canvas2D/WebGL/WebAudio/WASM, no engine, no wx.*, no server)?",
+      "weights": {
+        "loop_self_containment": 0.35,
+        "rendering_fit": 0.25,
+        "simulation_fit": 0.25,
+        "content_bootstrap": 0.15
+      }
+    },
+    "product_score": {
+      "question": "Can full commercial product parity (monetization, acquisition, social fabric, liveops, compliance) be achieved off-platform by a competent independent studio that is not the original IP holder?",
+      "weights": {
+        "monetization_parity": 0.25,
+        "acquisition_virality": 0.2,
+        "social_fabric": 0.15,
+        "backend_liveops": 0.25,
+        "compliance_ip": 0.15
+      }
+    }
+  },
+  "scale": "1-10 on both axes; 10 = easiest/fullest replication. Absolute scale: no game reaches high P because the WeChat platform fabric (chat-graph distribution, ad economics, one-tap payment, compliance absorption) has no generic equivalent (Round 1 gaps G1-G12).",
+  "rounding": "score = weighted sum rounded half-up; documented judgment adjustment of at most +/-1 allowed and recorded in the 'adjustment' field",
+  "vanilla_js_policy": "Browser-standard APIs only, no game engine. OSS WASM libs (e.g. Rapier) allowed with an M3 deduction; engine_assisted_mechanic_score shows the score with an OSS engine stack for comparability with Round 1.",
+  "games": [
+    {
+      "game": "赵云与阿斗",
+      "chart": "iaa_top10",
+      "chart_rank": 1,
+      "genre": "文字拼接 + 塔防",
+      "mechanic": {
+        "subscores": { "loop_self_containment": 7, "rendering_fit": 9, "simulation_fit": 7, "content_bootstrap": 5 },
+        "weighted": 7.2,
+        "adjustment": 0,
+        "score": 7,
+        "rationale": "Merge-TD campaign session runs fully offline; text-as-units renders trivially with canvas fillText (radically cheap art). Deductions: 1v1 online PvP is a headline mode (needs netcode or bots) and the CJK word/character content plus wave balance must exist before the loop is testable."
+      },
+      "product": {
+        "subscores": { "monetization_parity": 4, "acquisition_virality": 3, "social_fabric": 4, "backend_liveops": 4, "compliance_ip": 3 },
+        "weighted": 3.65,
+        "adjustment": 0,
+        "score": 4,
+        "rationale": "Hybrid IAA+IAP is partially portable natively, but matchmaking liquidity requires platform-scale DAU, the season ladder needs a backend, and the Chinese-character mechanic is culture-bound (does not localize), capping the global path."
+      },
+      "gap_m_minus_p": 3,
+      "round1_blended_score": 7
+    },
+    {
+      "game": "羊了个羊：星球",
+      "aliases": ["羊了个羊"],
+      "chart": "iaa_top10",
+      "chart_rank": 2,
+      "genre": "层叠式三槽消除",
+      "mechanic": {
+        "subscores": { "loop_self_containment": 10, "rendering_fit": 10, "simulation_fit": 10, "content_bootstrap": 8 },
+        "weighted": 9.7,
+        "adjustment": 0,
+        "score": 10,
+        "rationale": "Fully offline deterministic tile-DAG; proven on this branch: prototypes/sheep-match3 and prototypes/tile-trio implement the loop with solvability generation and headless verification in plain JS. Daily level can be locally seeded."
+      },
+      "product": {
+        "subscores": { "monetization_parity": 3, "acquisition_virality": 1, "social_fabric": 2, "backend_liveops": 7, "compliance_ip": 3 },
+        "weighted": 3.45,
+        "adjustment": 0,
+        "score": 3,
+        "rationale": "The product is a CN-chat social phenomenon: difficulty-cliff brag/share loop (P2=1), province/friend rank boards, rewarded-ad revives on 流量主 economics. Backend is light (level-of-day service + pass-rate telemetry) but that cannot rescue parity; its specific rage-share formula did not transfer in global clones."
+      },
+      "gap_m_minus_p": 7,
+      "round1_blended_score": 8
+    },
+    {
+      "game": "挪了下车",
+      "chart": "iaa_top10",
+      "chart_rank": 3,
+      "genre": "停车/排序解谜",
+      "mechanic": {
+        "subscores": { "loop_self_containment": 10, "rendering_fit": 10, "simulation_fit": 10, "content_bootstrap": 7 },
+        "weighted": 9.55,
+        "adjustment": 0,
+        "score": 10,
+        "rationale": "Pure algorithmic unblock/rush-hour puzzle: grid logic plus tween animation, fully offline. Levels are solver-generatable with minimum-move validation, so even content bootstrap is cheap."
+      },
+      "product": {
+        "subscores": { "monetization_parity": 3, "acquisition_virality": 3, "social_fabric": 5, "backend_liveops": 8, "compliance_ip": 4 },
+        "weighted": 4.7,
+        "adjustment": 0,
+        "score": 5,
+        "rationale": "Best P in the corpus: light social coupling, minimal backend, procedurally sustainable content, and a proven global genre (unblock puzzles) with original IP. Ceiling remains the missing CN-web rewarded-video economy and platform discovery."
+      },
+      "gap_m_minus_p": 5,
+      "round1_blended_score": 9
+    },
+    {
+      "game": "抓大鹅",
+      "chart": "iaa_top10",
+      "chart_rank": 4,
+      "genre": "3D找物消除",
+      "mechanic": {
+        "subscores": { "loop_self_containment": 9, "rendering_fit": 5, "simulation_fit": 4, "content_bootstrap": 7 },
+        "weighted": 6.45,
+        "adjustment": 0,
+        "score": 6,
+        "engine_assisted_mechanic_score": 8,
+        "rationale": "Loop is fully offline, but a 3D rigid-body pile of hundreds of items with raycast picking is impractical in hand-authored vanilla JS: raw-WebGL scene management (M2=5) and 3D physics (M3=4) gate it. With Three.js + Rapier WASM (all OSS) it scores 8, matching Round 1. The corpus's only client-tech moat."
+      },
+      "product": {
+        "subscores": { "monetization_parity": 3, "acquisition_virality": 3, "social_fabric": 4, "backend_liveops": 7, "compliance_ip": 4 },
+        "weighted": 4.3,
+        "adjustment": 0,
+        "score": 4,
+        "rationale": "IAA economics and share loops are the dependencies; backend is light (async ranks, ad-gated tools). Global genre analogs exist, so an off-platform product is plausible at lower eCPM."
+      },
+      "gap_m_minus_p": 2,
+      "round1_blended_score": 8
+    },
+    {
+      "game": "一找一个准",
+      "chart": "iaa_top10",
+      "chart_rank": 5,
+      "genre": "找物解谜",
+      "mechanic": {
+        "subscores": { "loop_self_containment": 10, "rendering_fit": 9, "simulation_fit": 10, "content_bootstrap": 3 },
+        "weighted": 8.7,
+        "adjustment": 0,
+        "score": 9,
+        "rationale": "Tap-to-find with hit regions and zoom/pan is trivial canvas work; the only real cost is that the loop's content IS authored art scenes (hundreds needed), hence M4=3."
+      },
+      "product": {
+        "subscores": { "monetization_parity": 3, "acquisition_virality": 3, "social_fabric": 5, "backend_liveops": 5, "compliance_ip": 4 },
+        "weighted": 3.95,
+        "adjustment": 0,
+        "score": 4,
+        "rationale": "Hidden-object is a proven global genre; parity is gated by a permanent original-art production pipeline (scene cadence) and rewarded-ad hint economics rather than by any platform API."
+      },
+      "gap_m_minus_p": 5,
+      "round1_blended_score": null
+    },
+    {
+      "game": "沙画消消",
+      "chart": "iaa_top10",
+      "chart_rank": 6,
+      "genre": "沙画排序消除",
+      "mechanic": {
+        "subscores": { "loop_self_containment": 10, "rendering_fit": 9, "simulation_fit": 8, "content_bootstrap": 7 },
+        "weighted": 8.8,
+        "adjustment": 0,
+        "score": 9,
+        "rationale": "Falling-sand cellular automata on Canvas 2D with typed arrays is classic vanilla-JS territory; color-sort win detection is simple, and levels are largely procedural."
+      },
+      "product": {
+        "subscores": { "monetization_parity": 3, "acquisition_virality": 3, "social_fabric": 4, "backend_liveops": 7, "compliance_ip": 4 },
+        "weighted": 4.3,
+        "adjustment": 0,
+        "score": 4,
+        "rationale": "Standard IAA sort-puzzle economics: light backend, sustainable content, global genre analogs (sand/water sort); the CN-web ad-economy gap is the ceiling."
+      },
+      "gap_m_minus_p": 5,
+      "round1_blended_score": null
+    },
+    {
+      "game": "躺平发育",
+      "chart": "iaa_top10",
+      "chart_rank": 7,
+      "genre": "非对称宿舍塔防",
+      "mechanic": {
+        "subscores": { "loop_self_containment": 5, "rendering_fit": 8, "simulation_fit": 7, "content_bootstrap": 6 },
+        "weighted": 6.4,
+        "adjustment": 0,
+        "score": 6,
+        "rationale": "Rendering and defense logic are easy 2D work, but the asymmetric raid/defense against other players' layouts is central to the loop; a solo slice with bot layouts is replicable, full loop needs rooms/netcode."
+      },
+      "product": {
+        "subscores": { "monetization_parity": 3, "acquisition_virality": 2, "social_fabric": 3, "backend_liveops": 4, "compliance_ip": 3 },
+        "weighted": 3.05,
+        "adjustment": 0,
+        "score": 3,
+        "rationale": "Needs player liquidity for the asymmetric loop plus rooms/matchmaking/anti-cheat backend; growth rode CN short-video/chat distribution that does not transfer."
+      },
+      "gap_m_minus_p": 3,
+      "round1_blended_score": null
+    },
+    {
+      "game": "挪了个挪",
+      "chart": "iaa_top10",
+      "chart_rank": 8,
+      "genre": "挪动/排序解谜",
+      "mechanic": {
+        "subscores": { "loop_self_containment": 10, "rendering_fit": 10, "simulation_fit": 9, "content_bootstrap": 7 },
+        "weighted": 9.3,
+        "adjustment": 0,
+        "score": 9,
+        "rationale": "Same family as 挪了下车: grid move/sort logic, fully offline, solver-generatable levels; slightly richer piece semantics than pure unblock."
+      },
+      "product": {
+        "subscores": { "monetization_parity": 3, "acquisition_virality": 3, "social_fabric": 4, "backend_liveops": 8, "compliance_ip": 4 },
+        "weighted": 4.55,
+        "adjustment": 0,
+        "score": 5,
+        "rationale": "Same profile as 挪了下车 with a weaker brand: minimal backend, procedural content, global sort-puzzle genre; capped by ad economics and discovery."
+      },
+      "gap_m_minus_p": 4,
+      "round1_blended_score": null
+    },
+    {
+      "game": "搬砖没我快",
+      "chart": "iaa_top10",
+      "chart_rank": 9,
+      "genre": "蚂蚁搬家式排序消除",
+      "mechanic": {
+        "subscores": { "loop_self_containment": 10, "rendering_fit": 9, "simulation_fit": 8, "content_bootstrap": 7 },
+        "weighted": 8.8,
+        "adjustment": 0,
+        "score": 9,
+        "rationale": "Sort-elimination with simple agent pathing (ants carrying items) — deterministic queueing logic plus light animation, all comfortably vanilla canvas."
+      },
+      "product": {
+        "subscores": { "monetization_parity": 3, "acquisition_virality": 3, "social_fabric": 4, "backend_liveops": 7, "compliance_ip": 4 },
+        "weighted": 4.3,
+        "adjustment": 0,
+        "score": 4,
+        "rationale": "Standard IAA sort-casual profile: light backend, sustainable content, global analogs; CN-web ad-economy gap is the ceiling."
+      },
+      "gap_m_minus_p": 5,
+      "round1_blended_score": null
+    },
+    {
+      "game": "打个螺丝",
+      "chart": "iaa_top10",
+      "chart_rank": 10,
+      "genre": "螺丝拆解/排序解谜",
+      "mechanic": {
+        "subscores": { "loop_self_containment": 10, "rendering_fit": 8, "simulation_fit": 7, "content_bootstrap": 6 },
+        "weighted": 8.15,
+        "adjustment": 0,
+        "score": 8,
+        "rationale": "2.5D layered plates with constraint checks (which screws are free) and light fake physics for falling plates; authored levels need solvability validation, all within vanilla JS."
+      },
+      "product": {
+        "subscores": { "monetization_parity": 3, "acquisition_virality": 3, "social_fabric": 4, "backend_liveops": 7, "compliance_ip": 4 },
+        "weighted": 4.3,
+        "adjustment": 0,
+        "score": 4,
+        "rationale": "Screw-puzzle genre has proven global analogs; parity gated by ad economics and level-content cadence, not platform APIs."
+      },
+      "gap_m_minus_p": 4,
+      "round1_blended_score": null
+    },
+    {
+      "game": "向僵尸开炮",
+      "chart": "iap_top10",
+      "chart_rank": 1,
+      "genre": "Roguelike割草射击 + 塔防 + 轻RPG养成",
+      "mechanic": {
+        "subscores": { "loop_self_containment": 9, "rendering_fit": 6, "simulation_fit": 7, "content_bootstrap": 6 },
+        "weighted": 7.3,
+        "adjustment": 0,
+        "score": 7,
+        "rationale": "A single wave-defense run with three-choice roguelike upgrades is fully offline and deterministic (seeded). Cost is performance engineering: hundreds of projectiles/entities with dense VFX on canvas requires pooling and careful batching; ballistics/knockback are fake-physics."
+      },
+      "product": {
+        "subscores": { "monetization_parity": 5, "acquisition_virality": 3, "social_fabric": 4, "backend_liveops": 3, "compliance_ip": 3 },
+        "weighted": 3.65,
+        "adjustment": 0,
+        "score": 4,
+        "rationale": "Best monetization parity on the grossing chart — its own developer proved the native-app path with hybrid IAA+IAP. The moat is deep meta (gear/talents/seasons/guilds), liveops cadence, and a WeChat-ads UA machine; CN standalone needs 版号."
+      },
+      "gap_m_minus_p": 3,
+      "round1_blended_score": 7
+    },
+    {
+      "game": "三国：冰河时代",
+      "aliases": ["三国冰河时代"],
+      "chart": "iap_top10",
+      "chart_rank": 2,
+      "genre": "冰雪生存模拟经营 + 三国4X SLG",
+      "mechanic": {
+        "subscores": { "loop_self_containment": 2, "rendering_fit": 5, "simulation_fit": 8, "content_bootstrap": 3 },
+        "weighted": 4.4,
+        "adjustment": 0,
+        "score": 4,
+        "rationale": "Client math is easy (timers, resource economy), but the retention loop — alliance war on a persistent world shard — cannot exist client-side; only a single-player city-builder slice is vanilla-JS replicable. Large 2.5D city/world-map scenes without an engine add friction."
+      },
+      "product": {
+        "subscores": { "monetization_parity": 4, "acquisition_virality": 2, "social_fabric": 2, "backend_liveops": 1, "compliance_ip": 3 },
+        "weighted": 2.4,
+        "adjustment": 0,
+        "score": 2,
+        "rationale": "Parity requires a sharded persistent world, alliance realtime ops, anti-cheat, and a liveops organization plus SLG-scale paid UA — an engineering program, not a project. Alliance social fabric needs player critical mass a clone will not have."
+      },
+      "gap_m_minus_p": 2,
+      "round1_blended_score": 5
+    },
+    {
+      "game": "灵画师",
+      "chart": "iap_top10",
+      "chart_rank": 3,
+      "genre": "国风修仙放置RPG + 开箱装备养成",
+      "mechanic": {
+        "subscores": { "loop_self_containment": 7, "rendering_fit": 7, "simulation_fit": 8, "content_bootstrap": 4 },
+        "weighted": 6.8,
+        "adjustment": 0,
+        "score": 7,
+        "rationale": "Kill-loot-equip idle loop with auto-battle is straightforward client logic; spine-style 2D RPG presentation is real but tractable canvas work. Class/beast/gear tables and balance must exist before the loop is meaningful."
+      },
+      "product": {
+        "subscores": { "monetization_parity": 4, "acquisition_virality": 3, "social_fabric": 3, "backend_liveops": 2, "compliance_ip": 3 },
+        "weighted": 3.0,
+        "adjustment": 0,
+        "score": 3,
+        "rationale": "Server-authoritative economy, PvP, deep content cadence, and IAP rails with 版号 for CN standalone; the xianxia theme is CN-market-bound."
+      },
+      "gap_m_minus_p": 4,
+      "round1_blended_score": null
+    },
+    {
+      "game": "疯狂水世界",
+      "chart": "iap_top10",
+      "chart_rank": 4,
+      "genre": "海上生存模拟经营 + 卡牌养成 + 轻SLG",
+      "mechanic": {
+        "subscores": { "loop_self_containment": 6, "rendering_fit": 7, "simulation_fit": 8, "content_bootstrap": 3 },
+        "weighted": 6.3,
+        "adjustment": 0,
+        "score": 6,
+        "rationale": "The scavenge/production-chain/base loop is offline-able, but the game couples three systems (economy sim, card collection, alliance city wars) and only the first is self-contained; content volume is large before the loop resembles the product."
+      },
+      "product": {
+        "subscores": { "monetization_parity": 4, "acquisition_virality": 3, "social_fabric": 2, "backend_liveops": 1, "compliance_ip": 3 },
+        "weighted": 2.6,
+        "adjustment": 0,
+        "score": 3,
+        "rationale": "Three coupled systems each need server authority; alliance city wars add SLG-class backend and player-mass requirements on top of sim liveops."
+      },
+      "gap_m_minus_p": 3,
+      "round1_blended_score": null
+    },
+    {
+      "game": "我的花园世界",
+      "chart": "iap_top10",
+      "chart_rank": 5,
+      "genre": "种花/插花模拟经营 + 社交",
+      "mechanic": {
+        "subscores": { "loop_self_containment": 9, "rendering_fit": 8, "simulation_fit": 9, "content_bootstrap": 3 },
+        "weighted": 7.85,
+        "adjustment": 0,
+        "score": 8,
+        "rationale": "Plant/harvest/order/decorate loop is simple client logic and fully offline-able; the cost is the large decoration asset base, which is content production rather than mechanics."
+      },
+      "product": {
+        "subscores": { "monetization_parity": 5, "acquisition_virality": 3, "social_fabric": 3, "backend_liveops": 3, "compliance_ip": 4 },
+        "weighted": 3.65,
+        "adjustment": 0,
+        "score": 4,
+        "rationale": "Casual-sim IAP conversion is proven globally in the genre; parity is gated by permanent content/liveops cadence, server-driven economy and events, and social visits — production burden, not platform APIs."
+      },
+      "gap_m_minus_p": 4,
+      "round1_blended_score": 6
+    },
+    {
+      "game": "跃动小子",
+      "chart": "iap_top10",
+      "chart_rank": 6,
+      "genre": "开箱养成 + 休闲RPG/闯关",
+      "mechanic": {
+        "subscores": { "loop_self_containment": 8, "rendering_fit": 7, "simulation_fit": 7, "content_bootstrap": 5 },
+        "weighted": 7.05,
+        "adjustment": 0,
+        "score": 7,
+        "rationale": "Loot-box opening, gear comparison, and stage-push action levels are replicable client-side; action feel (input latency, animation polish) is the main vanilla-JS effort."
+      },
+      "product": {
+        "subscores": { "monetization_parity": 4, "acquisition_virality": 3, "social_fabric": 3, "backend_liveops": 2, "compliance_ip": 3 },
+        "weighted": 3.0,
+        "adjustment": 0,
+        "score": 3,
+        "rationale": "Loot economy needs server authority; cross-server PvP, seasonal liveops, and IAP-scale UA make off-platform parity a sustained operation."
+      },
+      "gap_m_minus_p": 4,
+      "round1_blended_score": null
+    },
+    {
+      "game": "镇邪人",
+      "chart": "iap_top10",
+      "chart_rank": 7,
+      "genre": "中式微恐RPG + 轻量搜打撤 + 放置养成",
+      "mechanic": {
+        "subscores": { "loop_self_containment": 8, "rendering_fit": 6, "simulation_fit": 8, "content_bootstrap": 3 },
+        "weighted": 6.75,
+        "adjustment": 0,
+        "score": 7,
+        "rationale": "Single-map search, auto-battle, extraction, and meta upgrades are mechanically moderate; the horror atmosphere (lighting, audio, art direction) is where the real cost sits, and the loop needs substantial content before it feels like the product."
+      },
+      "product": {
+        "subscores": { "monetization_parity": 4, "acquisition_virality": 3, "social_fabric": 4, "backend_liveops": 3, "compliance_ip": 3 },
+        "weighted": 3.4,
+        "adjustment": 0,
+        "score": 3,
+        "rationale": "Hero meta and events need server ops; the product's pull is content/atmosphere volume with CN-culture theming that does not transfer, plus 版号 for CN standalone."
+      },
+      "gap_m_minus_p": 4,
+      "round1_blended_score": null
+    },
+    {
+      "game": "无尽冬日",
+      "chart": "iap_top10",
+      "chart_rank": 8,
+      "genre": "冰雪生存模拟经营 + 4X SLG",
+      "mechanic": {
+        "subscores": { "loop_self_containment": 2, "rendering_fit": 5, "simulation_fit": 8, "content_bootstrap": 2 },
+        "weighted": 4.25,
+        "adjustment": 0,
+        "score": 4,
+        "rationale": "A furnace/city-builder slice is vanilla-JS replicable, but the core loop is a persistent 4X world with alliances — inherently server-side. It is a native-app port (Whiteout Survival), so the client is engine-built with content scale far beyond a vanilla scope."
+      },
+      "product": {
+        "subscores": { "monetization_parity": 4, "acquisition_virality": 2, "social_fabric": 2, "backend_liveops": 1, "compliance_ip": 3 },
+        "weighted": 2.4,
+        "adjustment": 0,
+        "score": 2,
+        "rationale": "Off-platform viability is proven by the original itself (the native app), but for a replicator parity means building a Whiteout-class SLG backend, anti-cheat, and a liveops org, then buying SLG-CAC traffic — the largest program in the corpus."
+      },
+      "gap_m_minus_p": 2,
+      "round1_blended_score": 5
+    },
+    {
+      "game": "永远的蔚蓝星球",
+      "chart": "iap_top10",
+      "chart_rank": 9,
+      "genre": "随机英雄合成 + Roguelike塔防",
+      "mechanic": {
+        "subscores": { "loop_self_containment": 9, "rendering_fit": 7, "simulation_fit": 8, "content_bootstrap": 6 },
+        "weighted": 7.8,
+        "adjustment": 0,
+        "score": 8,
+        "rationale": "Three-minute summon/merge/hold-the-line runs with seeded randomness are an excellent vanilla-JS fit; moderate entity density needs pooling but no physics."
+      },
+      "product": {
+        "subscores": { "monetization_parity": 4, "acquisition_virality": 3, "social_fabric": 3, "backend_liveops": 3, "compliance_ip": 4 },
+        "weighted": 3.4,
+        "adjustment": 0,
+        "score": 3,
+        "rationale": "Hero pool, balance matrix, co-op/PvP modes and hybrid monetization require ongoing server ops and content cadence; genre has global analogs so the ceiling is operational, not structural."
+      },
+      "gap_m_minus_p": 5,
+      "round1_blended_score": null
+    },
+    {
+      "game": "向往的生活",
+      "chart": "iap_top10",
+      "chart_rank": 10,
+      "genre": "二合（merge-2）+ 田园建造/模拟经营",
+      "mechanic": {
+        "subscores": { "loop_self_containment": 10, "rendering_fit": 9, "simulation_fit": 9, "content_bootstrap": 5 },
+        "weighted": 8.75,
+        "adjustment": 0,
+        "score": 9,
+        "rationale": "Merge-2 board, task chains, and scene restoration are classic, fully offline client mechanics — among the easiest on the grossing chart."
+      },
+      "product": {
+        "subscores": { "monetization_parity": 4, "acquisition_virality": 2, "social_fabric": 3, "backend_liveops": 4, "compliance_ip": 1 },
+        "weighted": 3.0,
+        "adjustment": -1,
+        "score": 2,
+        "rationale": "Adjusted -1: the product is built on the 芒果TV variety-show license (IP, cast likenesses, show content) that a replicator cannot obtain — parity is structurally unattainable, not merely hard. Generic merge-farm parity is a different product."
+      },
+      "gap_m_minus_p": 7,
+      "round1_blended_score": null
+    },
+    {
+      "game": "跳一跳",
+      "chart": "legacy_minimum_set",
+      "chart_rank": null,
+      "chart_basis": "2017 launch icon; evergreen casual staple (Round 1 blended top-10 member)",
+      "genre": "蓄力跳跃物理计时",
+      "mechanic": {
+        "subscores": { "loop_self_containment": 10, "rendering_fit": 10, "simulation_fit": 9, "content_bootstrap": 9 },
+        "weighted": 9.6,
+        "adjustment": 0,
+        "score": 10,
+        "rationale": "Hold-to-charge ballistic hop with landing check and procedural platforms; a working vanilla-canvas replica already exists on this branch (prototypes/jump-jump). The mechanically easiest title in the corpus."
+      },
+      "product": {
+        "subscores": { "monetization_parity": 2, "acquisition_virality": 1, "social_fabric": 1, "backend_liveops": 8, "compliance_ip": 4 },
+        "weighted": 3.45,
+        "adjustment": -1,
+        "score": 2,
+        "rationale": "Adjusted -1: the formula lets a trivial backend (P4=8) rescue a product whose entire value — friend/group leaderboards inside chat and zero-friction launch — was rated blocking (G2/G3) in Round 1. Without an ambient social graph the clone is a hollow tech demo; monetization was never the point."
+      },
+      "gap_m_minus_p": 8,
+      "round1_blended_score": 7
+    },
+    {
+      "game": "寻道大千",
+      "chart": "legacy_minimum_set",
+      "chart_rank": 28,
+      "chart_basis": "畅销榜 #28 (2026-07); era-defining 2023-24 #1 (Round 1 blended top-10 member)",
+      "genre": "仙侠放置RPG",
+      "mechanic": {
+        "subscores": { "loop_self_containment": 8, "rendering_fit": 7, "simulation_fit": 9, "content_bootstrap": 4 },
+        "weighted": 7.4,
+        "adjustment": 0,
+        "score": 7,
+        "rationale": "The idle chop-chop loop (auto-battle, loot, upgrade timers) is easy vanilla JS; spine-style presentation is moderate work. The hard part — economy design and balance tables — is content, not code."
+      },
+      "product": {
+        "subscores": { "monetization_parity": 4, "acquisition_virality": 2, "social_fabric": 3, "backend_liveops": 2, "compliance_ip": 3 },
+        "weighted": 2.8,
+        "adjustment": 0,
+        "score": 3,
+        "rationale": "Its success formula was WeChat-ad-network UA arbitrage plus IAP rails, server-authoritative economy, cross-server async PvP, and rapid liveops iteration — none of which transfers off-platform."
+      },
+      "gap_m_minus_p": 4,
+      "round1_blended_score": 6
+    }
+  ],
+  "derived": {
+    "sweet_spot_ranking_by_gap": [
+      { "rank": 1, "game": "跳一跳", "m": 10, "p": 2, "gap": 8, "note": "pure mechanic-mine; pair with a chat-graph channel (e.g. Telegram Mini Apps) or the loop is hollow" },
+      { "rank": 2, "game": "羊了个羊：星球", "m": 10, "p": 3, "gap": 7, "note": "loop already proven on this branch; the difficulty-cliff share formula needs a social channel" },
+      { "rank": 3, "game": "向往的生活", "m": 9, "p": 2, "gap": 7, "note": "IP-capped — mine the merge-2 loop only, parity impossible without the 芒果TV license" },
+      { "rank": 4, "game": "挪了下车", "m": 10, "p": 5, "gap": 5, "note": "best ship-a-product target: corpus-max P with max M" },
+      { "rank": 5, "game": "一找一个准", "m": 9, "p": 4, "gap": 5 },
+      { "rank": 6, "game": "沙画消消", "m": 9, "p": 4, "gap": 5 },
+      { "rank": 7, "game": "搬砖没我快", "m": 9, "p": 4, "gap": 5 },
+      { "rank": 8, "game": "永远的蔚蓝星球", "m": 8, "p": 3, "gap": 5 },
+      { "rank": 9, "game": "挪了个挪", "m": 9, "p": 5, "gap": 4 },
+      { "rank": 10, "game": "打个螺丝", "m": 8, "p": 4, "gap": 4 }
+    ],
+    "quadrants": {
+      "thresholds": { "m_high": ">=7", "p_high": ">=4" },
+      "mechanic_mine_high_m_low_p": ["跳一跳", "羊了个羊：星球", "向往的生活", "永远的蔚蓝星球", "灵画师", "跃动小子", "镇邪人", "寻道大千"],
+      "clone_and_commercialize_high_m_high_p": ["挪了下车", "挪了个挪", "一找一个准", "沙画消消", "搬砖没我快", "打个螺丝", "我的花园世界", "向僵尸开炮", "赵云与阿斗"],
+      "tech_moat_low_m_high_p": ["抓大鹅"],
+      "do_not_replicate_low_m_low_p": ["躺平发育", "疯狂水世界", "无尽冬日", "三国：冰河时代"]
+    },
+    "extremes": {
+      "highest_m": [
+        { "game": "跳一跳", "m": 10 },
+        { "game": "羊了个羊：星球", "m": 10 },
+        { "game": "挪了下车", "m": 10 }
+      ],
+      "lowest_p": [
+        { "game": "跳一跳", "p": 2 },
+        { "game": "向往的生活", "p": 2 },
+        { "game": "无尽冬日", "p": 2 },
+        { "game": "三国：冰河时代", "p": 2 }
+      ]
+    }
+  }
+}
