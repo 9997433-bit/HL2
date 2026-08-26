@@ -12,6 +12,8 @@ name, art, code, levels, text, audio, or licensed IP.
 - [`round1/rankings.json`](./round1/rankings.json) — Machine-readable July 2026 IAP/IAA rankings, historical snapshots, source provenance, and confidence labels.
 - [`round2/gpt-docs-index-report.md`](./round2/gpt-docs-index-report.md) — Documentation merged in Round 2 and the research, platform, and implementation gaps still open.
 - [`round2/gpt-test-harness-report.md`](./round2/gpt-test-harness-report.md) — Unified harness results and a per-prototype matrix of automated coverage and remaining test gaps.
+- [`platform-constants.json`](./platform-constants.json) — Canonical current package, storage, payment, iOS, and project-structure facts with official URLs and verification labels.
+- [`round3/gpt-platform-normalize-report.md`](./round3/gpt-platform-normalize-report.md) — Round 3 contradiction resolution, report footnotes, WeChat package skeleton, and validation boundary.
 - [`../prototypes/README.md`](../prototypes/README.md) — Runnable-prototype catalog with launch, input, test, and platform-scope guidance.
 
 ## Round 1 — Research and feasibility
@@ -46,17 +48,25 @@ name, art, code, levels, text, audio, or licensed IP.
 
 - [`round2/dual-axis-scores.json`](./round2/dual-axis-scores.json) — Machine-readable mechanic/product scores backing the dual-axis report.
 
+## Round 3 — SOTA acceptance
+
+- [`round3/ROUND3_CONTEXT.md`](./round3/ROUND3_CONTEXT.md) — Final acceptance mission, blocking implementation items, output convention, and test gate.
+- [`round3/gpt-platform-normalize-report.md`](./round3/gpt-platform-normalize-report.md) — Current package/payment resolution, amended-report inventory, package-skeleton design, and Linux/DevTools verification split.
+- [`platform-constants.json`](./platform-constants.json) — Cross-round canonical platform facts. Earlier package/payment statements defer to this dataset through explicit footnotes.
+
 ## Playable prototypes
 
 - [`../prototypes/jump-jump/`](../prototypes/jump-jump/) — Single-file Canvas hold-to-charge jumping demo with randomized platforms, scoring, and combo feedback, covered by a Chrome/CDP smoke test.
 - [`../prototypes/sheep-match3/`](../prototypes/sheep-match3/) — Modular stacked match-3 prototype with a guaranteed-solvable generator, live solver/hints, props, debug autoplay, and 14 Node tests.
 - [`../prototypes/tile-trio/`](../prototypes/tile-trio/) — Single-file layered three-match game with three levels, three ad-shaped props, an inline platform shim, and a dependency-free verification script.
 - [`../prototypes/parking-jam/`](../prototypes/parking-jam/) — Parking-jam sliding puzzle whose BFS solver doubles as the level pipeline, with eight solver-rated levels, a rewarded-video-gated hint, 23 unit tests, and a verifier that plays every level through the shipped input handlers.
+- [`../prototypes/wechat-packaging-skeleton/`](../prototypes/wechat-packaging-skeleton/) — Native Canvas Tile Trio smoke package with `game.js`, `game.json`, `project.config.json`, and a thin `wx` adapter; structurally checked on Linux and pending DevTools/device validation.
 - [`../prototypes/shared/`](../prototypes/shared/) — `wx-shim`, the shared mock of the 微信小游戏 `wx.*` surface that every prototype's platform calls run through.
 
-These are mechanic probes, not deployable WeChat Mini Game packages. They do
-not provide production identity, ads, payments, friend data, sharing,
-compliance, release configuration, or real-device WeChat validation.
+The browser entries are mechanic probes, not deployable WeChat Mini Game
+packages. The packaging skeleton is an import-ready native smoke target, not a
+release-ready game. None provides production identity, ads, payments, friend
+data, compliance, or real-device WeChat validation.
 
 ## Supporting files
 

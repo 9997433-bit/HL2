@@ -10,6 +10,7 @@ be a finished game.
 | [`sheep-match3/`](./sheep-match3/) | Modular stacked match-3 with cover-graph rules, a guaranteed-solvable generator, solver/hints, four props, and debug autoplay | 14 Node tests covering generation, solvability, rules, and props | Core and renderer are platform-neutral; the host shell detects the host with `isRealWx()` and runs the ad-gated props, cloud score and friend board through the shim. Not a deployable package |
 | [`parking-jam/`](./parking-jam/) | Parking-jam sliding puzzle (挪了下车 family) with a BFS solver that supplies par, stars, hints and the level generator's accept test; eight levels, move budget, two-gate variant | 23 Node unit tests, plus `verify.js` — a level audit, a random-move invariant fuzz, and a stub-DOM playthrough that finishes every level through the shipped pointer handlers | Uses the shared `wx-shim` for real: the hint is gated on `wx.createRewardedVideoAd` and bests go to `wx.setUserCloudStorage`; no Mini Game package files |
 | [`tile-trio/`](./tile-trio/) | Single-file layered three-match with three levels, seven tray slots, and shuffle/pull/undo props | `verify.js` checks constructed winning lines, solver clears, state conservation, reachability, and four platform-loop assertions | Fullest shim integration: props cost a rewarded video after one free use, a mock video player with a working skip path, ad- and share-revive, and a rendered friend leaderboard |
+| [`wechat-packaging-skeleton/`](./wechat-packaging-skeleton/) | Compact 18-tile native Canvas version of Tile Trio with a thin platform adapter | JSON parsing, JavaScript syntax, required-file and Node mock-platform smoke checks on Linux | Has `game.js`, `game.json`, and `project.config.json`; import/compile, package accounting, eligible APIs, and device behavior remain pending WeChat DevTools |
 | [`shared/`](./shared/) | `wx-shim` — one mock of the 微信小游戏 `wx.*` surface (ads, share, cloud storage, login, system info, storage, haptics, payment) shared by every prototype | 19 Node tests | Stands aside when a genuine WeChat host is present, so the call sites above are the ones that would ship |
 
 ## Run
@@ -31,6 +32,10 @@ Open one of:
 directly. `sheep-match3` and `parking-jam` use JavaScript modules and must be
 served over HTTP from the repository root; `node prototypes/parking-jam/serve.js`
 does that in one command.
+
+`wechat-packaging-skeleton` is not served over HTTP. Import its directory into
+WeChat DevTools as a Mini Game project, select a test or eligible AppID, and
+follow its [README](./wechat-packaging-skeleton/README.md).
 
 ## Controls and debug entry points
 
@@ -64,13 +69,15 @@ coverage matrix and known exclusions.
 
 ## Scope
 
-These are browser mechanic probes. None is a release-ready WeChat Mini Game.
-The platform loop is exercised against a mock, not the platform: real ad fill
-and revenue, the 开放数据域 sub-context that actually holds friend data, the
-server half of `wx.login`, iOS 虚拟支付, in-chat distribution, 版号 and
-real-device performance all remain outside their validated scope. The gap
-matrix is in
+The browser entries are mechanic probes, and the native packaging skeleton is
+only an import-ready smoke target. None is a release-ready WeChat Mini Game.
+Real ad fill and revenue, the 开放数据域 sub-context that actually holds friend
+data, the server half of `wx.login`, payment eligibility, in-chat distribution,
+版号 and real-device performance all remain outside their validated scope. The
+gap matrix is in
 [`opus-wx-shim-report.md`](../.agent_workspace/round2/opus-wx-shim-report.md).
+Canonical package and payment facts are in
+[`platform-constants.json`](../.agent_workspace/platform-constants.json).
 
 See the [master research index](../.agent_workspace/README.md) for every report
 and dataset, especially the
