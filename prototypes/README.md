@@ -8,8 +8,8 @@ be a finished game.
 |---|---|---|---|
 | [`jump-jump/`](./jump-jump/) | Hold-to-charge jumping, randomized platforms, scoring, and combos in one Canvas/DOM HTML file | Chrome/CDP smoke test covers loading, rendering, initialization, keyboard charge/release, jump motion, and reset state | Calls `wx.*` through [`shared/wx-shim.js`](./shared/): rewarded-video revive, share, cloud score and friend board. No Mini Game project files |
 | [`sheep-match3/`](./sheep-match3/) | Modular stacked match-3 with cover-graph rules, a guaranteed-solvable generator, solver/hints, four props, and debug autoplay | 14 Node tests covering generation, solvability, rules, and props | Core and renderer are platform-neutral; the host shell detects the host with `isRealWx()` and runs the ad-gated props, cloud score and friend board through the shim. Not a deployable package |
+| [`parking-jam/`](./parking-jam/) | Parking-jam sliding puzzle (挪了下车 family) with a BFS solver that supplies par, stars, hints and the level generator's accept test; eight levels, move budget, two-gate variant | 23 Node unit tests, plus `verify.js` — a level audit, a random-move invariant fuzz, and a stub-DOM playthrough that finishes every level through the shipped pointer handlers | Uses the shared `wx-shim` for real: the hint is gated on `wx.createRewardedVideoAd` and bests go to `wx.setUserCloudStorage`; no Mini Game package files |
 | [`tile-trio/`](./tile-trio/) | Single-file layered three-match with three levels, seven tray slots, and shuffle/pull/undo props | `verify.js` checks constructed winning lines, solver clears, state conservation, reachability, and four platform-loop assertions | Fullest shim integration: props cost a rewarded video after one free use, a mock video player with a working skip path, ad- and share-revive, and a rendered friend leaderboard |
-| [`parking-jam/`](./parking-jam/) | Sliding-block parking puzzle with a BFS solver as the level pipeline | `verify.js` plus Node unit tests | Platform calls are isolated behind a `platform` adapter but still local stubs; see the [shim report](../.agent_workspace/round2/opus-wx-shim-report.md) for the drop-in diff |
 | [`shared/`](./shared/) | `wx-shim` — one mock of the 微信小游戏 `wx.*` surface (ads, share, cloud storage, login, system info, storage, haptics, payment) shared by every prototype | 19 Node tests | Stands aside when a genuine WeChat host is present, so the call sites above are the ones that would ship |
 
 ## Run
@@ -25,9 +25,12 @@ Open one of:
 - `http://localhost:8080/prototypes/jump-jump/`
 - `http://localhost:8080/prototypes/sheep-match3/`
 - `http://localhost:8080/prototypes/tile-trio/`
+- `http://localhost:8080/prototypes/parking-jam/`
 
 `jump-jump` and `tile-trio` are single-file demos that can also be opened
-directly. `sheep-match3` uses JavaScript modules and should be served over HTTP.
+directly. `sheep-match3` and `parking-jam` use JavaScript modules and must be
+served over HTTP from the repository root; `node prototypes/parking-jam/serve.js`
+does that in one command.
 
 ## Controls and debug entry points
 
@@ -38,6 +41,9 @@ directly. `sheep-match3` uses JavaScript modules and should be served over HTTP.
   solver autoplay at a 90 ms interval.
 - **Tile Trio:** tap/click an uncovered tile; use `?level=1`, `?level=2`, or
   `?level=3` to start a level directly.
+- **Parking Jam:** drag a car along its own axis, or tap it to slide it to the
+  stop; drag the gold car through the wall gap to finish. `Z` undo, `R` restart,
+  `H` hint (behind a mock rewarded video); `#1`–`#8` opens a level directly.
 
 ## Verify
 
@@ -49,9 +55,10 @@ node --test prototypes/shared/wx-shim.test.mjs   # the platform mock itself
 ```
 
 The aggregate runner requires Node 22+, npm, and Chrome/Chromium. It runs the
-Jump Jump browser smoke test, all 14 Sheep Match-3 tests, and the Tile Trio
-real-file verifier, continues after individual failures, and returns a failing
-exit status if any suite fails. See the
+Jump Jump browser smoke test, all 14 Sheep Match-3 tests, the Tile Trio
+real-file verifier, the 23 Parking Jam unit tests, and every
+`prototypes/*/verify.js` it can find; it continues after individual failures and
+returns a failing exit status if any suite fails. See the
 [harness report](../.agent_workspace/round2/gpt-test-harness-report.md) for the
 coverage matrix and known exclusions.
 
