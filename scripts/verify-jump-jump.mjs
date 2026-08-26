@@ -486,7 +486,7 @@ try {
       alive: missed.alive,
       score: missed.score,
       index: missed.platformIndex,
-      y: missed.y,
+      fell: missed.y - before.y,
       panel: __jj.panelVisible(),
       board: __jj.board(),
       reviveShown: document.getElementById('btnRevive').style.display !== 'none',
@@ -501,7 +501,7 @@ try {
     assert.equal(death.alive, false, 'falling into the gap did not end the run');
     assert.equal(death.index, death.indexBefore, 'a missed jump must not advance the block index');
     assert.equal(death.score, 14, 'the score changed on a miss');
-    assert.ok(death.y > 700, 'the jumper never fell past the death line');
+    assert.ok(death.fell > 290, 'the jumper never fell past the death line');
     assert.equal(death.gameOverShown, true);
     assert.equal(death.panel, true, 'the wx panel stayed hidden after game over');
     assert.equal(death.reviveShown, true);

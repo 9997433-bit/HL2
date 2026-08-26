@@ -143,7 +143,8 @@
       /** Platforms kept ready ahead of / behind the jumper. */
       ahead: 8,
       behind: 3,
-      deathY: 720,
+      /** Falling this far below the block you left ends the run. */
+      deathDrop: 300,
       cameraLerp: 7,
       playerRadius: 18,
     };
@@ -170,6 +171,7 @@
     let alive = true;
     let revived = false;
     let cameraX = 0;
+    let cameraY = 0;
     let accumulator = 0;
     /** When true the rAF loop only renders; a test drives the physics itself. */
     let driven = false;
@@ -243,6 +245,7 @@
       player.charging = false;
       player.platformIndex = 0;
       cameraX = Math.max(0, player.x - canvas.width * 0.32);
+      cameraY = player.y - canvas.height * 0.62;
       ensureAhead();
       gameOverEl.style.display = 'none';
       document.getElementById('wxPanel').classList.remove('show');
@@ -399,11 +402,22 @@
           const hit = findLanding(prevX, prevY, prevVy, h);
           if (hit) land(hit);
         }
-        if (player.jumping && player.y > CFG.deathY) die();
+        if (player.jumping && player.y > deathLine()) die();
       }
 
-      const target = Math.max(0, player.x - canvas.width * 0.32);
-      cameraX += (target - cameraX) * (1 - Math.exp(-CFG.cameraLerp * h));
+      // The camera tracks the block underfoot, not the jumper, so a fall does
+      // not drag the view down with it.
+      const anchor = platformAt(player.platformIndex);
+      const targetX = Math.max(0, player.x - canvas.width * 0.32);
+      const targetY = (anchor ? anchor.y : player.y) - canvas.height * 0.62;
+      const k = 1 - Math.exp(-CFG.cameraLerp * h);
+      cameraX += (targetX - cameraX) * k;
+      cameraY += (targetY - cameraY) * k;
+    }
+
+    function deathLine() {
+      const anchor = platformAt(player.platformIndex);
+      return (anchor ? anchor.y : CFG.topBand[1]) + CFG.deathDrop;
     }
 
     function update(dt) {
@@ -425,26 +439,28 @@
 
     function drawPlatform(p) {
       const sx = p.x - cameraX;
+      const sy = p.y - cameraY;
       if (sx + p.w / 2 < -40 || sx - p.w / 2 > canvas.width + 40) return;
       ctx.fillStyle = 'hsl(' + p.hue + ',35%,22%)';
-      ctx.fillRect(sx - p.w / 2, p.y + p.h, p.w, canvas.height);
+      ctx.fillRect(sx - p.w / 2, sy + p.h, p.w, canvas.height * 1.5);
       ctx.fillStyle = 'hsl(' + p.hue + ',60%,55%)';
       ctx.beginPath();
-      ctx.roundRect(sx - p.w / 2, p.y, p.w, p.h, 4);
+      ctx.roundRect(sx - p.w / 2, sy, p.w, p.h, 4);
       ctx.fill();
       ctx.fillStyle = 'rgba(255,255,255,0.15)';
-      ctx.fillRect(sx - p.w / 2, p.y, p.w, 4);
+      ctx.fillRect(sx - p.w / 2, sy, p.w, 4);
       // The combo target: land inside this mark and the payout doubles.
       ctx.fillStyle = 'rgba(255,215,0,0.55)';
-      ctx.fillRect(sx - CFG.centerTolerance, p.y + 6, CFG.centerTolerance * 2, 3);
+      ctx.fillRect(sx - CFG.centerTolerance, sy + 6, CFG.centerTolerance * 2, 3);
     }
 
     function drawPlayer() {
       const sx = player.x - cameraX;
-      const cy = player.y - player.size;
+      const feet = player.y - cameraY;
+      const cy = feet - player.size;
       ctx.fillStyle = 'rgba(0,0,0,0.25)';
       ctx.beginPath();
-      ctx.ellipse(sx, player.y + 3, player.size * 0.8, 4, 0, 0, Math.PI * 2);
+      ctx.ellipse(sx, feet + 3, player.size * 0.8, 4, 0, 0, Math.PI * 2);
       ctx.fill();
       ctx.fillStyle = '#ffd700';
       ctx.beginPath();
