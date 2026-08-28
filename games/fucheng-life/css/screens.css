@@ -925,6 +925,53 @@ button {
 }
 
 /* --------------------------------------------------------------------------
+   12b. 「氧气不足」— cash below next month's fixed spend
+   The money figure keeps the one glow it already had and changes its colour
+   to breathe red, so the warning costs the screen nothing extra in light.
+   -------------------------------------------------------------------------- */
+.fc-stat.is-warning {
+  border-color: color-mix(in srgb, var(--bad) 40%, transparent);
+}
+
+.fc-stat.is-warning::after {
+  background: radial-gradient(circle, color-mix(in srgb, var(--bad) 30%, transparent), transparent 70%);
+}
+
+.fc-stat.is-warning .fc-stat__value {
+  color: color-mix(in srgb, var(--bad) 62%, var(--text-hi));
+  animation: fc-oxygen 2.4s ease-in-out infinite;
+}
+
+/* Resting state is keyframe 0/100 — clamped to nothing under reduced motion,
+   it settles on the dim red rather than on whatever frame it stopped at. */
+@keyframes fc-oxygen {
+  0%,
+  100% {
+    text-shadow: 0 0 12px color-mix(in srgb, var(--bad) 26%, transparent);
+  }
+  50% {
+    text-shadow: 0 0 24px color-mix(in srgb, var(--bad) 60%, transparent),
+      0 0 6px color-mix(in srgb, var(--bad) 34%, transparent);
+  }
+}
+
+.fc-stat__warn {
+  margin-left: auto;
+  flex: none;
+  font-size: 9.5px;
+  letter-spacing: 0.14em;
+  color: var(--bad);
+  border: 1px solid color-mix(in srgb, var(--bad) 42%, transparent);
+  background: color-mix(in srgb, var(--bad) 13%, transparent);
+  padding: 1px 7px 2px;
+  border-radius: var(--fc-radius-pill);
+}
+
+.fc-stat__warn[hidden] {
+  display: none;
+}
+
+/* --------------------------------------------------------------------------
    13. Event log
    -------------------------------------------------------------------------- */
 .fc-log {
@@ -1795,6 +1842,13 @@ button {
   .fc-veil::before,
   .fc-veil::after {
     animation: none !important;
+  }
+
+  /* The money warning is state, not decoration: it holds its dim red instead
+     of breathing, and FCMotion skips the flying delta entirely. */
+  .fc-stat.is-warning .fc-stat__value {
+    animation: none !important;
+    text-shadow: 0 0 12px color-mix(in srgb, var(--bad) 30%, transparent);
   }
 
   /* Presses still answer, they just answer instantly. */

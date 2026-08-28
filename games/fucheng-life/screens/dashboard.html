@@ -55,8 +55,8 @@
 
   <!-- HUD -->
   <section class="fc-hud fc-rise" style="margin-bottom:18px">
-    <div class="fc-stat" style="--tint:var(--neon-amber)">
-      <div class="fc-stat__label">￥ 现金</div>
+    <div class="fc-stat" id="moneyStat" style="--tint:var(--neon-amber)">
+      <div class="fc-stat__label">￥ 现金 <span class="fc-stat__warn" id="moneyWarn" hidden>氧气不足</span></div>
       <div class="fc-stat__value" id="sMoney">0</div>
       <div class="fc-stat__delta" id="dMoney">月净流 —</div>
     </div>
@@ -383,6 +383,12 @@
     $("season").textContent = [
       "深冬 · 暖气与欠费", "早春 · 招聘季", "雨季 · 账单日临近", "盛夏 · 电费翻倍", "秋汛 · 年底考核"
     ][Math.floor(run.month / 2.5) % 5];
+
+    /* 「氧气不足」(architecture §2 S4): cash that no longer covers next
+       month's fixed spend. The figure keeps breathing red until it does. */
+    var starving = run.money < out;
+    $("moneyStat").classList.toggle("is-warning", starving);
+    $("moneyWarn").hidden = !starving;
 
     paintNumber("sMoney", run.money, "¥");
     $("dMoney").textContent = run.gap > 0
