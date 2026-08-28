@@ -1364,6 +1364,47 @@
           { id: "hide", label: "装不在家", d: { rep: -3, social: -1 },
             result: "你没开门。后来通知贴在了单元门，字比你大。" }
         ]
+      },
+      /* R17：新增三条钱—身体—家庭向的二选一，补上「非工位」的压力面。
+         追加在数组尾部，避免改动既有抽取顺序（等权时首个合格项先中）；
+         末位留给无属性门槛的一条，因为它同时是 pickMonthCrisis 的兜底项。 */
+      {
+        id: "checkup_arrow",
+        title: "体检报告上的箭头",
+        body: "一行指标带着向上的箭头。复查要排一上午队，工位那边要人。",
+        minMonths: 8,
+        needHealthBelow: 46,
+        choices: [
+          { id: "recheck", label: "请假去复查", d: { health: 9, money: -1, rep: -1 },
+            result: "队排到中午。医生说再观察，你把这句当成缓刑。" },
+          { id: "skip", label: "先拖着", d: { health: -7, social: -1 },
+            result: "你把报告塞进抽屉。箭头没走，只是暂时看不见了。" }
+        ]
+      },
+      {
+        id: "family_call",
+        title: "老家来的电话",
+        body: "妈说爸住了两天院，语气很轻——是那种「不用你操心」的轻。",
+        minMonths: 6,
+        gapMonths: 4,
+        choices: [
+          { id: "send", label: "先打钱回去", d: { money: -3, social: 3 },
+            result: "转账两分钟就好了。你没敢问要不要更多，怕答案是要。" },
+          { id: "later", label: "说下个月", d: { social: -3, health: -3 },
+            result: "你挂了电话。剩下的话没说出口，在胃里过了一夜。" }
+        ]
+      },
+      {
+        id: "wage_delay",
+        title: "工资晚了十天",
+        body: "财务说在走流程。房东不走流程，花呗也不走。",
+        minMonths: 7,
+        choices: [
+          { id: "press", label: "去要个说法", d: { money: 1, rep: -2, social: -1 },
+            result: "钱当天到账。你的名字也进了另一份名单，那份没人给你看。" },
+          { id: "wait", label: "再等等看", d: { money: -1, health: -3 },
+            result: "第十五天钱到了。这半个月的利息，由你的胃先垫上。" }
+        ]
       }
     ],
 

@@ -5,8 +5,8 @@
   var doc = global.document;
   var FC = global.FC || (global.FC = {});
 
-  /* v6：城市危机/事件弹窗同样是确认后才落账，刷新会补弹。 */
-  var KEY = "fucheng.guide.v6";
+  /* v7：带「合约」标签的城市事件也挂账，确认前刷新会原样补弹。 */
+  var KEY = "fucheng.guide.v7";
 
   var STEPS = [
     {
@@ -33,7 +33,8 @@
       title: "④ 人生合约",
       body: "入城头三个月会让你签一张合约（落户 / 首付 / 升职）。进度条一直挂在这里，到期城市会结算。" +
         "闯城档记得让它对齐主目标：目标落户就签落户积分，攒首付就签攒首付，向上爬一层就签升职——两条进度条一起走才划算。" +
-        "合约到期的结算弹窗要点完确认，奖惩才真正入账；确认前刷新的话，进门会再弹一次结算，别当成已经领过。",
+        "合约到期的结算弹窗要点完确认，奖惩才真正入账；确认前刷新的话，进门会再弹一次结算，别当成已经领过。" +
+        "日志里打「合约」标签的城市事件（要不要接这单之类）也一样：没确认就刷新，下次进门原样再弹一次，刷不掉也丢不了。",
       target: "contractHud",
       fallback: "vitalsPanel"
     },
@@ -179,6 +180,7 @@
     dismiss: function () {
       try {
         global.localStorage.setItem(KEY, "1");
+        global.localStorage.setItem("fucheng.guide.v6", "1");
         global.localStorage.setItem("fucheng.guide.v5", "1");
         global.localStorage.setItem("fucheng.guide.v4", "1");
         global.localStorage.setItem("fucheng.guide.v3", "1");
@@ -190,6 +192,7 @@
     reset: function () {
       try {
         global.localStorage.removeItem(KEY);
+        global.localStorage.removeItem("fucheng.guide.v6");
         global.localStorage.removeItem("fucheng.guide.v5");
         global.localStorage.removeItem("fucheng.guide.v4");
         global.localStorage.removeItem("fucheng.guide.v3");
