@@ -64,6 +64,7 @@
     charged_bike: "在你家充过电",
     ran_route: "替他跑过两单",
     handy: "帮她修过水管",
+    neighbor: "介绍过换房的人",
     paid_dinner: "那顿饭是你签的单",
     blacklist: "被记在催缴名单上",
     cold: "局上不再有你的位置",
@@ -460,6 +461,8 @@
         npcActMonth: {},
         npcRipple: [],
         npcArc: {},
+        lastCrisisMonth: 0,
+        zoneAftershock: null,
         challengeMonths: (function () {
           var mode = null;
           try {
@@ -504,6 +507,8 @@
       if (!run.npcActMonth) run.npcActMonth = {};
       if (!run.npcRipple) run.npcRipple = [];
       if (!run.npcArc) run.npcArc = {};
+      if (run.lastCrisisMonth == null) run.lastCrisisMonth = 0;
+      if (run.zoneAftershock === undefined) run.zoneAftershock = null;
       if (run.challengeMonths == null) {
         var mode = null;
         try { if (FC.read) mode = FC.read().playMode; } catch (e) { /* ignore */ }
@@ -1123,9 +1128,12 @@
       }
 
       var extra = null;
+      var zoneKey = null;
       if (action.zone && run.zoneQueue) {
+        zoneKey = run.zoneQueue;
         extra = FC.Sim.pickZoneEvent(run, run.zoneQueue);
         run.zoneQueue = null;
+        if (zoneKey) FC.Sim.queueZoneAftershock(run, zoneKey);
       }
 
       FC.Sim.maybePromote(run);
@@ -1134,6 +1142,186 @@
         applied: applied,
         text: action.text,
         zoneEvent: extra
+      };
+    },
+
+    /** R13：探区余波 —— 下月日志回响，不额外弹窗。 */
+    queueZoneAftershock: function (run, zoneKey) {
+      if (!run || !zoneKey) return;
+      var blurb = FC.Sim.zoneBlurb(zoneKey);
+      var sting = blurb && blurb.risk === "高";
+      run.zoneAftershock = {
+        zone: zoneKey,
+        dueMonth: (run.months || 0) + 1,
+        sting: !!sting,
+        fired: false
+      };
+    },
+
+    resolveZoneAftershock: function (run, era, origin) {
+      var z = run && run.zoneAftershock;
+      if (!z || z.fired) return null;
+      if ((run.months || 0) < z.dueMonth) return null;
+      z.fired = true;
+      run.zoneAftershock = null;
+      var name = z.zone;
+      var blurb = FC.Sim.zoneBlurb(z.zone);
+      if (blurb && blurb.blurb) {
+        /* blurb 首词常是地点感觉，名称仍用 key；文案里拼可读性 */
+        name = z.zone;
+      }
+      var d;
+      var text;
+      if (z.sting) {
+        d = { money: -1, health: -2 };
+        text = "探区「" + name + "」的余波还在：有人追着问你昨晚看见了什么。" +
+          (blurb ? "（" + blurb.blurb + "）" : "");
+      } else {
+        d = { social: 1, rep: 1 };
+        text = "探区「" + name + "」过后，街上多了一两个认得你的人。" +
+          (blurb ? "（" + blurb.blurb + "）" : "");
+      }
+      var applied = FC.Sim.applyDeltas(run, d, FC.Sim.income(run, era, origin));
+      return { text: text, applied: applied, zone: z.zone, kind: "zone" };
+    },
+
+    /** R13：本月危机 —— 约每 3–5 月一次二选一，打破月份同质感。 */
+    MONTH_CRISES: [
+      {
+        id: "ot_or_rest",
+        title: "凌晨的工位灯",
+        body: "KPI 和眼皮一起打架。组长说「再顶一晚」，医生说「再顶就住院」。",
+        minMonths: 2,
+        needHealthBelow: 58,
+        choices: [
+          { id: "ot", label: "加班顶住", d: { health: -10, money: 2, rep: 2 },
+            result: "你把天亮熬成了汇报页。数字亮了，身体暗了。" },
+          { id: "rest", label: "请假休息", d: { health: 12, money: -1, rep: -2 },
+            result: "你把手机扣过去。群里有人@你，你装没看见。" }
+        ]
+      },
+      {
+        id: "debt_or_cash",
+        title: "催收短信连响",
+        body: "负债像闹钟，比上班更准时。你手里还有一点现金，够还一截，也够撑下个月房租。",
+        minMonths: 3,
+        needDebtAbove: 8000,
+        choices: [
+          { id: "pay", label: "先还一截债", d: { money: -2, debt: -3 },
+            result: "账少了一截。手机安静了两天，房租开始吵。" },
+          { id: "hold", label: "先留现金", d: { social: -2, rep: -1 },
+            result: "你没还。催收换了个更有礼貌的语气，礼貌里全是压力。" }
+        ]
+      },
+      {
+        id: "dinner_or_sleep",
+        title: "酒桌与枕头",
+        body: "王总的局定在今晚。你的身体想睡觉，你的人脉想赴约。",
+        minMonths: 4,
+        needSocialBelow: 55,
+        choices: [
+          { id: "go", label: "去饭局", d: { social: 4, health: -6, money: -1 },
+            result: "你喝得不多，话也不多。但座位在，名字就在。" },
+          { id: "sleep", label: "回家睡", d: { health: 8, social: -3 },
+            result: "你关了灯。群里有人说「下次吧」，下次总是更贵。" }
+        ]
+      },
+      {
+        id: "side_or_study",
+        title: "夜校与夜单",
+        body: "同一块晚上：左边是进修报名页，右边是副业加急单。两件事都说「就差这一次」。",
+        minMonths: 3,
+        choices: [
+          { id: "study", label: "去进修", d: { edu: 4, health: -2, money: -1 },
+            result: "你用睡眠换了一点学历。证书不发光，但门禁认它。" },
+          { id: "side", label: "接副业", d: { money: 2, health: -4, social: -1 },
+            result: "钱到了。黑眼圈也到了。副业基金里多了一行。" }
+        ]
+      },
+      {
+        id: "rent_fight",
+        title: "涨租通知",
+        body: "陈姐把纸贴在门上：下月起加一成。你可以忍，也可以争。",
+        minMonths: 5,
+        choices: [
+          { id: "accept", label: "咬牙接受", d: { money: -2, social: 1 },
+            result: "你签了。门锁还在你这边，钱包轻了一点。" },
+          { id: "argue", label: "据理力争", d: { social: -2 },
+            result: "你争赢了半成。陈姐没拉黑你，只是话少了。" }
+        ]
+      },
+      {
+        id: "city_check",
+        title: "突击检查",
+        body: "街道办敲门：租住登记、电瓶车、楼道杂物。你要么配合，要么装不在。",
+        minMonths: 6,
+        gapMonths: 5,
+        choices: [
+          { id: "comply", label: "配合登记", d: { rep: 2, money: -1 },
+            result: "表格填完了。城市记住了你的名字，也收走了一点手续费。" },
+          { id: "hide", label: "装不在家", d: { rep: -3, social: -1 },
+            result: "你没开门。后来通知贴在了单元门，字比你大。" }
+        ]
+      }
+    ],
+
+    pickMonthCrisis: function (run, era, origin) {
+      if (!run) return null;
+      var months = run.months || 0;
+      var since = months - (run.lastCrisisMonth || 0);
+      if (since < 3) return null;
+
+      var pool = [];
+      FC.Sim.MONTH_CRISES.forEach(function (c) {
+        if (c.minMonths && months < c.minMonths) return;
+        if (c.gapMonths && since < c.gapMonths) return;
+        if (c.needHealthBelow != null && (run.health || 0) >= c.needHealthBelow) return;
+        if (c.needSocialBelow != null && (run.social || 0) >= c.needSocialBelow) return;
+        if (c.needDebtAbove != null && (run.debt || 0) < c.needDebtAbove) return;
+        var w = 1;
+        if (c.needHealthBelow != null) w += 2;
+        if (c.needDebtAbove != null) w += 2;
+        if (since >= 5) w += 1;
+        pool.push({ c: c, w: w });
+      });
+
+      if (!pool.length) {
+        if (since < 5) return null;
+        pool.push({ c: FC.Sim.MONTH_CRISES[FC.Sim.MONTH_CRISES.length - 1], w: 1 });
+      }
+
+      var total = 0;
+      pool.forEach(function (p) { total += p.w; });
+      var roll = Math.random() * total;
+      var acc = 0;
+      var i;
+      for (i = 0; i < pool.length; i++) {
+        acc += pool[i].w;
+        if (roll <= acc) return pool[i].c;
+      }
+      return pool[pool.length - 1].c;
+    },
+
+    crisisToEvent: function (crisis, run, origin) {
+      if (!crisis) return null;
+      var layer = FC.Sim.layerOf(run, origin);
+      return {
+        id: "crisis_" + crisis.id + "_" + (run.months || 0),
+        type: "opportunity",
+        title: crisis.title,
+        body: crisis.body,
+        category: "本月危机",
+        layerId: "L" + layer,
+        presentation: "modal",
+        once: false,
+        choices: (crisis.choices || []).map(function (ch) {
+          return {
+            id: ch.id,
+            label: ch.label,
+            d: ch.d,
+            result: ch.result
+          };
+        })
       };
     },
 
