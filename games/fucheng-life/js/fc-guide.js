@@ -5,8 +5,8 @@
   var doc = global.document;
   var FC = global.FC || (global.FC = {});
 
-  /* v5：补上快进不替你探区、结算确认入账与刷新补弹两条提醒。 */
-  var KEY = "fucheng.guide.v5";
+  /* v6：城市危机/事件弹窗同样是确认后才落账，刷新会补弹。 */
+  var KEY = "fucheng.guide.v6";
 
   var STEPS = [
     {
@@ -24,7 +24,8 @@
     {
       title: "③ 推进一个月",
       body: "行动点用尽后，点「推进一个月」结算收支、抽城市事件。手机端它会出现在底部行动栏。" +
-        "「快进三月」会自动替你把行动点花掉，但不会替你探区——想探的街区得自己先选好目标，否则快进会停下来提醒你还剩几点没花。",
+        "「快进三月」会自动替你把行动点花掉，但不会替你探区——想探的街区得自己先选好目标，否则快进会停下来提醒你还剩几点没花。" +
+        "抽到的城市危机/事件弹窗也要选完才算数：确认前刷新的话，进门会再弹一次同一张，不是漏掉也不是白捡。",
       target: "tickBtn",
       fallback: "mobileDock"
     },
@@ -178,6 +179,7 @@
     dismiss: function () {
       try {
         global.localStorage.setItem(KEY, "1");
+        global.localStorage.setItem("fucheng.guide.v5", "1");
         global.localStorage.setItem("fucheng.guide.v4", "1");
         global.localStorage.setItem("fucheng.guide.v3", "1");
         global.localStorage.setItem("fucheng.guide.v2", "1");
@@ -188,6 +190,7 @@
     reset: function () {
       try {
         global.localStorage.removeItem(KEY);
+        global.localStorage.removeItem("fucheng.guide.v5");
         global.localStorage.removeItem("fucheng.guide.v4");
         global.localStorage.removeItem("fucheng.guide.v3");
         global.localStorage.removeItem("fucheng.guide.v2");
