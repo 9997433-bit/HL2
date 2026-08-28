@@ -74,27 +74,78 @@
     hole.style.height = Math.min(r.height + pad * 2, global.innerHeight - 16) + "px";
   }
 
+  function boxesOverlap(a, b) {
+    return !(a.right <= b.left || a.left >= b.right || a.bottom <= b.top || a.top >= b.bottom);
+  }
+
+  /** 气泡绝不能盖住正在教的按钮；下方空间不够就改到上方或侧面。 */
   function placeTip(tip, el) {
+    tip.style.transform = "";
     var r = el.getBoundingClientRect();
-    var tipW = tip.offsetWidth || 300;
-    var tipH = tip.offsetHeight || 160;
-    var gap = 14;
-    var left = Math.min(
-      Math.max(12, r.left + r.width / 2 - tipW / 2),
-      global.innerWidth - tipW - 12
-    );
-    var top;
-    if (r.bottom + gap + tipH < global.innerHeight - 12) {
-      top = r.bottom + gap;
-      tip.classList.remove("is-above");
-      tip.classList.add("is-below");
-    } else {
-      top = Math.max(12, r.top - tipH - gap);
-      tip.classList.remove("is-below");
-      tip.classList.add("is-above");
+    var tipW = Math.max(tip.offsetWidth || 0, 280);
+    var tipH = Math.max(tip.offsetHeight || 0, 160);
+    var gap = 18;
+    var pad = 12;
+    var vw = global.innerWidth;
+    var vh = global.innerHeight;
+    var targetBox = {
+      left: r.left - 6,
+      top: r.top - 6,
+      right: r.right + 6,
+      bottom: r.bottom + 6
+    };
+
+    function clampPos(top, left) {
+      return {
+        top: Math.min(Math.max(pad, top), Math.max(pad, vh - tipH - pad)),
+        left: Math.min(Math.max(pad, left), Math.max(pad, vw - tipW - pad))
+      };
     }
-    tip.style.left = left + "px";
-    tip.style.top = top + "px";
+
+    var candidates = [
+      { top: r.top - tipH - gap, left: r.left + r.width / 2 - tipW / 2, cls: "is-above" },
+      { top: r.bottom + gap, left: r.left + r.width / 2 - tipW / 2, cls: "is-below" },
+      { top: r.top + r.height / 2 - tipH / 2, left: r.right + gap, cls: "is-right" },
+      { top: r.top + r.height / 2 - tipH / 2, left: r.left - tipW - gap, cls: "is-left" },
+      { top: pad, left: (vw - tipW) / 2, cls: "is-above" }
+    ];
+
+    /* 目标在屏幕下半：优先上方 / 右侧，避免气泡压住「推进一个月」。 */
+    if (r.top > vh * 0.4) {
+      candidates = [
+        candidates[0],
+        candidates[2],
+        candidates[3],
+        { top: pad + 48, left: pad, cls: "is-above" },
+        candidates[1],
+        candidates[4]
+      ];
+    }
+
+    var chosen = null;
+    var i, c, pos, box;
+    for (i = 0; i < candidates.length; i++) {
+      c = candidates[i];
+      pos = clampPos(c.top, c.left);
+      box = {
+        left: pos.left,
+        top: pos.top,
+        right: pos.left + tipW,
+        bottom: pos.top + tipH
+      };
+      if (!boxesOverlap(box, targetBox)) {
+        chosen = { top: pos.top, left: pos.left, cls: c.cls };
+        break;
+      }
+    }
+    if (!chosen) {
+      chosen = { top: pad, left: pad, cls: "is-above" };
+    }
+
+    tip.classList.remove("is-above", "is-below", "is-left", "is-right");
+    tip.classList.add(chosen.cls);
+    tip.style.left = chosen.left + "px";
+    tip.style.top = chosen.top + "px";
   }
 
   FC.guide = {
@@ -187,22 +238,31 @@
           bodyEl.textContent = s.body;
           paintDots();
           clearHighlight();
+          tip.style.transform = "";
           var el = resolveTarget(s);
+          function layout() {
+            if (!el) {
+              hole.style.top = "18%";
+              hole.style.left = "18%";
+              hole.style.width = "64%";
+              hole.style.height = "36%";
+              tip.style.left = "12px";
+              tip.style.top = "12px";
+              return;
+            }
+            placeHole(hole, el);
+            placeTip(tip, el);
+          }
           if (el) {
             highlight = el;
             el.classList.add("fc-coach-target");
-            try { el.scrollIntoView({ block: "nearest", behavior: "smooth" }); } catch (e) { /* ignore */ }
-            placeHole(hole, el);
-            placeTip(tip, el);
-          } else {
-            hole.style.top = "20%";
-            hole.style.left = "20%";
-            hole.style.width = "60%";
-            hole.style.height = "40%";
-            tip.style.left = "50%";
-            tip.style.top = "55%";
-            tip.style.transform = "translateX(-50%)";
+            try { el.scrollIntoView({ block: "center", behavior: "smooth" }); } catch (e) { /* ignore */ }
           }
+          layout();
+          /* 文案撑开高度后再量一次，避免 tipH 低估导致压住按钮。 */
+          global.requestAnimationFrame(function () {
+            global.requestAnimationFrame(layout);
+          });
           nextBtn.textContent = step >= STEPS.length - 1
             ? "开始生活"
             : "下一步 (" + (step + 1) + "/" + STEPS.length + ")";
