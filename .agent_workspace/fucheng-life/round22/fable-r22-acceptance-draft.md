@@ -36,8 +36,8 @@
   只是 G1 的自动断言**只锁 labelledby**（引用 + `<h2 id>` 成对），describedby
   靠 45-c 的走查兜底——G2 不必改字，验收人记得手过一遍即可。
 - 条目保持 `[ ]`。手工走查未做，勾选留到十路全绿 + 走查签核后另一笔
-  commit。（写稿时 O1–O5、G1、G2、F1 已落，F2 与本稿未落；本稿落地后
-  十路只差 F2。）
+  commit。（发稿前 F2 也落了 `11301bb`——playfeel 稿判 R21 R1/R2 双销、
+  另记 6 条残留——本稿落地即十路齐；测试全绿，只差走查签核。）
 
 ---
 
@@ -193,8 +193,8 @@ hidden 项、反向回绕跳过开头 hidden 项、全 hidden 空名单吞键、
 ## 三、与现码的对齐说明（写给 G2 / 合入责任人）
 
 写稿时分支 `cursor/fucheng-r22-trap-visible-fa72` HEAD 为 `b01ae83`，
-十路中 O1–O5、G1、G2、F1 已落，F2 与本稿未落。全量测试实测
-**33 passed / 0 failed**：
+十路中 O1–O5、G1、G2、F1 已落；发稿前 F2 也落了（`11301bb`，playfeel
+风险稿），本稿落地即十路齐。全量测试实测 **33 passed / 0 failed**：
 
 - **O1 已落**（`55567ba`，`fc-events.js`）：`FC.overlay.trap` 先取候选再逐个
   筛可见——`el.closest("[hidden]")` 命中即丢；`offsetParent === null` 且
