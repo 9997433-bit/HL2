@@ -1,5 +1,20 @@
 /* Gameplay layer — tabs, AP, actions, ending */
 
+.fc-saga-banner {
+  margin-bottom: 14px;
+  padding: 10px 16px;
+  border-radius: 12px;
+  font: 600 13px/1.4 var(--font-sans);
+  color: var(--neon-violet);
+  text-align: center;
+  letter-spacing: 0.02em;
+  background: linear-gradient(135deg, rgba(168, 85, 247, 0.12), rgba(79, 227, 255, 0.06));
+  border: 1px solid rgba(168, 85, 247, 0.35);
+  box-shadow: 0 0 18px rgba(168, 85, 247, 0.12);
+}
+
+.fc-saga-banner[hidden] { display: none !important; }
+
 .fc-tabs {
   display: flex;
   gap: 6px;

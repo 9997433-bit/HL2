@@ -4,7 +4,7 @@
 
   var $ = function (id) { return document.getElementById(id); };
   var era, origin, run, logSeq = 0, painted = [], lastLayer = null;
-  var MODAL_ODDS = [0, 0, 0.45, 0.65, 1];
+  var MODAL_ODDS = [0, 0, 0.28, 0.42, 0.72];
   var STAT_NAME = { money: "现金", health: "健康", social: "人脉", rep: "声望", edu: "学历" };
   var fmt = function (n) { return n.toLocaleString("zh-CN"); };
   var esc = function (s) { return FC.esc(s); };
@@ -168,6 +168,19 @@
         '" style="--tint:var(--' + l.key + ')"><b>' + l.id + "</b><span>" + l.name + "</span></div>";
     }).join("");
     $("layerNote").textContent = layer.description;
+
+    var sagaBanner = $("sagaBanner");
+    if (sagaBanner) {
+      if (run.saga) {
+        var sagaMeta = FC.Sim.sagaById ? FC.Sim.sagaById(run.saga.id) : null;
+        var sagaTotal = sagaMeta && sagaMeta.steps ? sagaMeta.steps.length : "?";
+        sagaBanner.textContent = "链式事件 · " + run.saga.title + " · 第 " +
+          (run.saga.step + 1) + "/" + sagaTotal + " 步";
+        sagaBanner.hidden = false;
+      } else {
+        sagaBanner.hidden = true;
+      }
+    }
 
     renderActions();
     renderTabsExtra();

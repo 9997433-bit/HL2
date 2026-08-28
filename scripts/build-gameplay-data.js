@@ -211,7 +211,7 @@ const pack = {
   balance: {
     apBase: 3,
     sagaStartMonths: 18,
-    sagaMonthlyOdds: 0.045,
+    sagaMonthlyOdds: 0.09,
     recentAmbientWindow: 18,
     minMonthsBeforeBankruptcy: 48,
     minMonthsBeforeRedline: 72,

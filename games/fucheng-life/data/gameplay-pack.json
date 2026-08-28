@@ -3,7 +3,7 @@
   "balance": {
     "apBase": 3,
     "sagaStartMonths": 18,
-    "sagaMonthlyOdds": 0.045,
+    "sagaMonthlyOdds": 0.09,
     "recentAmbientWindow": 18,
     "minMonthsBeforeBankruptcy": 48,
     "minMonthsBeforeRedline": 72,
@@ -5856,6 +5856,115 @@
           "d": {
             "money": -2,
             "health": -2
+          }
+        }
+      ]
+    },
+    {
+      "id": "SAGA_RENT_FIGHT",
+      "title": "租房纠纷",
+      "minMonths": 8,
+      "steps": [
+        {
+          "title": "退押金",
+          "text": "合同到期，房东说墙上有钉眼要扣两千。你指着入住时的照片，对方说「不算数」。",
+          "d": {
+            "health": -3,
+            "social": -1
+          }
+        },
+        {
+          "title": "对峙",
+          "text": "中介拉群调解，两边各发十几条语音。你请假半天，坐在楼梯间等回复。",
+          "choices": [
+            {
+              "text": "走调解平台",
+              "d": {
+                "rep": 2,
+                "health": -2,
+                "money": -1
+              }
+            },
+            {
+              "text": "直接起诉",
+              "d": {
+                "rep": 3,
+                "health": -4,
+                "money": -2
+              }
+            }
+          ]
+        },
+        {
+          "title": "拉锯",
+          "text": "平台判部分退还，房东仍拖。你在评论区看到同款遭遇，点赞像抱团取暖。",
+          "d": {
+            "health": -3,
+            "social": 2
+          }
+        },
+        {
+          "title": "收尾",
+          "text": "钱到账那天，你删了租房 App 收藏夹。下一处，合同小字逐行读。",
+          "d": {
+            "rep": 2,
+            "health": 2,
+            "money": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "SAGA_SIDE_CRASH",
+      "title": "副业翻车",
+      "minMonths": 10,
+      "steps": [
+        {
+          "title": "爆单",
+          "text": "闲鱼副业突然爆单，你下班后打包到一点。主业主管问「最近状态」。",
+          "d": {
+            "money": 2,
+            "health": -4,
+            "rep": -1
+          }
+        },
+        {
+          "title": "翻车",
+          "text": "一批货色差被投诉，平台扣保证金。买家群截图挂你 ID。",
+          "choices": [
+            {
+              "text": "全额退款",
+              "d": {
+                "money": -3,
+                "rep": 2,
+                "social": -1
+              }
+            },
+            {
+              "text": "扯皮拖延",
+              "d": {
+                "money": -1,
+                "rep": -3,
+                "health": -3
+              }
+            }
+          ]
+        },
+        {
+          "title": "主业预警",
+          "text": "HR 约谈考勤，副业手机仍震。你学会把通知静音，心却静不了。",
+          "d": {
+            "rep": -2,
+            "health": -3
+          }
+        },
+        {
+          "title": "收摊",
+          "text": "你下架链接，库存捐给同城群。副业没赚多少，教训记牢。",
+          "d": {
+            "rep": 1,
+            "health": 2,
+            "social": 1
           }
         }
       ]
