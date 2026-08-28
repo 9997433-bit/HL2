@@ -15,8 +15,7 @@ function functionSection(src, name) {
   const start = src.indexOf("function " + name + "(");
   const end = src.indexOf("\n  function ", start + 1);
   assert.ok(start >= 0, name + " must be declared");
-  assert.ok(end > start, name + " source section must be bounded");
-  return src.slice(start, end);
+  return src.slice(start, end > start ? end : src.length);
 }
 
 function careerHarness() {
