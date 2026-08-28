@@ -23,3 +23,15 @@
 
 ## 分支
 `cursor/fucheng-r19-career-dismiss-fa72`
+
+## Agent IDs
+- F1: bc-774a2eca-66af-5bd7-a356-c2f4b18f1a99
+- F2: bc-676a5bef-0d0d-59ad-bf1c-48e4b335de5f
+- F3: bc-1eee7b7b-287d-517e-89f6-4f0a8e13941e
+- O1: bc-9e9f5120-4ed0-56f6-8dc3-41d2dab174cf
+- O2: bc-b489b4fe-b1d0-5f7d-9aea-34f4c53cbc5f
+- O3: bc-1b13e442-2f54-55f8-a2ca-fed8bd9294fa
+- O4: bc-142e075b-bc1b-5317-bc9b-ec47c8313bd1
+- O5: bc-c9f3472d-5d48-5a13-83ed-2b5d8a1e859a
+- G1: bc-9f7031a9-5f10-5f0f-95a8-2ffb0a1f6dff
+- G2: bc-23daf7f2-4c55-5b1e-99a2-48b1466d5ff9
