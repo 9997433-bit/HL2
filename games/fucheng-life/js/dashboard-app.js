@@ -90,10 +90,16 @@
     var activeLayer = FC.byId(FC.LAYERS, zonePickerLayerId);
     var tint = activeLayer ? "var(--" + activeLayer.key + ")" : "var(--neon-cyan)";
     var zoneBtns = zones.map(function (z) {
+      var meta = FC.Sim.zoneBlurb ? FC.Sim.zoneBlurb(z.key) : null;
+      var preview = meta
+        ? '<small class="fc-zone-mini__meta">风险' + esc(meta.risk) +
+          ' · 收益' + esc(meta.reward) + "</small>" +
+          '<small class="fc-zone-mini__blurb">' + esc(meta.blurb) + "</small>"
+        : "";
       return '<button type="button" class="fc-zone-mini__btn' +
         (target === z.key ? " is-target" : "") +
         '" data-zone="' + z.key + '" style="--tint:' + tint + '">' +
-        esc(z.name) + "</button>";
+        "<b>" + esc(z.name) + "</b>" + preview + "</button>";
     }).join("");
 
     return '<div class="fc-zone-mini" style="--tint:' + tint + '">' +
@@ -252,13 +258,39 @@
   /* 高频四行动常驻手机底栏；其余收进「更多」抽屉 */
   var QUICK_ACTIONS = ["work", "rest", "explore", "network"];
 
-  function actionBtn(a, extra) {
+  function actionBtn(a, extra, suggestId) {
     var ok = FC.Sim.canAction(run, a, era, origin);
+    var suggested = suggestId && a.id === suggestId;
     return '<button type="button" class="fc-action-btn' + (ok ? "" : " is-disabled") +
+      (suggested ? " is-suggested" : "") +
       (extra ? " " + extra : "") + '" data-action="' +
       a.id + '" ' + (ok ? "" : "disabled") + ">" +
+      (suggested ? '<span class="fc-action-btn__badge">建议</span>' : "") +
       '<span class="fc-action-btn__icon">' + esc(a.icon) + "</span>" +
       "<b>" + esc(a.name) + "</b><span>−" + a.ap + " AP</span></button>";
+  }
+
+  function monthAdvice() {
+    if (!FC.Sim.suggestMonth) return null;
+    return FC.Sim.suggestMonth(run, era, origin);
+  }
+
+  function renderMonthAdvice() {
+    var el = $("monthAdvice");
+    if (!el) return;
+    var tip = monthAdvice();
+    if (!tip) { el.hidden = true; return; }
+    el.hidden = false;
+    el.className = "fc-month-advice is-" + (tip.urgency || "low");
+    var label = tip.actionId === null ? "推进一月"
+      : tip.actionId === "side" ? "副业"
+        : tip.actionId === "study" ? "进修"
+          : tip.actionId === "rest" ? "休息"
+            : tip.actionId === "explore" ? "探区"
+              : tip.actionId === "network" ? "饭局"
+                : tip.actionId === "work" ? "上班" : "行动";
+    el.innerHTML = '<span class="fc-month-advice__tag">本月建议 · ' + esc(label) + "</span>" +
+      '<span class="fc-month-advice__text">' + esc(tip.reason) + "</span>";
   }
 
   function apDotsHtml() {
@@ -273,6 +305,8 @@
   function renderDock() {
     var dock = $("mobileDock");
     if (!dock) return;
+    var tip = monthAdvice();
+    var suggestId = tip && tip.actionId;
     var all = FC.Sim.actions();
     var byId = {}, quick = [], rest = [], i;
     for (i = 0; i < all.length; i++) byId[all[i].id] = all[i];
@@ -289,31 +323,47 @@
         '<button type="button" class="fc-btn fc-btn--primary fc-dock__tick" data-dock-tick>推进一月 ▸</button>';
     } else {
       $("dockActions").innerHTML = quick.map(function (a) {
-        return actionBtn(a, "fc-dock__btn");
+        return actionBtn(a, "fc-dock__btn", suggestId);
       }).join("") +
         '<button type="button" class="fc-action-btn fc-dock__btn" data-dock-more aria-haspopup="dialog">' +
         '<span class="fc-action-btn__icon">⋯</span><b>更多</b><span>' + rest.length + " 项</span></button>";
     }
     var drawerGrid = $("drawerActions");
     if (drawerGrid) {
-      drawerGrid.innerHTML = rest.map(function (a) { return actionBtn(a); }).join("");
+      drawerGrid.innerHTML = rest.map(function (a) { return actionBtn(a, "", suggestId); }).join("");
     }
   }
 
   function renderActions() {
     var grid = $("actionGrid");
     if (!grid) return;
-    grid.innerHTML = FC.Sim.actions().map(function (a) { return actionBtn(a); }).join("");
+    var tip = monthAdvice();
+    var suggestId = tip && tip.actionId;
+    grid.innerHTML = FC.Sim.actions().map(function (a) {
+      return actionBtn(a, "", suggestId);
+    }).join("");
 
     $("apLabel").textContent = run.ap + "/" + run.apMax;
     $("apDots").innerHTML = apDotsHtml();
     $("stageChip").textContent = FC.Sim.stage(run).label;
     $("tickBtn").disabled = run.ap > 0;
-    $("apHint").textContent = run.zoneQueue
-      ? "已选探区「" + (zoneLabel(run.zoneQueue) || run.zoneQueue) + "」，可点「探区」消耗行动点。"
-      : run.ap > 0
-        ? "用完行动点后再推进一月。侧栏可设定探区目标。"
-        : "行动点已用尽，可以推进一月。";
+
+    var blurb = run.zoneQueue && FC.Sim.zoneBlurb ? FC.Sim.zoneBlurb(run.zoneQueue) : null;
+    if (run.ap <= 0) {
+      $("apHint").textContent = "行动点已用尽，可以推进一月。";
+    } else if (run.zoneQueue && blurb) {
+      $("apHint").textContent = "探区「" + (zoneLabel(run.zoneQueue) || "") +
+        "」· 风险" + blurb.risk + " / 收益" + blurb.reward + " — " + blurb.blurb +
+        "　点「探区」消耗 1 AP。";
+    } else if (run.zoneQueue) {
+      $("apHint").textContent = "已选探区「" + (zoneLabel(run.zoneQueue) || run.zoneQueue) +
+        "」，可点「探区」消耗行动点。";
+    } else if (tip && tip.reason) {
+      $("apHint").textContent = tip.reason;
+    } else {
+      $("apHint").textContent = "用完行动点后再推进一月。侧栏可设定探区目标。";
+    }
+    renderMonthAdvice();
     renderDock();
   }
 

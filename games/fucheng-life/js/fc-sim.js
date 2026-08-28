@@ -742,6 +742,81 @@
       return (FC.Sim.pack && FC.Sim.pack.actions) || [];
     },
 
+    /** R9：本月最该干什么。返回 { actionId, reason, urgency } 或 null（该推进月份）。 */
+    suggestMonth: function (run, era, origin) {
+      if (!run) return null;
+      if ((run.ap || 0) <= 0) {
+        return { actionId: null, reason: "行动点已用尽，点「推进一个月」结算。", urgency: "tick" };
+      }
+
+      if ((run.health || 0) < 38) {
+        return { actionId: "rest", reason: "健康偏低，先休息一口，别在工位上倒下。", urgency: "high" };
+      }
+
+      var debtor = FC.Sim.debtNpc(run);
+      if (debtor) {
+        return {
+          actionId: "network",
+          reason: debtor.name + "账本结余已到 " + debtor.balance + "，人情快上门了——去饭局转转。",
+          urgency: "high"
+        };
+      }
+
+      var c = run.contract;
+      if (c && c.status === "active") {
+        if (c.id === "hukou") {
+          return { actionId: "study", reason: "落户合约进行中：进修最能抬积分。", urgency: "mid" };
+        }
+        if (c.id === "promote") {
+          return { actionId: "work", reason: "升职合约进行中：上班/加班抬 KPI。", urgency: "mid" };
+        }
+        if (c.id === "home") {
+          return { actionId: "side", reason: "攒首付进行中：副业能往基金里塞钱。", urgency: "mid" };
+        }
+      }
+
+      if (run.zoneQueue) {
+        return {
+          actionId: "explore",
+          reason: "探区目标已设，点「探区」花 1 AP 去触发那里的事。",
+          urgency: "mid"
+        };
+      }
+
+      if ((run.health || 0) < 55) {
+        return { actionId: "rest", reason: "身体有点紧，穿插一次休息更稳。", urgency: "low" };
+      }
+
+      return { actionId: "work", reason: "本月没有急事：先正常上班稳住收入。", urgency: "low" };
+    },
+
+    /** R9：探区地点的风险/收益预览（静态文案，不改数值）。 */
+    ZONE_BLURB: {
+      broker: { risk: "高", reward: "中", blurb: "灰色中介：可能翻出便宜房，也可能被套路" },
+      alley: { risk: "高", reward: "中", blurb: "夜场后巷：人情与麻烦同价" },
+      factory: { risk: "高", reward: "低", blurb: "废弃厂区：少有人去，消息却危险" },
+      auction: { risk: "高", reward: "高", blurb: "拍卖行：可能捡漏，也可能砸一整月工资" },
+      school: { risk: "低", reward: "中", blurb: "重点中学：学历与人脉的慢变量" },
+      exam: { risk: "中", reward: "中", blurb: "考场：一次机会，换一张纸" },
+      jobfair: { risk: "低", reward: "中", blurb: "校招现场：简历堆里翻身" },
+      nightclass: { risk: "低", reward: "中", blurb: "夜校：用睡眠换积分" },
+      incubator: { risk: "中", reward: "高", blurb: "孵化器：故事好听，钱难赚" },
+      office: { risk: "低", reward: "中", blurb: "写字楼：KPI 与茶水间八卦" },
+      rent: { risk: "低", reward: "低", blurb: "合租房：房东与室友的日常账" },
+      metro: { risk: "低", reward: "低", blurb: "早高峰地铁：迟到与偶遇" },
+      mall: { risk: "中", reward: "中", blurb: "连锁商圈：消费陷阱与兼职" },
+      bank: { risk: "低", reward: "中", blurb: "银行网点：理财与脸色" },
+      village: { risk: "中", reward: "低", blurb: "城中村：房租低，事却不少" },
+      market: { risk: "低", reward: "低", blurb: "早市：新鲜与讨价还价" },
+      delivery: { risk: "中", reward: "中", blurb: "外卖站点：日结与膝盖" },
+      nightfood: { risk: "低", reward: "中", blurb: "夜宵大排档：人情最好下酒" },
+      labor: { risk: "中", reward: "中", blurb: "劳务市场：力气换钱" }
+    },
+
+    zoneBlurb: function (zoneKey) {
+      return FC.Sim.ZONE_BLURB[zoneKey] || null;
+    },
+
     canAction: function (run, action, era, origin) {
       if (run.ap < action.ap) return false;
       if (action.minLayer && FC.Sim.layerOf(run, origin) < action.minLayer) return false;
