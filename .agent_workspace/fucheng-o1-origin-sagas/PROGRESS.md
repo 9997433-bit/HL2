@@ -4,10 +4,13 @@
 | Round | Status | Notes |
 |-------|--------|-------|
 | R4–R7 | complete | 已合 main（PR #4） |
-| **R8** | **in progress** | 落户 pacing + NPC 回账保底队列 |
+| **R8** | **complete** | 落户 pacing + NPC 回账保底；18/18 tests |
 
-## R8 目标
-1. 落户不再 1–7 月秒杀（学历×35% + 加分；进修/月度加分下调）
-2. 首付线 ≥ 签约现金×1.5（挡开局即赢）
-3. 人情 flag 挂上后 2–4 月定向插队 EV88–92
-4. EV89 去掉 `maxBalance: -1`；回账权重 ×5
+## R8 交付
+| 项 | 内容 |
+|----|------|
+| 落户 | 进度 = edu×35% + points；进修/月度加分下调 |
+| 首付 | goal ≥ 签约现金 × 1.5 |
+| NPC | `npcQueue` 挂 flag 后 2–4 月插队 EV88–92 |
+| EV89 | 去掉 maxBalance；回账权重 ×5 |
+| 测试 | `r8-pacing.test.js` + 全套 18/18 |
