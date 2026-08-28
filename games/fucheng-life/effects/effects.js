@@ -52,7 +52,7 @@
       ctx.beginPath();
       ctx.moveTo(this.x, this.y);
       ctx.lineTo(this.x + drift, this.y + this.length);
-      ctx.strokeStyle = `rgba(139, 222, 255, ${this.alpha})`;
+      ctx.strokeStyle = `rgba(79, 227, 255, ${this.alpha})`;
       ctx.lineWidth = this.width;
       ctx.stroke();
     }
@@ -80,7 +80,7 @@
       const y = this.y + pointer.y * 2;
       ctx.fillStyle = this.warm
         ? `rgba(255, 203, 119, ${glow})`
-        : `rgba(88, 246, 255, ${glow})`;
+        : `rgba(79, 227, 255, ${glow})`;
       ctx.fillRect(x, y, this.radius, this.radius * this.heightScale);
     }
   }
@@ -153,7 +153,7 @@
 
     ctx.save();
     ctx.globalCompositeOperation = "lighter";
-    ctx.shadowColor = "#58f6ff";
+    ctx.shadowColor = "#4fe3ff";
     ctx.shadowBlur = 4;
     lights.forEach((light) => {
       if (update) light.update();
@@ -241,11 +241,11 @@
     const panels = Array.from(consoleElement.querySelectorAll("[data-city-layer]"));
     const progress = consoleElement.querySelector("[data-layer-progress]");
     const colors = {
-      1: { hex: "#ffb35a", rgb: "255, 179, 90" },
-      2: { hex: "#58f6ff", rgb: "88, 246, 255" },
-      3: { hex: "#63ffb0", rgb: "99, 255, 176" },
-      4: { hex: "#d7a0ff", rgb: "215, 160, 255" },
-      5: { hex: "#ff5277", rgb: "255, 82, 119" }
+      1: { hex: "#ffb454", rgb: "255, 180, 84" },
+      2: { hex: "#8fa8c8", rgb: "143, 168, 200" },
+      3: { hex: "#3be8b0", rgb: "59, 232, 176" },
+      4: { hex: "#f0c75e", rgb: "240, 199, 94" },
+      5: { hex: "#e3255f", rgb: "227, 37, 95" }
     };
     let activeLayer = 1;
     let queuedLayer = null;

@@ -88,7 +88,7 @@
      2. 城市素材：调色与灯牌文案
      --------------------------------------------------------- */
   const NEON = [
-    { c: '#3ff0ff', g: 'rgba(63,240,255,' }, // 青
+    { c: '#4fe3ff', g: 'rgba(79,227,255,' }, // 青
     { c: '#ff3fa4', g: 'rgba(255,63,164,' }, // 品红
     { c: '#ffc861', g: 'rgba(255,200,97,' }, // 金
     { c: '#34e0a1', g: 'rgba(52,224,161,' }, // 玉
@@ -641,8 +641,8 @@
       ctx.fillRect(0, hz - hz * 0.42, W, hz * 0.42);
 
       const glow2 = ctx.createRadialGradient(W * 0.3, hz, 0, W * 0.3, hz, W * 0.5);
-      glow2.addColorStop(0, 'rgba(63,240,255,0.1)');
-      glow2.addColorStop(1, 'rgba(63,240,255,0)');
+      glow2.addColorStop(0, 'rgba(79,227,255,0.1)');
+      glow2.addColorStop(1, 'rgba(79,227,255,0)');
       ctx.fillStyle = glow2;
       ctx.fillRect(0, hz - W * 0.5, W, W * 0.5);
     }

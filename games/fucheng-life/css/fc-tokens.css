@@ -1,0 +1,182 @@
+/*
+ * 浮城人生 · shared design tokens
+ * Architecture tokens use the --fc-* namespace. Legacy aliases keep the
+ * Round 1 shell, core screens, and effects gallery on one canonical palette.
+ */
+:root {
+  color-scheme: dark;
+
+  /* City foundation */
+  --fc-bg-void: #07080f;
+  --fc-bg-city: #0b0e1a;
+  --fc-bg-raised: #121629;
+  --fc-ink-100: #f2f4ff;
+  --fc-ink-70: rgba(242, 244, 255, 0.72);
+  --fc-ink-45: rgba(242, 244, 255, 0.45);
+
+  /* Brand and semantics */
+  --fc-neon-cyan: #4fe3ff;
+  --fc-neon-cyan-rgb: 79, 227, 255;
+  --fc-neon-magenta: #ff4fa3;
+  --fc-neon-magenta-rgb: 255, 79, 163;
+  --fc-money: #ffd666;
+  --fc-money-rgb: 255, 214, 102;
+  --fc-up: #3de8a0;
+  --fc-down: #ff5c5c;
+  --fc-warn: #ffa940;
+  --fc-l4-alt: #a06bff;
+  --fc-l4-alt-rgb: 160, 107, 255;
+
+  /* Five-layer city */
+  --fc-l1-primary: #ffb454;
+  --fc-l1-deep: #c77b2e;
+  --fc-l1-glow: rgba(255, 180, 84, 0.45);
+  --fc-l1-tint: rgba(255, 180, 84, 0.08);
+  --fc-l2-primary: #8fa8c8;
+  --fc-l2-deep: #4c6076;
+  --fc-l2-glow: rgba(143, 168, 200, 0.35);
+  --fc-l2-tint: rgba(143, 168, 200, 0.08);
+  --fc-l3-primary: #3be8b0;
+  --fc-l3-deep: #12805f;
+  --fc-l3-glow: rgba(59, 232, 176, 0.4);
+  --fc-l3-tint: rgba(59, 232, 176, 0.08);
+  --fc-l4-primary: #f0c75e;
+  --fc-l4-deep: #8a6620;
+  --fc-l4-glow: rgba(240, 199, 94, 0.45);
+  --fc-l4-tint: rgba(240, 199, 94, 0.08);
+  --fc-l5-primary: #e3255f;
+  --fc-l5-deep: #6e1030;
+  --fc-l5-glow: rgba(227, 37, 95, 0.4);
+  --fc-l5-tint: rgba(227, 37, 95, 0.08);
+
+  /* Glass elevations */
+  --fc-glass-1-bg: rgba(18, 22, 41, 0.55);
+  --fc-glass-1-line: rgba(255, 255, 255, 0.1);
+  --fc-glass-1-filter: blur(12px) saturate(140%);
+  --fc-glass-2-bg: rgba(11, 14, 26, 0.65);
+  --fc-glass-2-line: rgba(255, 255, 255, 0.12);
+  --fc-glass-2-filter: blur(20px) saturate(140%);
+  --fc-glass-3-bg: rgba(7, 8, 15, 0.72);
+  --fc-glass-3-line: rgba(255, 255, 255, 0.08);
+  --fc-glass-3-filter: blur(28px);
+  --fc-glass-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+
+  /* Type, shape, motion */
+  --fc-font-ui: "PingFang SC", "HarmonyOS Sans SC", "Noto Sans SC",
+    "Microsoft YaHei", system-ui, sans-serif;
+  --fc-font-display: "Noto Serif SC", "Source Han Serif SC", "STSong", serif;
+  --fc-font-num: "SF Mono", "JetBrains Mono", "Roboto Mono", ui-monospace,
+    monospace;
+  --fc-radius-sm: 10px;
+  --fc-radius-md: 14px;
+  --fc-radius-lg: 20px;
+  --fc-radius-xl: 28px;
+  --fc-radius-pill: 999px;
+  --fc-ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --fc-ease-io: cubic-bezier(0.65, 0, 0.35, 1);
+  --fc-t-fast: 120ms;
+  --fc-t-base: 200ms;
+  --fc-t-slow: 320ms;
+  --fc-t-cine: 640ms;
+  --fc-grad-neon: linear-gradient(135deg, #4fe3ff 0%, #a06bff 55%, #ff4fa3 100%);
+  --fc-grad-money: linear-gradient(135deg, #ffd666 0%, #f0c75e 100%);
+  --fc-glow-text: 0 0 6px currentColor, 0 0 18px var(--glow-color);
+
+  /* Compatibility aliases: shell + screens */
+  --ink-950: var(--fc-bg-void);
+  --ink-900: var(--fc-bg-city);
+  --ink-800: #0d1120;
+  --ink-700: var(--fc-bg-raised);
+  --ink-600: #1a2038;
+  --ink-500: #202a46;
+  --ink-400: #293657;
+  --text-hi: var(--fc-ink-100);
+  --text: var(--fc-ink-70);
+  --text-dim: var(--fc-ink-45);
+  --text-faint: rgba(242, 244, 255, 0.32);
+  --neon-cyan: var(--fc-neon-cyan);
+  --neon-cyan-rgb: var(--fc-neon-cyan-rgb);
+  --neon-cyan-dim: #23899a;
+  --neon-magenta: var(--fc-neon-magenta);
+  --neon-magenta-dim: #a83270;
+  --neon-gold: var(--fc-money);
+  --neon-amber: var(--fc-money);
+  --neon-rose: var(--fc-neon-magenta);
+  --neon-violet: var(--fc-l4-alt);
+  --neon-jade: var(--fc-up);
+  --neon-blood: var(--fc-l5-primary);
+  --tier-l1: var(--fc-l1-primary);
+  --tier-l2: var(--fc-l2-primary);
+  --tier-l3: var(--fc-l3-primary);
+  --tier-l4: var(--fc-l4-primary);
+  --tier-l5: var(--fc-l5-primary);
+  --l1: var(--fc-l1-primary);
+  --l1-deep: var(--fc-l1-deep);
+  --l2: var(--fc-l2-primary);
+  --l2-deep: var(--fc-l2-deep);
+  --l3: var(--fc-l3-primary);
+  --l3-deep: var(--fc-l3-deep);
+  --l4: var(--fc-l4-primary);
+  --l4-alt: var(--fc-l4-alt);
+  --l4-deep: var(--fc-l4-deep);
+  --l5: var(--fc-l5-primary);
+  --l5-deep: var(--fc-l5-deep);
+  --ok: var(--fc-up);
+  --warn: var(--fc-warn);
+  --bad: var(--fc-down);
+  --glass-bg: var(--fc-glass-1-bg);
+  --glass-bg-strong: var(--fc-glass-2-bg);
+  --glass-blur: 12px;
+  --glass-line: var(--fc-glass-1-line);
+  --glass-line-hi: rgba(255, 255, 255, 0.24);
+  --glass: var(--fc-glass-1-bg);
+  --glass-hi: var(--fc-glass-2-bg);
+  --line: var(--fc-glass-1-line);
+  --line-hi: rgba(255, 255, 255, 0.24);
+  --r-sm: var(--fc-radius-sm);
+  --r-md: var(--fc-radius-md);
+  --r-lg: var(--fc-radius-lg);
+  --r-xl: var(--fc-radius-xl);
+  --radius: var(--fc-radius-md);
+  --radius-md: var(--fc-radius-md);
+  --radius-lg: var(--fc-radius-lg);
+  --shadow: 0 18px 50px rgba(0, 0, 0, 0.55);
+  --shadow-lift: 0 26px 70px rgba(0, 0, 0, 0.68);
+  --ease: var(--fc-ease-out);
+  --ease-out: var(--fc-ease-out);
+  --ease-io: var(--fc-ease-io);
+  --font: var(--fc-font-ui);
+  --font-sans: var(--fc-font-ui);
+  --font-serif: var(--fc-font-display);
+  --font-mono: var(--fc-font-num);
+
+  /* Compatibility aliases: effects gallery */
+  --ink: #effcff;
+  --muted: #8d9aad;
+  --dim: #59667a;
+  --cyan: var(--fc-neon-cyan);
+  --cyan-rgb: var(--fc-neon-cyan-rgb);
+  --violet: var(--fc-l4-alt);
+  --violet-rgb: var(--fc-l4-alt-rgb);
+  --gold: var(--fc-money);
+  --gold-rgb: var(--fc-money-rgb);
+  --danger: var(--fc-down);
+  --danger-rgb: 255, 92, 92;
+  --surface: var(--fc-glass-1-bg);
+  --surface-strong: var(--fc-glass-2-bg);
+  --hairline: var(--fc-glass-1-line);
+  --grid: rgba(122, 208, 255, 0.055);
+  --page: var(--fc-bg-void);
+  --display: var(--fc-font-display);
+  --sans: var(--fc-font-ui);
+  --mono: var(--fc-font-num);
+  --max-width: 1240px;
+
+  /* Shell layout and safe areas */
+  --pad-x: clamp(1.1rem, 4vw, 4.5rem);
+  --pad-y: clamp(0.9rem, 2.4vh, 2rem);
+  --safe-t: env(safe-area-inset-top, 0px);
+  --safe-b: env(safe-area-inset-bottom, 0px);
+  --safe-l: env(safe-area-inset-left, 0px);
+  --safe-r: env(safe-area-inset-right, 0px);
+}

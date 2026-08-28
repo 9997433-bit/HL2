@@ -1,28 +1,4 @@
-:root {
-  color-scheme: dark;
-  --ink: #effcff;
-  --muted: #8d9aad;
-  --dim: #59667a;
-  --cyan: #58f6ff;
-  --cyan-rgb: 88, 246, 255;
-  --violet: #ae72ff;
-  --violet-rgb: 174, 114, 255;
-  --gold: #ffcb77;
-  --gold-rgb: 255, 203, 119;
-  --danger: #ff5277;
-  --danger-rgb: 255, 82, 119;
-  --surface: rgba(13, 18, 34, .54);
-  --surface-strong: rgba(16, 22, 40, .82);
-  --hairline: rgba(221, 245, 255, .13);
-  --grid: rgba(122, 208, 255, .055);
-  --page: #080b16;
-  --display: "Arial Narrow", "Roboto Condensed", "DIN Alternate", "Microsoft YaHei", sans-serif;
-  --sans: Inter, "SF Pro Display", "PingFang SC", "Microsoft YaHei", sans-serif;
-  --mono: "SFMono-Regular", "Roboto Mono", "Cascadia Code", monospace;
-  --radius-lg: 28px;
-  --radius-md: 18px;
-  --max-width: 1240px;
-}
+/* Shared palette and compatibility aliases live in ../css/fc-tokens.css. */
 
 * {
   box-sizing: border-box;
@@ -1240,8 +1216,8 @@ code {
 }
 
 .layer-stage {
-  --active-color: #ffb35a;
-  --active-rgb: 255, 179, 90;
+  --active-color: var(--fc-l1-primary);
+  --active-rgb: 255, 180, 84;
   position: relative;
   min-height: 500px;
   overflow: hidden;
