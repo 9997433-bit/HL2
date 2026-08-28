@@ -1,4 +1,4 @@
-Model slug: gpt-sol-r3-pages-readme
+Model slug: gpt-5.6-sol
 
 # Round 3 Pages / README 交付报告
 
