@@ -858,7 +858,7 @@
     if (!FC.events || FC.events.isOpen()) return null;
     if (!run.done) run.done = {};
 
-    /* R8：人情回账到期时插队，不走 MODAL_ODDS —— 账到了就会敲门。 */
+    /* R13：本月危机插队 —— 比随机 O1 更优先，仍让人情回账（R8）先敲门。 */
     var forced = FC.Sim.dueNpcFollowup(run);
     if (forced) {
       var forcedEv = FC.events.byId
@@ -875,6 +875,15 @@
         FC.Sim.markNpcFollowupFired(run, forced.eventId);
       } else {
         FC.Sim.markNpcFollowupFired(run, forced.eventId);
+      }
+    }
+
+    if (FC.Sim.pickMonthCrisis && FC.Sim.crisisToEvent) {
+      var crisis = FC.Sim.pickMonthCrisis(run, era, origin);
+      if (crisis) {
+        run.lastCrisisMonth = run.months || 0;
+        run.sinceModal = 0;
+        return FC.Sim.crisisToEvent(crisis, run, origin);
       }
     }
 
@@ -1138,6 +1147,24 @@
           card: true,
           d: rip.applied || {},
           kind: "npc"
+        });
+      }
+    }
+
+    /* R13：探区余波（高风险地点更疼）。 */
+    if (FC.Sim.resolveZoneAftershock) {
+      var zRip = FC.Sim.resolveZoneAftershock(run, era, origin);
+      if (zRip) {
+        if (zRip.applied && zRip.applied.money) moves.push(zRip.applied.money);
+        pushLog({
+          t: ts(),
+          tag: "探区余波",
+          tint: "var(--neon-cyan)",
+          title: "探区余波",
+          text: zRip.text,
+          card: true,
+          d: zRip.applied || {},
+          kind: "zone"
         });
       }
     }

@@ -164,7 +164,12 @@ python3 -m http.server 8000
     「向上爬一层」按出身动态定目标圈层（L2→L3，L3→L4）。  
     `./scripts/run-fucheng-life-tests.sh` 全绿。
 
-35. [ ] **R12 · 人情余波 + 翻脸代价**  
+35. [x] **R12 · 人情余波 + 翻脸代价**  
     还人情/约饭/求助后 1–3 月日志出现「人情余波」；约饭推进每人 2 步短线。  
     陈姐 `blacklist` 房租上浮；老周 `drifted` 收入缩水。  
+    `./scripts/run-fucheng-life-tests.sh` 全绿。
+
+36. [ ] **R13 · 本月危机 + 探区余波**  
+    约每 3–5 月触发一次二选一「本月危机」弹窗（加班/还债/饭局等）。  
+    探区后下月日志出现探区余波（高风险更疼）。  
     `./scripts/run-fucheng-life-tests.sh` 全绿。
