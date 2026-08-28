@@ -146,6 +146,9 @@ scripts/build-gameplay-data.js          # 生成 gameplay-pack.json
 
 - `data/story.json` 是年代、出身、城市层级和 O1 事件文案的唯一数据源；`story-loader.js` 将其发布到
   `window.FC.story`，并追加加载 `data/gameplay-pack.json` 到 `FC.gameplay`。
+- `story.json → events[]` 收录 56 条手写弹窗事件，每条自带 `layerId`、`category`、`weight` 与
+  2–3 个 `choices[]{label, d, result}`；风险类另带 `type: "redline"`。`fc-events.js` 只做适配与抽取，
+  不再持有分支文案。
 - 游戏存档键是 `fucheng.save.v1`。完成年代或出身选择后，主入口的「继续人生」解锁并显示档案摘要。
 - 出身页 `originAlloc` 保存 8 点属性分配；终局页 `fucheng.inheritedTalent.v1` 保存天赋印记。
 - 主入口设置保存在 `fucheng-life.settings.v1`：画质、雨幕、霓虹、环境音/音量及减弱动效。

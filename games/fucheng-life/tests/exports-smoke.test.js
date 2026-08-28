@@ -95,13 +95,17 @@ async function main() {
   assertFunctions(context.FC.overlay, ["push", "pop", "top", "trap"], "FC.overlay");
   assert.equal(context.FC.events.moneyOf(-2, 10000), -6000, "moneyOf must preserve signed deltas");
 
-  const payload = context.FC.events.toPayload(story.sampleEvents[0]);
+  const payload = context.FC.events.toPayload(story.events[0]);
   assert.equal(payload.id, "EV01", "toPayload must preserve event IDs");
   assert.equal(payload.layer, "L1", "toPayload must normalize layer IDs");
-  assert.ok(payload.choices.length > 0, "toPayload must attach scripted choices");
+  assert.deepEqual(payload.choices, story.events[0].choices,
+    "toPayload must prefer the choices authored in story.json");
 
   const deck = await context.FC.events.load();
-  assert.equal(deck.length, 10, "FC.events.load must export all 10 story events");
+  assert.equal(deck.length, story.events.length, "FC.events.load must export every story event");
+  assert.ok(deck.length >= 50, "the modal deck must ship at least 50 events");
+  assert.ok(deck.every((event) => event.choices.length >= 2),
+    "every deck entry must reach the overlay with its choices");
   assert.equal(context.FC.events.deck(), deck, "FC.events.deck must expose the loaded deck");
   assert.ok(context.FC.events.pick({ layer: 2, allowRedline: false }), "FC.events.pick must return an event");
 

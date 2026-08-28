@@ -22,9 +22,10 @@
     }
 
     var layers = raw.layers || raw.cityLayers;
+    /* `sampleEvents` is the pre-migration spelling of `events`. */
     var events = raw.events || raw.sampleEvents;
     if (!Array.isArray(layers) || !Array.isArray(events)) {
-      throw new Error("story.json is missing cityLayers or sampleEvents");
+      throw new Error("story.json is missing cityLayers or events");
     }
 
     return {

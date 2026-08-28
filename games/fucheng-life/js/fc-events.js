@@ -5,6 +5,10 @@
    Ships the shared overlay stack (`FC.overlay`) the spec assigns to O2 as
    well, so the ledger sheet can reuse the trap and the scroll lock verbatim.
 
+   `data/story.json → events[]` is the SSOT for the deck: every event carries
+   its own title, body, weight and `choices[]`. This module only adapts and
+   picks; it does not author.
+
    ES5-flavoured, no build step, and it still runs from a file:// double-click:
    `FC.story` is used when story-loader.js published it, story.json is fetched
    when the page is served, and the mirror at the bottom of this file covers
@@ -112,12 +116,15 @@
     }, true);
   }
 
-  /* ------------------------------------------------------------------ 剧本
-     story.json carries the scene; the branching lives here (overlay-spec
-     §4.2). Money deltas are written in units of "about a third of a month's
-     income" rather than absolute ¥: a life in 1984 and a life in 2026 are
-     lived at different magnitudes, and a choice should cost the same share of
-     either. `FC.events.moneyOf` turns a unit into the ¥ the player will see. */
+  /* ------------------------------------------------------- legacy 分支表
+     story.json is the SSOT: every event there carries its own `choices`.
+     This table only answers for the offline SEED below, whose entries predate
+     the migration and still ship without branching.
+
+     Money deltas are written in units of "about a third of a month's income"
+     rather than absolute ¥: a life in 1984 and a life in 2026 are lived at
+     different magnitudes, and a choice should cost the same share of either.
+     `FC.events.moneyOf` turns a unit into the ¥ the player will see. */
   var SCRIPT = {
     EV01: {
       choices: [
@@ -226,11 +233,12 @@
   var loading = null;
 
   function toPayload(raw) {
-    var script = SCRIPT[raw.id] || {};
     var type = CATEGORY_TYPE[raw.category] || "opportunity";
     var layer = raw.layerId || raw.layer || "L2";
-    /* choices ride along in story.json the day they are authored there */
-    var choices = raw.choices || script.choices || [];
+    /* story.json owns the branching; SCRIPT only covers the offline SEED */
+    var choices = (raw.choices && raw.choices.length)
+      ? raw.choices
+      : ((SCRIPT[raw.id] || {}).choices || []);
     return {
       id: raw.id,
       type: raw.type || type,
@@ -269,12 +277,17 @@
     });
   }
 
+  /* story.json → `events`; `sampleEvents` is the pre-migration spelling. */
+  function eventsOf(data) {
+    return data && (data.events || data.sampleEvents);
+  }
+
   function load() {
     if (deck) return Promise.resolve(deck);
     if (loading) return loading;
 
     var source;
-    if (FC.story && (FC.story.events || FC.story.sampleEvents)) {
+    if (eventsOf(FC.story)) {
       source = Promise.resolve(FC.story);
     } else if (global.location.protocol === "file:") {
       /* A fetch from file:// is refused before it leaves the page and Chrome
@@ -287,7 +300,7 @@
     }
 
     loading = source.then(function (data) {
-      var events = data && (data.events || data.sampleEvents);
+      var events = eventsOf(data);
       if (!events || !events.length) throw new Error("story has no events");
       return events;
     }).catch(function () {
@@ -628,8 +641,9 @@
   };
 
   /* ------------------------------------------------------- offline mirror
-     Mirrors data/story.json → sampleEvents, used only when the JSON cannot be
-     read (typically file://). Keep in sync when the story file changes. */
+     A ten-event lifeboat for the case where story.json cannot be read at all
+     (typically file://). It is deliberately not the full deck — story.json is
+     the SSOT — so these entries borrow their branching from SCRIPT above. */
   var SEED = [
     { id: "EV01", title: "凌晨四点的灯", layerId: "L1", category: "生计",
       text: "外卖站的卷帘门升起一半。有人开始今天，有人还没结束昨天。你的手机先亮了，余额没有。" },
