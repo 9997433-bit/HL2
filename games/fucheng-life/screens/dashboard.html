@@ -173,7 +173,7 @@
       debt: origin.layer >= 4 ? 0 : Math.round(money * 0.35),
       income: 0,
       gap: 0,
-      nextEvent: rollGap(),
+      sinceModal: 1,
       log: []
     };
   }
@@ -181,14 +181,11 @@
   var saved = FC.read().run;
   var run = saved && saved.key === era.id + "/" + origin.id ? saved : freshRun();
 
-  /* O1 事件弹窗 — the city knocks every few months, never on a schedule the
-     player can plan around. Older saves join the rotation on load. */
-  var eventDue = false;
-  if (typeof run.nextEvent !== "number") run.nextEvent = rollGap();
-
-  function rollGap() {
-    return 3 + Math.floor(Math.random() * 4);
-  }
+  /* O1 事件弹窗 — the city knocks on its own schedule. The odds climb with
+     every quiet month and hit certainty at four, so a demo that advances
+     three or four times always sees one. Older saves join the rotation. */
+  var MODAL_ODDS = [0, 0, 0.45, 0.65, 1];
+  if (typeof run.sinceModal !== "number") run.sinceModal = 1;
 
   /* --------------------------------------------------------------- 经济模型
      Money is oxygen: bills eat most of the paycheque at every layer, and
@@ -304,14 +301,19 @@
 
   /* Deltas are written in units, not amounts: money moves in steps of roughly
      a third of a month's income, so a choice costs the same share of a life
-     whichever layer the player is standing on. */
+     in 1984 as it does in 2026. FC.events.moneyOf is the same conversion the
+     event card shows the player, so the card and the HUD cannot disagree. */
+  function toMoney(units) {
+    if (FC.events && FC.events.moneyOf) return FC.events.moneyOf(units, income());
+    return units * Math.max(400, Math.round(income() * 0.3));
+  }
+
   function applyDeltas(d) {
-    var scale = Math.max(400, Math.round(income() * 0.3));
     var applied = {};
     for (var k in d) {
       if (!Object.prototype.hasOwnProperty.call(d, k)) continue;
       if (k === "money") {
-        var amount = d[k] * scale;
+        var amount = toMoney(d[k]);
         run.money += amount;
         applied.money = Math.round(amount / 100) * 100;
       } else if (typeof run[k] === "number") {
@@ -486,50 +488,93 @@
 
     if (run.log.length > 60) run.log.length = 60;
 
-    if (--run.nextEvent <= 0) eventDue = true;
-
     render(true);
     renderLog();
+
+    var ev = drawModalEvent();
+    if (!ev) return Promise.resolve(false);
+    return openEvent(ev);
   }
 
-  /* One interruption per click, even when half a year goes by at once —
-     the modal is a pause, not a queue. */
-  function maybeEvent() {
-    if (!eventDue || !FC.events || FC.events.isOpen()) return;
+  /* The undercurrent stays shut for the first half-year, and once it opens it
+     stays shut for another twelve months. */
+  function drawModalEvent() {
+    if (!FC.events || FC.events.isOpen()) return null;
 
-    var ev = FC.events.pick({ layer: layerOf(), avoid: run.seen || [] });
-    if (!ev) return; /* deck still loading — the month rolls on, try the next */
+    run.sinceModal++;
+    if (Math.random() >= MODAL_ODDS[Math.min(run.sinceModal, 4)]) return null;
 
-    eventDue = false;
-    run.nextEvent = rollGap();
-    run.seen = (run.seen || []).concat(ev.id).slice(-4);
+    var draw = { layer: layerOf(), avoid: run.recentModal || [] };
+    var ev = FC.events.pick(draw);
+    if (!ev) return null; /* deck still loading — the month rolls on quietly */
 
-    FC.events.show(ev, { apply: applyDeltas }).then(function (result) {
-      if (!result) return;
+    var redlineShut = run.months < 6 ||
+      (typeof run.lastRedline === "number" && run.months - run.lastRedline < 12);
+    if (ev.type === "redline" && redlineShut) {
+      draw.allowRedline = false;
+      ev = FC.events.pick(draw);
+      if (!ev) return null;
+    }
+    if (ev.type === "redline") run.lastRedline = run.months;
+
+    run.sinceModal = 0;
+    run.recentModal = (run.recentModal || []).concat(ev.id).slice(-3);
+    return ev;
+  }
+
+  /* The overlay is pure UI: it hands back the choice, the dashboard is what
+     actually charges the player for it. */
+  function openEvent(ev) {
+    return FC.events.show(ev, { moneyRef: income() }).then(function (res) {
+      if (res.dismissed) return true;
+      var applied = applyDeltas(res.deltas);
       run.log.unshift({
         t: run.year + "." + (run.month < 10 ? "0" : "") + run.month,
-        tag: ev.category,
-        tint: "var(--l" + ev.layer + ")",
-        text: "【" + ev.title + "】" + result.choice.outcome,
-        d: result.deltas
+        tag: FC.events.TYPE_LABEL[ev.type] || ev.category,
+        tint: "var(--l" + ev.layerIndex + ")",
+        text: "【" + ev.title + "】" + ((res.choice && res.choice.result) || ""),
+        d: applied
       });
       if (run.log.length > 60) run.log.length = 60;
       render(true);
       renderLog();
+      return true;
     });
   }
 
-  $("tickBtn").addEventListener("click", function () {
-    tick();
-    maybeEvent();
-  });
+  function note(text) {
+    run.log.unshift({
+      t: run.year + "." + (run.month < 10 ? "0" : "") + run.month,
+      tag: "系统",
+      tint: "var(--text-faint)",
+      text: text,
+      d: {}
+    });
+    renderLog();
+  }
+
+  $("tickBtn").addEventListener("click", function () { tick(); });
+
+  /* Fast-forward runs the months one after another and stops at the first
+     interruption — six modals in a row would be a queue, not a life. */
   $("tick6Btn").addEventListener("click", function () {
-    for (var i = 0; i < 6; i++) tick();
-    maybeEvent();
+    var months = 6;
+    (function step(i) {
+      if (i >= months) return;
+      tick().then(function (interrupted) {
+        if (interrupted) {
+          note("快进被一件事打断。");
+          return;
+        }
+        step(i + 1);
+      });
+    })(0);
   });
+
   $("resetBtn").addEventListener("click", function () {
+    if (FC.events) FC.events.close();
+    if (FC.ledger) FC.ledger.close();
     run = freshRun();
-    eventDue = false;
     seed();
     render(true);
     renderLog();

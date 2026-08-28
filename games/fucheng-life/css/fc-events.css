@@ -1,371 +1,372 @@
 /* ==========================================================================
    浮城人生 · fc-events.css
    O1 事件弹窗 — the city knocking on the door.
-   Depends only on the layer tokens from screens.css, with hard fallbacks so
-   the modal still reads correctly if it is dropped onto another page.
+   Implements round2/fable-overlay-spec.md §1. Consumes only screens.css
+   tokens; the fallbacks keep the card readable if it is dropped elsewhere.
    ========================================================================== */
 
 :root {
-  --fc-ev-l1: var(--l1, #ffb347);
-  --fc-ev-l2: var(--l2, #7fa8d4);
-  --fc-ev-l3: var(--l3, #3fd6a0);
-  --fc-ev-l4: var(--l4, #e8c46a);
-  --fc-ev-l5: var(--l5, #d0325c);
-  --fc-ev-ease: var(--ease, cubic-bezier(0.22, 0.9, 0.24, 1));
+  --z-sheet: 200;
+  --z-modal: 300;
+  --z-toast: 400;
+  --ov-ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ov-t-fast: 200ms;
+  --ov-t-panel: 320ms;
 }
 
-body.fc-ev-lock {
+body.fc-scroll-lock {
   overflow: hidden;
 }
 
-.fc-ev {
+/* --------------------------------------------------------------- overlay */
+.fc-event {
   position: fixed;
   inset: 0;
-  z-index: 300;
+  z-index: var(--z-modal);
   display: grid;
   place-items: center;
-  padding: 20px 16px;
-  --tint: var(--fc-ev-l2);
+  padding: 16px;
+  --tint: var(--l2, #7fa8d4);
+  --tint-deep: var(--l2-deep, #22364f);
+  --etint: var(--neon-cyan, #35e0ff);
 }
 
-/* ----------------------------------------------------------------- 遮罩 */
-.fc-ev__veil {
+.fc-event[data-layer="L1"] { --tint: var(--l1); --tint-deep: var(--l1-deep); }
+.fc-event[data-layer="L2"] { --tint: var(--l2); --tint-deep: var(--l2-deep); }
+.fc-event[data-layer="L3"] { --tint: var(--l3); --tint-deep: var(--l3-deep); }
+.fc-event[data-layer="L4"] { --tint: var(--l4); --tint-deep: var(--l4-deep); }
+.fc-event[data-layer="L5"] { --tint: var(--l5); --tint-deep: var(--l5-deep); }
+
+.fc-event[data-type="opportunity"] { --etint: var(--neon-cyan); }
+.fc-event[data-type="bill"] { --etint: var(--neon-amber); }
+.fc-event[data-type="relation"] { --etint: var(--neon-violet); }
+.fc-event[data-type="redline"] { --etint: var(--neon-blood); }
+
+/* Light rises from the street below; the top of the frame stays pressed down */
+.fc-event__scrim {
   position: absolute;
   inset: 0;
   background:
-    radial-gradient(
-      78% 58% at 50% 46%,
-      color-mix(in srgb, var(--tint) 16%, transparent),
-      transparent 72%
-    ),
-    rgba(4, 6, 13, 0.74);
-  backdrop-filter: blur(14px) saturate(120%);
-  -webkit-backdrop-filter: blur(14px) saturate(120%);
+    radial-gradient(120% 90% at 50% 108%,
+      color-mix(in srgb, var(--tint) 24%, transparent), transparent 58%),
+    radial-gradient(90% 60% at 50% -10%,
+      color-mix(in srgb, var(--tint-deep) 55%, transparent), transparent 70%),
+    rgba(4, 6, 13, 0.78);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   opacity: 0;
-  transition: opacity 0.2s var(--fc-ev-ease);
+  transition: opacity var(--ov-t-fast) ease-out;
 }
 
-.fc-ev.is-open .fc-ev__veil {
-  opacity: 1;
-}
+.fc-event.is-open .fc-event__scrim { opacity: 1; }
+.fc-event.is-closing .fc-event__scrim { opacity: 0; }
 
 /* The undercurrent presses harder than the other four layers. */
-.fc-ev[data-layer="l5"] .fc-ev__veil {
+.fc-event[data-layer="L5"] .fc-event__scrim {
   background:
-    radial-gradient(70% 54% at 50% 44%, rgba(208, 50, 92, 0.24), transparent 70%),
-    rgba(3, 3, 7, 0.86);
+    radial-gradient(120% 90% at 50% 108%,
+      color-mix(in srgb, var(--tint) 32%, transparent), transparent 58%),
+    radial-gradient(90% 60% at 50% -10%,
+      color-mix(in srgb, var(--tint-deep) 60%, transparent), transparent 70%),
+    rgba(4, 6, 13, 0.88);
 }
 
-/* ------------------------------------------------------------------ 卡片 */
-.fc-ev__card {
+@supports not (backdrop-filter: blur(1px)) {
+  .fc-event__scrim {
+    background:
+      radial-gradient(120% 90% at 50% 108%,
+        color-mix(in srgb, var(--tint) 24%, transparent), transparent 58%),
+      rgba(4, 6, 13, 0.86);
+  }
+}
+
+/* ------------------------------------------------------------------ card */
+.fc-event__card {
   position: relative;
-  width: 100%;
-  max-width: 560px;
-  max-height: calc(100vh - 40px);
+  width: min(560px, 100%);
+  max-height: min(86vh, 720px);
   overflow-y: auto;
-  padding: 24px 24px 20px;
-  border-radius: var(--r-lg, 22px);
-  background: rgba(9, 13, 24, 0.9);
-  border: 1px solid color-mix(in srgb, var(--tint) 42%, transparent);
+  padding: 22px 20px 20px;
+  border-radius: var(--r-xl, 30px);
+  background: rgba(10, 15, 28, 0.92);
+  border: 1px solid color-mix(in srgb, var(--tint) 30%, var(--line-hi, rgba(160, 190, 240, 0.34)));
+  backdrop-filter: blur(24px) saturate(140%);
+  -webkit-backdrop-filter: blur(24px) saturate(140%);
   box-shadow:
-    0 0 0 1px rgba(255, 255, 255, 0.05),
-    0 30px 80px rgba(0, 0, 0, 0.7),
+    var(--shadow-lift, 0 26px 70px rgba(0, 0, 0, 0.68)),
     0 0 60px color-mix(in srgb, var(--tint) 18%, transparent);
-  backdrop-filter: blur(22px);
-  -webkit-backdrop-filter: blur(22px);
   opacity: 0;
-  transform: scale(0.965) translateY(8px);
-  transition: opacity 0.32s var(--fc-ev-ease), transform 0.32s var(--fc-ev-ease);
+  transform: scale(0.96) translateY(12px);
+  transition: opacity var(--ov-t-panel) var(--ov-ease-out),
+    transform var(--ov-t-panel) var(--ov-ease-out);
 }
 
-.fc-ev.is-open .fc-ev__card {
-  opacity: 1;
-  transform: none;
+.fc-event[data-type="redline"] .fc-event__card {
+  border-color: color-mix(in srgb, var(--etint) 30%, transparent);
 }
 
-.fc-ev.is-closing .fc-ev__card {
-  opacity: 0;
-  transform: scale(0.99) translateY(4px);
-}
+.fc-event.is-open .fc-event__card { opacity: 1; transform: none; }
+.fc-event.is-closing .fc-event__card { opacity: 0; transform: scale(0.99) translateY(6px); }
+.fc-event__card:focus { outline: none; }
 
-.fc-ev.is-closing .fc-ev__veil {
-  opacity: 0;
-}
-
-/* Layer light along the card's top edge — the only glow in the overlay */
-.fc-ev__card::before {
-  content: "";
+/* The only element in the overlay allowed to glow continuously. */
+.fc-event__accent {
   position: absolute;
   top: 0;
   left: 14%;
   right: 14%;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, var(--tint), transparent);
-  opacity: 0.75;
+  height: 2px;
+  border-radius: 99px;
+  background: linear-gradient(90deg, transparent, var(--etint), transparent);
+  box-shadow: 0 0 14px var(--etint);
 }
 
-@keyframes fc-ev-nudge {
-  0%, 100% { transform: none; }
-  25% { transform: translateX(-4px); }
-  75% { transform: translateX(4px); }
+@keyframes fc-deny {
+  25% { transform: translateX(-6px); }
+  75% { transform: translateX(6px); }
 }
 
-.fc-ev__card--nudge {
-  animation: fc-ev-nudge 0.26s var(--fc-ev-ease);
+.fc-event__card.is-denied {
+  animation: fc-deny 0.24s var(--ease, ease);
 }
 
-/* ------------------------------------------------------------------ 抬头 */
-.fc-ev__head {
+/* ------------------------------------------------------------------ head */
+.fc-event__head {
   display: flex;
   align-items: center;
   gap: 10px;
-  margin-bottom: 14px;
 }
 
-.fc-ev__scene {
+.fc-event__scene {
   display: inline-flex;
   align-items: center;
-  padding: 3px 11px;
+  padding: 3px 10px;
   border-radius: 99px;
+  font-family: var(--font-mono, ui-monospace, monospace);
   font-size: 11px;
   letter-spacing: 0.12em;
   color: var(--tint);
-  border: 1px solid color-mix(in srgb, var(--tint) 46%, transparent);
-  background: color-mix(in srgb, var(--tint) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--tint) 34%, transparent);
+  background: color-mix(in srgb, var(--tint) 10%, transparent);
 }
 
-.fc-ev__code {
+.fc-event__badge {
   margin-left: auto;
-  font-family: var(--font-mono, ui-monospace, monospace);
-  font-size: 10px;
-  letter-spacing: 0.24em;
-  color: var(--text-faint, #55637f);
+  padding: 3px 10px;
+  border-radius: 99px;
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  color: var(--etint);
+  border: 1px solid color-mix(in srgb, var(--etint) 34%, transparent);
+  background: color-mix(in srgb, var(--etint) 10%, transparent);
 }
 
-.fc-ev__title {
-  margin: 0 0 12px;
+.fc-event[data-type="redline"] .fc-event__badge {
+  box-shadow: 0 0 18px color-mix(in srgb, var(--neon-blood) 45%, transparent);
+}
+
+.fc-event__title {
+  margin: 14px 0 10px;
   font-family: var(--font-serif, Georgia, serif);
   font-size: 24px;
-  line-height: 1.35;
+  line-height: 32px;
   font-weight: 700;
-  letter-spacing: 0.04em;
   color: var(--text-hi, #f2f6ff);
 }
 
-.fc-ev__text {
+.fc-event__body {
   margin: 0 0 20px;
-  font-size: 15px;
-  line-height: 1.85;
+  font-size: 16px;
+  line-height: 26px;
   color: var(--text, #c8d3e8);
-  max-width: 34em;
+  max-width: 36ch;
 }
 
-/* ------------------------------------------------------------------ 选项 */
-.fc-ev__choices {
-  display: grid;
-  gap: 10px;
+.fc-event__face--ask {
+  transition: opacity var(--ov-t-fast) var(--ov-ease-out),
+    transform var(--ov-t-fast) var(--ov-ease-out);
 }
 
-.fc-ev__choice {
+.fc-event__face--ask.is-leaving {
+  opacity: 0;
+  transform: translateY(-8px);
+}
+
+/* --------------------------------------------------------------- choices */
+.fc-event__choices {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  width: 100%;
-  min-height: 56px;
-  padding: 13px 16px;
-  border-radius: var(--r-md, 16px);
-  text-align: left;
-  color: var(--text, #c8d3e8);
-  border: 1px solid var(--line, rgba(140, 165, 214, 0.16));
-  background: rgba(255, 255, 255, 0.035);
-  transition: border-color 0.22s var(--fc-ev-ease),
-    background 0.22s var(--fc-ev-ease), transform 0.14s var(--fc-ev-ease);
-}
-
-.fc-ev__choice:hover,
-.fc-ev__choice:focus-visible {
-  outline: none;
-  color: var(--text-hi, #f2f6ff);
-  border-color: color-mix(in srgb, var(--tint) 58%, transparent);
-  background: color-mix(in srgb, var(--tint) 10%, rgba(255, 255, 255, 0.03));
-}
-
-.fc-ev__choice:focus-visible {
-  box-shadow: 0 0 0 2px color-mix(in srgb, var(--tint) 55%, transparent);
-}
-
-.fc-ev__choice:active {
-  transform: scale(0.985);
-}
-
-.fc-ev__choice[disabled] {
-  opacity: 0.4;
-  cursor: not-allowed;
-}
-
-.fc-ev__choice.is-risk {
-  border-color: color-mix(in srgb, var(--bad, #ff4d6a) 34%, transparent);
-}
-
-.fc-ev__choice.is-risk:hover,
-.fc-ev__choice.is-risk:focus-visible {
-  border-color: color-mix(in srgb, var(--bad, #ff4d6a) 62%, transparent);
-  background: color-mix(in srgb, var(--bad, #ff4d6a) 9%, transparent);
-}
-
-.fc-ev__choice-main {
-  display: flex;
-  align-items: baseline;
   gap: 10px;
-  flex-wrap: wrap;
 }
 
-.fc-ev__label {
-  font-size: 14.5px;
-  font-weight: 600;
-  letter-spacing: 0.05em;
-  color: inherit;
-}
-
-.fc-ev__hint {
-  font-family: var(--font-serif, Georgia, serif);
-  font-size: 12px;
-  color: var(--text-faint, #55637f);
-}
-
-/* Consequence preview — direction and strength only, never the exact price.
-   Hidden until the choice is hovered or focused so the card stays quiet. */
-.fc-ev__preview {
+.fc-choice {
+  position: relative;
   display: flex;
-  flex-wrap: wrap;
-  gap: 6px 14px;
-  opacity: 0;
-  transform: translateY(-2px);
-  transition: opacity 0.2s var(--fc-ev-ease), transform 0.2s var(--fc-ev-ease);
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 52px;
+  padding: 12px 14px;
+  overflow: hidden;
+  text-align: left;
+  border-radius: 14px;
+  border: 1px solid var(--line-hi, rgba(160, 190, 240, 0.34));
+  background: rgba(255, 255, 255, 0.04);
+  transition: all 0.24s var(--ease, ease);
 }
 
-.fc-ev__choice:hover .fc-ev__preview,
-.fc-ev__choice:focus-visible .fc-ev__preview,
-.fc-ev__choice:focus-within .fc-ev__preview {
-  opacity: 1;
+.fc-choice:hover,
+.fc-choice:focus-visible {
+  border-color: color-mix(in srgb, var(--etint) 55%, transparent);
+  background: color-mix(in srgb, var(--etint) 10%, rgba(255, 255, 255, 0.04));
+  transform: translateY(-2px);
+}
+
+.fc-choice:focus-visible {
+  outline: 2px solid var(--neon-cyan, #35e0ff);
+  outline-offset: 2px;
+}
+
+.fc-choice:active {
+  transform: scale(0.98);
+}
+
+.fc-event[data-type="redline"] .fc-choice {
+  border-color: color-mix(in srgb, var(--neon-blood) 40%, transparent);
+}
+
+.fc-choice.is-cooling {
+  opacity: 0.55;
+  cursor: not-allowed;
   transform: none;
 }
 
-.fc-ev__pv {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 11px;
-  letter-spacing: 0.1em;
-  color: var(--text-faint, #55637f);
-}
-
-.fc-ev__pv-dots {
-  display: inline-flex;
-  gap: 3px;
-}
-
-.fc-ev__pv-dots i {
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.14);
-}
-
-.fc-ev__pv.is-up .fc-ev__pv-dots i.on {
-  background: var(--ok, #3fd6a0);
-  box-shadow: 0 0 6px color-mix(in srgb, var(--ok, #3fd6a0) 60%, transparent);
-}
-
-.fc-ev__pv.is-down .fc-ev__pv-dots i.on {
-  background: var(--bad, #ff4d6a);
-  box-shadow: 0 0 6px color-mix(in srgb, var(--bad, #ff4d6a) 60%, transparent);
-}
-
-.fc-ev__foot,
-.fc-ev__cool {
-  margin: 14px 0 0;
-  font-size: 11px;
-  letter-spacing: 0.12em;
-  color: var(--text-faint, #55637f);
-}
-
-.fc-ev__cool {
+.fc-choice__num {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 6px;
+  border: 1px solid var(--line-hi, rgba(160, 190, 240, 0.34));
   font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 11px;
+  color: var(--text-faint, #55637f);
+}
+
+.fc-choice__label {
+  flex: 1;
+  min-width: 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--text-hi, #f2f6ff);
+}
+
+.fc-choice--ack .fc-choice__label {
+  text-align: center;
+  letter-spacing: 0.1em;
+}
+
+.fc-choice__cost {
+  flex: none;
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 11px;
+  color: var(--text-dim, #8494b3);
+}
+
+.fc-choice--risk .fc-choice__cost {
   color: var(--bad, #ff4d6a);
 }
 
-/* ------------------------------------------------------------------ 结果 */
-.fc-ev__result {
-  display: grid;
-  gap: 12px;
+/* Consequence preview (Reigns rule): which dimensions move and how far,
+   never which way. Always visible — a phone has no hover to reveal them. */
+.fc-choice__dots {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  transition: transform 0.2s var(--ease, ease);
 }
 
-.fc-ev__picked {
-  margin: 0;
-  font-size: 12px;
-  letter-spacing: 0.14em;
-  color: var(--text-faint, #55637f);
+.fc-choice:hover .fc-choice__dots,
+.fc-choice:focus-visible .fc-choice__dots {
+  transform: scale(1.25);
 }
 
-.fc-ev__outcome {
-  margin: 0;
+.fc-dot {
+  border-radius: 50%;
+  background: currentColor;
+  box-shadow: 0 0 6px currentColor;
+  opacity: 0.85;
+}
+
+.fc-dot--money { color: var(--neon-amber, #ffb547); }
+.fc-dot--health { color: var(--neon-jade, #34e0a1); }
+.fc-dot--social { color: var(--neon-violet, #a56bff); }
+.fc-dot--rep { color: var(--neon-cyan, #35e0ff); }
+
+.fc-dot--s { width: 5px; height: 5px; }
+.fc-dot--m { width: 7px; height: 7px; }
+.fc-dot--l { width: 9px; height: 9px; }
+
+@keyframes fc-cooldown {
+  to { transform: scaleX(1); }
+}
+
+.fc-choice__cooling {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  height: 2px;
+  width: 100%;
+  background: var(--neon-blood, #e0324c);
+  transform: scaleX(0);
+  transform-origin: left;
+  animation: fc-cooldown 3s linear forwards;
+}
+
+/* ---------------------------------------------------------------- result */
+.fc-event__result {
+  margin: 0 0 14px;
+  padding-top: 16px;
+  border-top: 1px solid var(--line, rgba(140, 165, 214, 0.16));
   font-family: var(--font-serif, Georgia, serif);
   font-size: 14.5px;
-  line-height: 1.9;
+  line-height: 1.8;
   color: var(--text, #c8d3e8);
-  padding-left: 13px;
-  border-left: 2px solid color-mix(in srgb, var(--tint) 50%, transparent);
 }
 
-.fc-ev__ticks {
+.fc-event__deltas {
+  list-style: none;
+  margin: 0 0 18px;
+  padding: 0;
+}
+
+.fc-event__delta-row {
   display: flex;
-  flex-wrap: wrap;
-  gap: 8px 16px;
+  align-items: baseline;
+  gap: 12px;
+  padding: 5px 0;
   font-family: var(--font-mono, ui-monospace, monospace);
   font-size: 12.5px;
-  min-height: 18px;
+  color: var(--text-dim, #8494b3);
+  animation: fc-rise 0.4s var(--ease, ease) both;
+  animation-delay: calc(var(--i) * 90ms);
 }
 
-.fc-ev__tick {
-  animation: fc-ev-tick 0.34s var(--fc-ev-ease) both;
-}
-
-.fc-ev__tick.up { color: var(--ok, #3fd6a0); }
-.fc-ev__tick.down { color: var(--bad, #ff4d6a); }
-
-@keyframes fc-ev-tick {
-  from { opacity: 0; transform: translateY(6px); }
-}
-
-.fc-ev__go {
-  justify-self: start;
-  margin-top: 4px;
-  padding: 11px 22px;
-  border-radius: 99px;
-  font-size: 13.5px;
+.fc-event__delta-row b {
+  margin-left: auto;
   font-weight: 600;
-  letter-spacing: 0.1em;
-  color: var(--text-hi, #f2f6ff);
-  border: 1px solid color-mix(in srgb, var(--tint) 55%, transparent);
-  background: color-mix(in srgb, var(--tint) 14%, transparent);
-  transition: background 0.22s var(--fc-ev-ease), transform 0.14s var(--fc-ev-ease);
 }
 
-.fc-ev__go:hover {
-  background: color-mix(in srgb, var(--tint) 24%, transparent);
+.fc-event__delta-row.up b { color: var(--ok, #3fd6a0); }
+.fc-event__delta-row.down b { color: var(--bad, #ff4d6a); }
+
+.fc-event__continue {
+  width: 100%;
 }
 
-.fc-ev__go:active {
-  transform: scale(0.985);
-}
-
-.fc-ev__go:focus-visible {
-  outline: none;
-  box-shadow: 0 0 0 2px color-mix(in srgb, var(--tint) 60%, transparent);
-}
-
-.fc-ev .fc-sr {
+.fc-event .fc-sr {
   position: absolute;
   width: 1px;
   height: 1px;
@@ -374,43 +375,42 @@ body.fc-ev-lock {
   white-space: nowrap;
 }
 
-/* -------------------------------------------------------------- 响应式 */
+/* ------------------------------------------------------------ responsive */
 @media (max-width: 560px) {
-  .fc-ev {
+  .fc-event {
     padding: 12px;
     align-items: end;
   }
-  .fc-ev__card {
-    padding: 20px 16px 16px;
+  .fc-event__card {
+    padding: 18px 16px 16px;
     max-height: calc(100vh - 24px);
   }
-  .fc-ev__title {
+  .fc-event__title {
     font-size: 21px;
+    line-height: 30px;
   }
-  .fc-ev__text {
-    font-size: 14.5px;
+  .fc-event__body {
+    font-size: 15px;
+    line-height: 25px;
   }
-}
-
-/* Touch devices have no hover: the preview has to be readable up front. */
-@media (hover: none) {
-  .fc-ev__preview {
-    opacity: 1;
-    transform: none;
+  .fc-choice__cost {
+    display: none; /* the dots already carry the weight on a narrow card */
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .fc-ev__preview {
+  .fc-event__card,
+  .fc-event__scrim {
+    transition: none;
     opacity: 1;
     transform: none;
   }
-  .fc-ev__card,
-  .fc-ev__veil,
-  .fc-ev__tick {
-    transition: none;
+  .fc-event__card.is-denied,
+  .fc-choice__cooling {
     animation: none;
-    opacity: 1;
-    transform: none;
+  }
+  .fc-choice__cooling {
+    transform: scaleX(1);
+    opacity: 0.5;
   }
 }

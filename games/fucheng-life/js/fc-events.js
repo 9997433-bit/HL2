@@ -1,17 +1,23 @@
 /* 浮城人生 · fc-events.js
-   O1 事件弹窗 — a Reigns-style interruption card.
+   O1 事件弹窗 — the city knocks, and you have to answer.
 
-   Self-contained on purpose: it only needs a DOM and `css/fc-events.css`.
-   If `story-loader.js` is present it reuses `FC.story`; otherwise it fetches
-   `data/story.json` itself and falls back to the offline mirror at the bottom
-   of this file so the modal still works from a file:// double-click.
+   Implements `round2/fable-overlay-spec.md` §1 / §3.1 / §3.2 / §4.
+   Ships the shared overlay stack (`FC.overlay`) the spec assigns to O2 as
+   well, so the ledger sheet can reuse the trap and the scroll lock verbatim.
 
-   Public API (window.FC.events):
-     load()               → Promise<deck>
-     deck()               → array | null
-     pick({layer, avoid}) → event | null
-     show(event, opts)    → Promise<{event, choice, deltas} | null>
-     isOpen()             → boolean
+   ES5-flavoured, no build step, and it still runs from a file:// double-click:
+   `FC.story` is used when story-loader.js published it, story.json is fetched
+   when the page is served, and the mirror at the bottom of this file covers
+   the case where neither is reachable.
+
+   Public API
+     FC.overlay.push(kind, el) / .pop(el) / .top() / .trap(el, event)
+     FC.events.load()                → Promise<deck>
+     FC.events.deck()                → array | null
+     FC.events.pick({layer, avoid, allowRedline})
+     FC.events.show(payload, opts?)  → Promise<{choiceId, choice, deltas, event, dismissed}>
+     FC.events.close()               → force-close, resolves dismissed:true
+     FC.events.moneyOf(units, ref)   → ¥ amount for a money delta
 */
 (function (global) {
   "use strict";
@@ -20,9 +26,18 @@
   var FC = global.FC || (global.FC = {});
 
   var STAT_LABEL = { money: "现金", health: "健康", social: "人脉", rep: "声望" };
-  var STRENGTH = ["", "轻微", "中等", "明显"];
   var LAYER_NAME = {
     L1: "市井层", L2: "工薪层", L3: "上升通道", L4: "资本名利", L5: "暗流"
+  };
+  var TYPE_LABEL = {
+    opportunity: "机遇", bill: "账单", relation: "人情", redline: "红线"
+  };
+  /* story.json only carries a Chinese `category`; overlay-spec §4.2 maps it. */
+  var CATEGORY_TYPE = {
+    "机会": "opportunity",
+    "金钱": "bill", "生计": "bill", "居住": "bill",
+    "人情": "relation", "关系": "relation",
+    "风险": "redline"
   };
 
   function esc(s) {
@@ -31,162 +46,209 @@
     });
   }
 
+  function reduced() {
+    return !!(global.matchMedia && global.matchMedia("(prefers-reduced-motion: reduce)").matches);
+  }
+
   function layerNum(id) {
     var n = parseInt(String(id || "L2").replace(/[^\d]/g, ""), 10);
     return n >= 1 && n <= 5 ? n : 2;
   }
 
-  function reduced() {
-    return !!(global.matchMedia && global.matchMedia("(prefers-reduced-motion: reduce)").matches);
+  function fmt(n) {
+    return Math.abs(Math.round(n)).toLocaleString("zh-CN");
+  }
+
+  function signed(v, prefix) {
+    return (v < 0 ? "−" : "+") + (prefix || "") + fmt(v);
+  }
+
+  /* ------------------------------------------------------- FC.overlay 栈
+     One keydown listener for the whole app; the top of the stack owns it. */
+  if (!FC.overlay) {
+    var stack = [];
+
+    FC.overlay = {
+      push: function (kind, el) {
+        for (var i = 0; i < stack.length; i++) {
+          if (stack[i].kind === kind) {
+            if (global.console) console.warn("FC.overlay: " + kind + " is already open");
+            return false;
+          }
+        }
+        el.style.zIndex = kind === "sheet" ? 200 : 300;
+        if (!stack.length) doc.body.classList.add("fc-scroll-lock");
+        stack.push({ kind: kind, rootEl: el, returnFocus: doc.activeElement });
+        return true;
+      },
+      pop: function (el) {
+        for (var i = stack.length - 1; i >= 0; i--) {
+          if (stack[i].rootEl !== el) continue;
+          var entry = stack.splice(i, 1)[0];
+          if (!stack.length) doc.body.classList.remove("fc-scroll-lock");
+          if (entry.returnFocus && entry.returnFocus.focus) entry.returnFocus.focus();
+          return true;
+        }
+        return false;
+      },
+      top: function () {
+        return stack.length ? stack[stack.length - 1] : null;
+      },
+      trap: function (rootEl, e) {
+        if (e.key !== "Tab") return;
+        var items = [].slice.call(
+          rootEl.querySelectorAll("button:not([disabled]), [href], [tabindex]:not([tabindex='-1'])")
+        );
+        if (!items.length) return;
+        var first = items[0], last = items[items.length - 1];
+        if (e.shiftKey && doc.activeElement === first) { e.preventDefault(); last.focus(); }
+        else if (!e.shiftKey && doc.activeElement === last) { e.preventDefault(); first.focus(); }
+      }
+    };
+
+    doc.addEventListener("keydown", function (e) {
+      var top = FC.overlay.top();
+      if (top && top.onKey) top.onKey(e);
+    }, true);
   }
 
   /* ------------------------------------------------------------------ 剧本
-     story.json carries the scene; the branching lives here. Deltas use the
-     same unit scale as the dashboard pool: money is in "roughly a third of a
-     month's income" steps, the other three are raw points out of 100. */
+     story.json carries the scene; the branching lives here (overlay-spec
+     §4.2). Money deltas are written in units of "about a third of a month's
+     income" rather than absolute ¥: a life in 1984 and a life in 2026 are
+     lived at different magnitudes, and a choice should cost the same share of
+     either. `FC.events.moneyOf` turns a unit into the ¥ the player will see. */
   var SCRIPT = {
     EV01: {
-      weight: 10,
       choices: [
-        { label: "接下这一单", hint: "天亮前还能再跑两趟", d: { money: 1, health: -3 },
-          outcome: "你把手机塞回外套内袋。第一笔到账短信来的时候，天还没有亮透。" },
-        { label: "再睡两个小时", hint: "身体先于账单开口", d: { health: 4, money: -1 },
-          outcome: "闹钟被按掉两次。醒来时太阳已经越过巷口，欠的那部分还在原处等你。" },
-        { label: "在站点群里问问长期的活", hint: "认识人比跑单慢，也比跑单久", d: { social: 4, health: -1 },
-          outcome: "站长记下了你的名字，说下个月排班时想着你。这句话不值钱，但可以先记着。" }
+        { id: "run", label: "接下这一单", cost: "整夜 −", d: { money: 1, health: -3 },
+          result: "你把手机塞回外套内袋。第一笔到账短信来的时候，天还没有亮透。" },
+        { id: "sleep", label: "再睡两个小时", cost: "收入 −", d: { health: 4, money: -1 },
+          result: "闹钟被按掉两次。醒来时太阳已经越过巷口，欠的那部分还在原处等你。" },
+        { id: "ask", label: "在站点群里问问长期的活", cost: "先欠个人情", d: { social: 4, health: -1 },
+          result: "站长记下了你的名字，说下个月排班时想着你。这句话不值钱，但可以先记着。" }
       ]
     },
     EV02: {
-      weight: 10,
       choices: [
-        { label: "按人头平摊", hint: "省事，也省了争执", d: { money: -1, social: 2 },
-          outcome: "你转出那一份，群里很快恢复表情包。合租的默契就是不追问细节。" },
-        { label: "把自己那份算清楚", hint: "分寸有时会被当成计较", d: { social: -3, rep: 2 },
-          outcome: "你把用量截图发了出去，数字没有人反驳。之后几天，厨房安静了一些。" },
-        { label: "先垫上，不提这事", hint: "垫的钱通常回不来", d: { money: -2, social: 5 },
-          outcome: "你先把账缴了。有人说下次一定还，你点了点头，没有记在备忘录里。" }
+        { id: "split", label: "按人头平摊", cost: "现金 −", d: { money: -1, social: 2 },
+          result: "你转出那一份，群里很快恢复表情包。合租的默契就是不追问细节。" },
+        { id: "exact", label: "把自己那份算清楚", cost: "关系 −", d: { social: -3, rep: 2 },
+          result: "你把用量截图发了出去，数字没有人反驳。之后几天，厨房安静了一些。" },
+        { id: "cover", label: "先垫上，不提这事", cost: "现金 −−", d: { money: -2, social: 5 },
+          result: "你先把账缴了。有人说下次一定还，你点了点头，没有记在备忘录里。" }
       ]
     },
     EV03: {
-      weight: 10,
       choices: [
-        { label: "回工位再改一版", hint: "今晚不会结束", d: { rep: 4, health: -5 },
-          outcome: "你在空掉的办公室里改到两点。第二天没有人提起，文件安静地过了。" },
-        { label: "回复「明早处理」", hint: "边界要自己划", d: { rep: -2, health: 3 },
-          outcome: "消息发出后你把手机倒扣。第二天九点，那句「再改一版」还在，你也还在。" },
-        { label: "在车上改", hint: "隧道里没有信号", d: { rep: 2, health: -3 },
-          outcome: "笔记本架在膝盖上，改到出站才发的。你分不清是效率，还是不肯浪费的那点时间。" }
+        { id: "back", label: "回工位再改一版", cost: "健康 −", d: { rep: 4, health: -5 },
+          result: "你在空掉的办公室里改到两点。第二天没有人提起，文件安静地过了。" },
+        { id: "tomorrow", label: "回复「明早处理」", cost: "声望 −", d: { rep: -2, health: 3 },
+          result: "消息发出后你把手机倒扣。第二天九点，那句「再改一版」还在，你也还在。" },
+        { id: "onboard", label: "在车上改", cost: "折中", d: { rep: 2, health: -3 },
+          result: "笔记本架在膝盖上，改到出站才发的。你分不清是效率，还是不肯浪费的那点时间。" }
       ]
     },
     EV04: {
-      weight: 8,
       choices: [
-        { label: "把最后一道大题写完", hint: "多留十分钟", d: { rep: 5, health: -3 },
-          outcome: "收卷铃响时你才落笔。走出考场，雨已经停了，路面还亮着。" },
-        { label: "提前交卷", hint: "换回一点确定的东西", d: { rep: -1, health: 3 },
-          outcome: "你比大多数人早出来。空荡的走廊里，你第一次听见自己的脚步声。" }
+        { id: "finish", label: "把最后一道大题写完", cost: "多留十分钟", d: { rep: 5, health: -3 },
+          result: "收卷铃响时你才落笔。走出考场，雨已经停了，路面还亮着。" },
+        { id: "leave", label: "提前交卷", cost: "声望 −", d: { rep: -1, health: 3 },
+          result: "你比大多数人早出来。空荡的走廊里，你第一次听见自己的脚步声。" }
       ]
     },
     EV05: {
-      weight: 10,
       choices: [
-        { label: "拍一张，发给家里", hint: "有些东西不计入绩效", d: { social: 3, health: 2 },
-          outcome: "家里回了一句「真好看」，然后问你吃饭没有。你说吃过了，其实还没有。" },
-        { label: "继续把表填完", hint: "日落不影响截止时间", d: { rep: 3, health: -3 },
-          outcome: "表格在天黑前提交。窗外的金色退回成灰色，办公室的灯准时替它上岗。" },
-        { label: "提前十分钟下班", hint: "早走的人会被记住", d: { rep: -2, health: 4 },
-          outcome: "你在电梯里遇见同一层的陌生人。街上的风还带着白天的温度。" }
+        { id: "photo", label: "拍一张，发给家里", cost: "两分钟", d: { social: 3, health: 2 },
+          result: "家里回了一句「真好看」，然后问你吃饭没有。你说吃过了，其实还没有。" },
+        { id: "form", label: "继续把表填完", cost: "健康 −", d: { rep: 3, health: -3 },
+          result: "表格在天黑前提交。窗外的金色退回成灰色，办公室的灯准时替它上岗。" },
+        { id: "early", label: "提前十分钟下班", cost: "声望 −", d: { rep: -2, health: 4 },
+          result: "你在电梯里遇见同一层的陌生人。街上的风还带着白天的温度。" }
       ]
     },
     EV06: {
-      weight: 8,
       choices: [
-        { label: "排进终面的队伍", hint: "队很长，机会只有几个", d: { rep: 5, health: -4 },
-          outcome: "你站到下午三点。面试八分钟，对方说会有通知，通知一直没有具体日期。" },
-        { label: "投两个摊位就走", hint: "把力气留给下一场", d: { social: 2, health: 1 },
-          outcome: "两份简历，两句客气话。你把手环收进包里，它比offer先到手。" },
-        { label: "退出，转投熟人内推", hint: "人情要先欠下才能用", d: { social: 5, rep: -1 },
-          outcome: "学长答应帮你递进去，附了一句「别抱太大希望」。这话你听得懂。" }
+        { id: "queue", label: "排进终面的队伍", cost: "一个下午", d: { rep: 5, health: -4 },
+          result: "你站到下午三点。面试八分钟，对方说会有通知，通知一直没有具体日期。" },
+        { id: "two", label: "投两个摊位就走", cost: "机会 −", d: { social: 2, health: 1 },
+          result: "两份简历，两句客气话。你把手环收进包里，它比 offer 先到手。" },
+        { id: "refer", label: "退出，转投熟人内推", cost: "人情 −", d: { social: 5, rep: -1 },
+          result: "学长答应帮你递进去，附了一句「别抱太大希望」。这话你听得懂。" }
       ]
     },
     EV07: {
-      weight: 6,
       choices: [
-        { label: "跟着进去", hint: "门内的规矩由别人定", d: { social: 6, rep: 2, money: -2 },
-          outcome: "有人替你介绍了半句身份，剩下半句留给你自己补。你补得还算得体。" },
-        { label: "在大堂等人下来", hint: "不进门，也不缺席", d: { social: -1, health: 1 },
-          outcome: "你在沙发上坐了四十分钟。散场时有人和你握手，说下次一起上去。" },
-        { label: "说句抱歉，先走", hint: "退出比进入省钱", d: { social: -3, health: 3 },
-          outcome: "你在门口叫了车。回程路上，城市的灯一格一格退到身后。" }
+        { id: "up", label: "跟着进去", cost: "现金 −−", d: { social: 6, rep: 2, money: -2 },
+          result: "有人替你介绍了半句身份，剩下半句留给你自己补。你补得还算得体。" },
+        { id: "lobby", label: "在大堂等人下来", cost: "四十分钟", d: { social: -1, health: 1 },
+          result: "你在沙发上坐了四十分钟。散场时有人和你握手，说下次一起上去。" },
+        { id: "go", label: "说句抱歉，先走", cost: "人脉 −", d: { social: -3, health: 3 },
+          result: "你在门口叫了车。回程路上，城市的灯一格一格退到身后。" }
       ]
     },
     EV08: {
-      weight: 6,
       choices: [
-        { label: "把账结了", hint: "现金买回一点主动", d: { money: -3, social: 4, rep: 3 },
-          outcome: "你去前台签了单，回来时没有说。第二天有人在群里提了一句，你说小事。" },
-        { label: "让对方结，记下这笔", hint: "人情会计息", d: { social: 6, rep: -2 },
-          outcome: "这一顿你没有付钱。人情账本上多了一行，落款是你。" },
-        { label: "AA，把话说明白", hint: "清楚，但不热络", d: { money: -1, social: -2, rep: 2 },
-          outcome: "你提议平摊，桌上短暂安静，然后有人笑着答应。此后联系少了一些。" }
+        { id: "pay", label: "把账结了", cost: "现金 −−−", d: { money: -3, social: 4, rep: 3 },
+          result: "你去前台签了单，回来时没有说。第二天有人在群里提了一句，你说小事。" },
+        { id: "owe", label: "让对方结，记下这笔", cost: "人情 ▲", d: { social: 6, rep: -2 },
+          result: "这一顿你没有付钱。人情账本上多了一行，落款是你。" },
+        { id: "aa", label: "AA，把话说明白", cost: "关系 −", d: { money: -1, social: -2, rep: 2 },
+          result: "你提议平摊，桌上短暂安静，然后有人笑着答应。此后联系少了一些。" }
       ]
     },
     EV09: {
-      weight: 4,
-      redline: true,
       choices: [
-        { label: "按纸上的数还回去", hint: "退出要付全款", d: { money: -4, rep: 4 },
-          outcome: "你把钱转过去，对方发来一个句号。借据被撕掉，名字终于不再流通。" },
-        { label: "先拖着，等对方开口", hint: "拖延也是一种利息", risk: true, d: { money: 1, rep: -5, social: -2 },
-          outcome: "没有人来催。三周后，一个陌生号码开始每天固定时间响两声。" },
-        { label: "找中间人重新谈", hint: "第三个人也要分成", risk: true, d: { money: -2, social: -3, rep: -1 },
-          outcome: "中间人把数字压下来一些，条件是这件事以后由他记着。" }
+        { id: "repay", label: "按纸上的数还回去", cost: "现金 −−−−", d: { money: -4, rep: 4 },
+          result: "你把钱转过去，对方发来一个句号。借据被撕掉，名字终于不再流通。" },
+        { id: "stall", label: "先拖着，等对方开口", cost: "风险 ▲", risk: true,
+          d: { money: 1, rep: -5, social: -2 },
+          result: "没有人来催。三周后，一个陌生号码开始每天固定时间响两声。" },
+        { id: "broker", label: "找中间人重新谈", cost: "风险 ▲", risk: true,
+          d: { money: -2, social: -3, rep: -1 },
+          result: "中间人把数字压下来一些，条件是这件事以后由他记着。" }
       ]
     },
     EV10: {
-      weight: 10,
       choices: [
-        { label: "先还最急的那笔", hint: "把火压回一格", d: { money: -2, rep: 2 },
-          outcome: "你按到期日排了序，还掉最上面的一笔。剩下的往后挪了一个月。" },
-        { label: "分期，把利息摊开", hint: "现在轻，以后重", d: { money: -1, health: -1, rep: -2 },
-          outcome: "分期页面只要三次点击。每月多出的那个数字很小，也一直都在。" },
-        { label: "关掉短信提醒", hint: "看不见不等于不存在", risk: true, d: { health: 2, rep: -3 },
-          outcome: "世界安静了两天。第三天，电话代替短信找了过来。" }
+        { id: "urgent", label: "先还最急的那笔", cost: "现金 −−", d: { money: -2, rep: 2 },
+          result: "你按到期日排了序，还掉最上面的一笔。剩下的往后挪了一个月。" },
+        { id: "instal", label: "分期，把利息摊开", cost: "以后 −", d: { money: -1, health: -1, rep: -2 },
+          result: "分期页面只要三次点击。每月多出的那个数字很小，也一直都在。" },
+        { id: "mute", label: "关掉短信提醒", cost: "风险 ▲", risk: true, d: { health: 2, rep: -3 },
+          result: "世界安静了两天。第三天，电话代替短信找了过来。" }
       ]
     }
   };
-
-  /* Events the JSON adds later still work — they just get a neutral pair. */
-  var GENERIC = [
-    { label: "照常过去", hint: "不做记号的一天", d: { health: 1 },
-      outcome: "这一天没有留下什么。城市照常运转，你也是。" },
-    { label: "多留意一会儿", hint: "记住细节，未必有用", d: { rep: 1, health: -1 },
-      outcome: "你多站了一会儿，把这件事记住了。用处以后再说。" }
-  ];
 
   /* --------------------------------------------------------------- 数据装载 */
   var deck = null;
   var loading = null;
 
+  function toPayload(raw) {
+    var script = SCRIPT[raw.id] || {};
+    var type = CATEGORY_TYPE[raw.category] || "opportunity";
+    var layer = raw.layerId || raw.layer || "L2";
+    /* choices ride along in story.json the day they are authored there */
+    var choices = raw.choices || script.choices || [];
+    return {
+      id: raw.id,
+      type: raw.type || type,
+      layer: layer,
+      layerIndex: layerNum(layer),
+      scene: raw.scene || (layer + " · " + (LAYER_NAME[layer] || "城市")),
+      category: raw.category || "",
+      title: raw.title,
+      body: raw.body || raw.text,
+      weight: raw.weight || 8,
+      choices: choices
+    };
+  }
+
   function build(events) {
     var out = [];
     for (var i = 0; i < events.length; i++) {
-      var raw = events[i];
-      if (!raw || !raw.id) continue;
-      var script = SCRIPT[raw.id] || {};
-      out.push({
-        id: raw.id,
-        title: raw.title,
-        text: raw.text,
-        category: raw.category || "城市",
-        layerId: raw.layerId || "L2",
-        layer: layerNum(raw.layerId),
-        weight: script.weight || raw.weight || 8,
-        redline: !!script.redline || raw.category === "风险",
-        /* choices ride along in story.json when authored there; the script
-           table is the fallback so the two can be merged later without churn */
-        choices: raw.choices || script.choices || GENERIC
-      });
+      if (events[i] && events[i].id) out.push(toPayload(events[i]));
     }
     return out;
   }
@@ -215,7 +277,7 @@
     if (FC.story && (FC.story.events || FC.story.sampleEvents)) {
       source = Promise.resolve(FC.story);
     } else if (global.location.protocol === "file:") {
-      /* A fetch from file:// is blocked before it leaves the page and Chrome
+      /* A fetch from file:// is refused before it leaves the page and Chrome
          logs it as an error; go straight to the mirror instead. */
       source = Promise.reject(new Error("file://"));
     } else if (FC.ready && typeof FC.ready.then === "function") {
@@ -229,7 +291,6 @@
       if (!events || !events.length) throw new Error("story has no events");
       return events;
     }).catch(function () {
-      /* file:// double-click, offline, or a story.json that moved */
       return SEED;
     }).then(function (events) {
       deck = build(events);
@@ -243,10 +304,9 @@
      The city knocks on the door you actually live behind: same-layer events
      are common, distant ones rare, and the undercurrent mostly stays shut. */
   function weightOf(ev, layer) {
-    var base = ev.weight;
-    if (ev.layer === 5) return layer >= 4 ? base * 1.2 : base * 0.3;
-    var dist = Math.abs(ev.layer - layer);
-    return base * (dist === 0 ? 3 : dist === 1 ? 1.4 : 0.45);
+    if (ev.layerIndex === 5) return layer >= 4 ? ev.weight * 1.2 : ev.weight * 0.3;
+    var dist = Math.abs(ev.layerIndex - layer);
+    return ev.weight * (dist === 0 ? 3 : dist === 1 ? 1.4 : 0.45);
   }
 
   function pick(opts) {
@@ -258,6 +318,7 @@
 
     for (i = 0; i < deck.length; i++) {
       if (avoid.indexOf(deck[i].id) >= 0) continue;
+      if (opts.allowRedline === false && deck[i].type === "redline") continue;
       var w = weightOf(deck[i], layer);
       pool.push(deck[i]);
       weights.push(w);
@@ -273,200 +334,283 @@
     return pool[pool.length - 1];
   }
 
-  /* ------------------------------------------------------------------ 视图 */
-  var openHost = null;
-
-  function magnitude(k, v) {
-    var a = Math.abs(v);
-    if (k === "money") return a >= 4 ? 3 : a >= 2 ? 2 : 1;
-    return a >= 7 ? 3 : a >= 4 ? 2 : 1;
+  /* Single source of truth for the unit→¥ conversion, shared with the caller
+     so the result face and the HUD can never disagree. */
+  function moneyOf(units, ref) {
+    return units * Math.max(400, Math.round((ref || 0) * 0.3));
   }
 
-  function previewHtml(d) {
-    var keys = Object.keys(d || {});
-    if (!keys.length) return '<span class="fc-ev__pv fc-ev__pv--none">代价未知</span>';
-    return keys.map(function (k) {
-      var v = d[k];
-      var n = magnitude(k, v);
-      var dots = "";
-      for (var i = 1; i <= 3; i++) dots += '<i' + (i <= n ? ' class="on"' : "") + "></i>";
-      return '<span class="fc-ev__pv ' + (v >= 0 ? "is-up" : "is-down") + '">' +
-        '<span class="fc-ev__pv-k">' + esc(STAT_LABEL[k] || k) + "</span>" +
-        '<span class="fc-ev__pv-dots" aria-hidden="true">' + dots + "</span>" +
-        '<span class="fc-sr">' + (v >= 0 ? "上升" : "下降") + " " + STRENGTH[n] + "</span>" +
-        "</span>";
+  /* --------------------------------------------------------------- 预览点
+     Reigns rule: announce which dimensions move and how far, never which way. */
+  function bucket(stat, value, moneyRef) {
+    var a = Math.abs(value);
+    if (stat !== "money") return a <= 3 ? "s" : a <= 7 ? "m" : "l";
+    var amount = Math.abs(moneyOf(value, moneyRef));
+    var ref = moneyRef ? Math.abs(moneyRef) : 0;
+    if (!ref) return amount <= 1000 ? "s" : amount <= 6000 ? "m" : "l";
+    return amount <= 0.4 * ref ? "s" : amount <= 1.2 * ref ? "m" : "l";
+  }
+
+  function dotsHtml(choice, moneyRef) {
+    if (choice.preview) {
+      return choice.preview.map(function (p) {
+        return '<i class="fc-dot fc-dot--' + p.stat + " fc-dot--" + p.size + '"></i>';
+      }).join("");
+    }
+    var d = choice.d || choice.deltas || {};
+    return Object.keys(d).filter(function (k) { return d[k]; }).map(function (k) {
+      return '<i class="fc-dot fc-dot--' + k + " fc-dot--" + bucket(k, d[k], moneyRef) + '"></i>';
     }).join("");
   }
 
-  function focusables(root) {
-    return [].slice.call(root.querySelectorAll("button:not([disabled])"));
+  function affectedNames(choice) {
+    var d = choice.d || choice.deltas || {};
+    return Object.keys(d).filter(function (k) { return d[k]; }).map(function (k) {
+      return STAT_LABEL[k] || k;
+    }).join("、");
   }
 
-  function show(ev, opts) {
-    opts = opts || {};
-    if (openHost) return Promise.resolve(null);
+  function countTo(el, value, prefix) {
+    var counter = (FC.fx && FC.fx.countUp) ||
+      (global.FCMotion && global.FCMotion.countUp) ||
+      (global.FCUI && global.FCUI.countUp);
+    if (counter) counter(el, value, { duration: 400, prefix: prefix || "", from: 0 });
+    else el.textContent = (prefix || "") + fmt(value);
+  }
 
-    return new Promise(function (resolve) {
-      var lastFocus = doc.activeElement;
-      var soft = reduced();
+  /* ------------------------------------------------------------------ 视图 */
+  var current = null;
+  var queue = [];
 
-      var host = doc.createElement("div");
-      host.className = "fc-ev";
-      host.setAttribute("data-layer", "l" + ev.layer);
-      host.style.setProperty("--tint", "var(--fc-ev-l" + ev.layer + ")");
+  function render(ev, opts, resolve) {
+    var soft = reduced();
+    var moneyRef = opts.moneyRef || 0;
+    var ack = !ev.choices || !ev.choices.length;
+    var isRedline = ev.type === "redline" && !ack;
 
-      var scene = (ev.layerId || "L2") + " " + (LAYER_NAME[ev.layerId] || "城市") +
-        " · " + ev.category;
+    var host = doc.createElement("div");
+    host.className = "fc-event";
+    host.setAttribute("data-layer", ev.layer);
+    host.setAttribute("data-type", ev.type);
 
-      host.innerHTML =
-        '<div class="fc-ev__veil"></div>' +
-        '<div class="fc-ev__card" role="dialog" aria-modal="true" ' +
-             'aria-labelledby="fc-ev-title" aria-describedby="fc-ev-text">' +
-          '<div class="fc-ev__head">' +
-            '<span class="fc-ev__scene">' + esc(scene) + "</span>" +
-            '<span class="fc-ev__code">' + esc(ev.id) + "</span>" +
-          "</div>" +
-          '<h2 class="fc-ev__title" id="fc-ev-title">' + esc(ev.title) + "</h2>" +
-          '<p class="fc-ev__text" id="fc-ev-text">' + esc(ev.text) + "</p>" +
-          '<div class="fc-ev__body"></div>' +
-        "</div>";
-
-      var card = host.querySelector(".fc-ev__card");
-      var body = host.querySelector(".fc-ev__body");
-      var settled = false;
-      var chosen = null;
-
-      function close(result) {
-        if (settled) return;
-        settled = true;
-        doc.removeEventListener("keydown", onKey, true);
-        host.classList.add("is-closing");
-        var done = function () {
-          if (host.parentNode) host.parentNode.removeChild(host);
-          doc.body.classList.remove("fc-ev-lock");
-          openHost = null;
-          if (lastFocus && lastFocus.focus) lastFocus.focus();
-          resolve(result);
-        };
-        if (soft) done();
-        else global.setTimeout(done, 200);
-      }
-
-      function onKey(e) {
-        if (e.key === "Escape") {
-          /* An event is an interruption, not a dialog: it can only be closed
-             once a choice has been paid for. */
-          if (chosen) {
-            e.preventDefault();
-            close(chosen);
-          } else {
-            card.classList.remove("fc-ev__card--nudge");
-            void card.offsetWidth;
-            card.classList.add("fc-ev__card--nudge");
-          }
-          return;
-        }
-        if (e.key !== "Tab") return;
-        var items = focusables(card);
-        if (!items.length) return;
-        var first = items[0], last = items[items.length - 1];
-        if (e.shiftKey && doc.activeElement === first) { e.preventDefault(); last.focus(); }
-        else if (!e.shiftKey && doc.activeElement === last) { e.preventDefault(); first.focus(); }
-      }
-
-      function renderChoices() {
-        var html = '<div class="fc-ev__choices">';
-        for (var i = 0; i < ev.choices.length; i++) {
-          var c = ev.choices[i];
-          html += '<button type="button" class="fc-ev__choice' + (c.risk ? " is-risk" : "") +
+    var choicesHtml = ack
+      ? '<button class="fc-choice fc-choice--ack" data-i="-1">' +
+          '<span class="fc-choice__label">继续 ▸</span></button>'
+      : ev.choices.map(function (c, i) {
+          return '<button class="fc-choice' + (c.risk ? " fc-choice--risk" : "") +
             '" data-i="' + i + '">' +
-            '<span class="fc-ev__choice-main">' +
-              '<span class="fc-ev__label">' + esc(c.label) + "</span>" +
-              (c.hint ? '<span class="fc-ev__hint">' + esc(c.hint) + "</span>" : "") +
-            "</span>" +
-            '<span class="fc-ev__preview">' + previewHtml(c.d) + "</span>" +
+            '<span class="fc-choice__num">' + (i + 1) + "</span>" +
+            '<span class="fc-choice__label">' + esc(c.label) + "</span>" +
+            (c.cost ? '<span class="fc-choice__cost">' + esc(c.cost) + "</span>" : "") +
+            '<span class="fc-choice__dots" aria-hidden="true">' + dotsHtml(c, moneyRef) + "</span>" +
+            '<span class="fc-sr">影响：' + esc(affectedNames(c) || "未知") + "</span>" +
+            (isRedline ? '<i class="fc-choice__cooling" aria-hidden="true"></i>' : "") +
             "</button>";
-        }
-        html += "</div>";
-        html += '<p class="fc-ev__foot">' +
-          (ev.redline ? "红线事件 · 代价只标强度，不标确数。" : "预览只显示影响的方向与强度。") +
-          "</p>";
-        body.innerHTML = html;
-
-        var buttons = focusables(body);
-        buttons.forEach(function (b) {
-          b.addEventListener("click", function () {
-            choose(ev.choices[parseInt(b.getAttribute("data-i"), 10)]);
-          });
-        });
-
-        if (ev.redline && !opts.skipCooldown) coolDown(buttons);
-        else if (buttons[0]) buttons[0].focus();
-      }
-
-      /* Some decisions need three seconds. It doubles as mis-tap protection. */
-      function coolDown(buttons) {
-        var left = 3;
-        var note = doc.createElement("p");
-        note.className = "fc-ev__cool";
-        body.appendChild(note);
-        buttons.forEach(function (b) { b.disabled = true; });
-
-        var paint = function () {
-          note.textContent = left > 0 ? "冷静期 " + left + " 秒" : "";
-        };
-        paint();
-        var timer = global.setInterval(function () {
-          left--;
-          paint();
-          if (left > 0) return;
-          global.clearInterval(timer);
-          if (settled) return;
-          note.parentNode && note.parentNode.removeChild(note);
-          buttons.forEach(function (b) { b.disabled = false; });
-          if (buttons[0]) buttons[0].focus();
-        }, 1000);
-      }
-
-      function choose(choice) {
-        var deltas = choice.d || {};
-        var applied = opts.apply ? opts.apply(deltas, choice, ev) : deltas;
-        chosen = { event: ev, choice: choice, deltas: applied };
-        host.classList.add("is-resolved");
-
-        var ticks = Object.keys(applied || {}).map(function (k, i) {
-          var v = applied[k];
-          return '<span class="fc-ev__tick ' + (v >= 0 ? "up" : "down") + '" ' +
-            'style="animation-delay:' + (soft ? 0 : 90 * i) + 'ms">' +
-            esc(STAT_LABEL[k] || k) + " " + (v >= 0 ? "+" : "−") +
-            Math.abs(v).toLocaleString("zh-CN") + "</span>";
         }).join("");
 
-        body.innerHTML =
-          '<div class="fc-ev__result">' +
-            '<p class="fc-ev__picked">你选择了：' + esc(choice.label) + "</p>" +
-            '<p class="fc-ev__outcome">' + esc(choice.outcome || "") + "</p>" +
-            '<div class="fc-ev__ticks">' + ticks + "</div>" +
-            '<button type="button" class="fc-ev__go">继续这个月 ▸</button>' +
-          "</div>";
+    host.innerHTML =
+      '<div class="fc-event__scrim"></div>' +
+      '<div class="fc-event__card" role="dialog" aria-modal="true" tabindex="-1" ' +
+           'aria-labelledby="fcEvTitle" aria-describedby="fcEvBody">' +
+        '<i class="fc-event__accent" aria-hidden="true"></i>' +
+        '<div class="fc-event__head">' +
+          '<span class="fc-event__scene">' + esc(ev.scene) + "</span>" +
+          '<span class="fc-event__badge">' + esc(TYPE_LABEL[ev.type] || "事件") + "</span>" +
+        "</div>" +
+        '<div class="fc-event__face fc-event__face--ask">' +
+          '<h2 class="fc-event__title" id="fcEvTitle">' + esc(ev.title) + "</h2>" +
+          '<p class="fc-event__body" id="fcEvBody">' + esc(ev.body) + "</p>" +
+          '<div class="fc-event__choices" role="group" aria-label="选择">' + choicesHtml + "</div>" +
+        "</div>" +
+        '<div class="fc-event__face fc-event__face--result" hidden></div>' +
+      "</div>";
 
-        var go = body.querySelector(".fc-ev__go");
-        go.addEventListener("click", function () {
-          close(chosen);
+    var card = host.querySelector(".fc-event__card");
+    var badge = host.querySelector(".fc-event__badge");
+    var askFace = host.querySelector(".fc-event__face--ask");
+    var resultFace = host.querySelector(".fc-event__face--result");
+    var buttons = [].slice.call(host.querySelectorAll(".fc-choice"));
+
+    var settled = false;
+    var cooling = isRedline;
+    var answered = null;
+    var coolTimer = null;
+
+    function finish(result) {
+      if (settled) return;
+      settled = true;
+      if (coolTimer) global.clearInterval(coolTimer);
+      host.classList.add("is-closing");
+      var done = function () {
+        if (host.parentNode) host.parentNode.removeChild(host);
+        FC.overlay.pop(host);
+        current = null;
+        resolve(result);
+        var next = queue.shift();
+        if (next) render(next.ev, next.opts, next.resolve);
+      };
+      if (soft) done();
+      else global.setTimeout(done, 200);
+    }
+
+    function deny() {
+      if (soft || cooling) return;
+      card.classList.remove("is-denied");
+      void card.offsetWidth;
+      card.classList.add("is-denied");
+    }
+
+    /* Closing an event: an interruption has to be answered, so ESC and the
+       scrim only work once a choice has been paid for (overlay-spec §1.8). */
+    function requestClose() {
+      if (answered) finish(answered);
+      else if (ack) answer(null);
+      else deny();
+    }
+
+    function answer(choice) {
+      if (settled || cooling) return;
+      var deltas = {};
+      var d = (choice && (choice.d || choice.deltas)) || {};
+      for (var k in d) {
+        if (Object.prototype.hasOwnProperty.call(d, k) && d[k]) deltas[k] = d[k];
+      }
+      answered = {
+        choiceId: choice ? choice.id : null,
+        choice: choice,
+        deltas: deltas,
+        event: ev,
+        dismissed: false
+      };
+
+      /* ack mode has nothing to settle — the button *is* the acknowledgement */
+      if (!choice) { finish(answered); return; }
+
+      var keys = Object.keys(deltas);
+      resultFace.innerHTML =
+        (choice && choice.result
+          ? '<p class="fc-event__result">' + esc(choice.result) + "</p>" : "") +
+        '<ul class="fc-event__deltas" aria-live="polite">' +
+          keys.map(function (k, i) {
+            var isMoney = k === "money";
+            var value = isMoney ? moneyOf(deltas[k], moneyRef) : deltas[k];
+            return '<li class="fc-event__delta-row ' + (value >= 0 ? "up" : "down") +
+              '" style="--i:' + i + '">' +
+              "<span>" + esc(STAT_LABEL[k] || k) + "</span>" +
+              '<b data-value="' + value + '"' + (isMoney ? ' data-money="1"' : "") + ">" +
+              signed(value, isMoney ? "¥" : "") + "</b></li>";
+          }).join("") +
+        "</ul>" +
+        '<button class="fc-btn fc-btn--primary fc-event__continue">记入日志，继续 ▸</button>';
+
+      /* Bound before the face swap: the button is in the DOM the moment the
+         markup lands, and it must never exist without its handler. */
+      var go = resultFace.querySelector(".fc-event__continue");
+      go.addEventListener("click", function () { finish(answered); });
+
+      var swap = function () {
+        askFace.hidden = true;
+        resultFace.hidden = false;
+        host.classList.add("is-resolved");
+        [].slice.call(resultFace.querySelectorAll("b[data-value]")).forEach(function (b) {
+          var v = Number(b.getAttribute("data-value"));
+          var money = b.getAttribute("data-money");
+          b.textContent = (v < 0 ? "−" : "+") + (money ? "¥" : "");
+          var span = doc.createElement("span");
+          b.appendChild(span);
+          countTo(span, Math.abs(v));
         });
         go.focus();
+      };
+
+      if (soft) swap();
+      else {
+        askFace.classList.add("is-leaving");
+        global.setTimeout(swap, 200);
       }
+    }
 
-      renderChoices();
-      doc.body.appendChild(host);
-      doc.body.classList.add("fc-ev-lock");
-      doc.addEventListener("keydown", onKey, true);
-      openHost = host;
+    function onKey(e) {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        if (cooling) return;
+        requestClose();
+        return;
+      }
+      if (e.key === "Tab") { FC.overlay.trap(card, e); return; }
+      if (answered || cooling) return;
+      var n = parseInt(e.key, 10);
+      if (n >= 1 && n <= buttons.length && !buttons[n - 1].disabled) {
+        e.preventDefault();
+        buttons[n - 1].click();
+      }
+    }
 
-      /* let the first frame paint the closed state before opening */
-      if (soft) host.classList.add("is-open");
-      else global.requestAnimationFrame(function () { host.classList.add("is-open"); });
+    buttons.forEach(function (b) {
+      b.addEventListener("click", function () {
+        var i = parseInt(b.getAttribute("data-i"), 10);
+        answer(i >= 0 ? ev.choices[i] : null);
+      });
     });
+
+    host.querySelector(".fc-event__scrim").addEventListener("click", requestClose);
+
+    doc.body.appendChild(host);
+    FC.overlay.push("modal", host);
+    FC.overlay.top().onKey = onKey;
+    current = { host: host, finish: finish, event: ev };
+
+    /* Some decisions need three seconds. It doubles as mis-tap protection,
+       so it survives prefers-reduced-motion (overlay-spec §1.7). */
+    if (isRedline) {
+      var left = 3;
+      var label = TYPE_LABEL.redline;
+      buttons.forEach(function (b) { b.disabled = true; b.classList.add("is-cooling"); });
+      badge.textContent = label + " · " + left;
+      card.focus();
+      coolTimer = global.setInterval(function () {
+        left--;
+        if (left > 0) { badge.textContent = label + " · " + left; return; }
+        global.clearInterval(coolTimer);
+        coolTimer = null;
+        if (settled) return;
+        cooling = false;
+        badge.textContent = label;
+        buttons.forEach(function (b) {
+          b.disabled = false;
+          b.classList.remove("is-cooling");
+          var bar = b.querySelector(".fc-choice__cooling");
+          if (bar) bar.parentNode.removeChild(bar);
+        });
+        buttons[0].focus();
+      }, 1000);
+    } else {
+      buttons[0].focus();
+    }
+
+    if (soft) host.classList.add("is-open");
+    else global.requestAnimationFrame(function () { host.classList.add("is-open"); });
+  }
+
+  function show(payload, opts) {
+    var ev = payload && payload.layerIndex ? payload : toPayload(payload || {});
+    opts = opts || {};
+    return new Promise(function (resolve) {
+      if (current) queue.push({ ev: ev, opts: opts, resolve: resolve });
+      else render(ev, opts, resolve);
+    });
+  }
+
+  function close() {
+    var pending = queue.splice(0, queue.length);
+    pending.forEach(function (q) {
+      q.resolve({ choiceId: null, choice: null, deltas: {}, event: q.ev, dismissed: true });
+    });
+    if (current) {
+      current.finish({
+        choiceId: null, choice: null, deltas: {}, event: current.event, dismissed: true
+      });
+    }
   }
 
   FC.events = {
@@ -474,12 +618,17 @@
     deck: function () { return deck; },
     pick: pick,
     show: show,
-    isOpen: function () { return !!openHost; },
-    STAT_LABEL: STAT_LABEL
+    close: close,
+    isOpen: function () { return !!current; },
+    moneyOf: moneyOf,
+    toPayload: toPayload,
+    STAT_LABEL: STAT_LABEL,
+    TYPE_LABEL: TYPE_LABEL,
+    _bucket: bucket
   };
 
   /* ------------------------------------------------------- offline mirror
-     Mirrors data/story.json → sampleEvents. Only used when the JSON cannot be
+     Mirrors data/story.json → sampleEvents, used only when the JSON cannot be
      read (typically file://). Keep in sync when the story file changes. */
   var SEED = [
     { id: "EV01", title: "凌晨四点的灯", layerId: "L1", category: "生计",
