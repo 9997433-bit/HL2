@@ -552,7 +552,8 @@
     }
 
     function makeGrainSprite() {
-      const S = 128;
+      // 一次性做大一点，逐帧就少几十次 overlay 混合的 drawImage
+      const S = 512;
       const cv = D.createElement('canvas');
       cv.width = S;
       cv.height = S;
@@ -995,12 +996,13 @@
     function drawGrain() {
       if (!scene.q.grain || settings.calm) return;
       const s = scene.grainSprite;
-      const ox = -Math.random() * 128;
-      const oy = -Math.random() * 128;
+      const S = s.width;
+      const ox = -Math.random() * S;
+      const oy = -Math.random() * S;
       ctx.globalAlpha = 0.5;
       ctx.globalCompositeOperation = 'overlay';
-      for (let x = ox; x < scene.W; x += 128) {
-        for (let y = oy; y < scene.H; y += 128) ctx.drawImage(s, x, y);
+      for (let x = ox; x < scene.W; x += S) {
+        for (let y = oy; y < scene.H; y += S) ctx.drawImage(s, x, y);
       }
       ctx.globalAlpha = 1;
       ctx.globalCompositeOperation = 'source-over';
