@@ -37,7 +37,7 @@
 ## Round Status
 | Round | Status |
 |-------|--------|
-| Round 1 | in_progress — 2/6 done |
+| Round 1 | in_progress — 3/6 done |
 | Round 2 | pending |
 | Round 3 | pending |
 
