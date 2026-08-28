@@ -114,11 +114,11 @@ python3 -m http.server 8000
 
 ## 签核
 
-- 测试人：
-- 日期：
-- Chrome 版本：
-- 操作系统：
-- 视口：桌面 / 390px
-- 自动化测试提交：
-- 结果：通过 / 不通过
-- 备注：
+- 测试人：R2-C fable 子代理
+- 日期：2026-08-28
+- Chrome 版本：148.0.7778.96
+- 操作系统：Linux
+- 视口：桌面 1280×900
+- 自动化测试提交：`3f504a5`
+- 结果：通过
+- 备注：详见 `.agent_workspace/fucheng-o1-origin-sagas/round2/MANUAL_ACCEPTANCE.md`
