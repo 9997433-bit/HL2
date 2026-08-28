@@ -288,14 +288,22 @@
     });
   }
 
+  function sagaTag() {
+    var meta = FC.Sim.sagaById ? FC.Sim.sagaById(run.saga.id) : null;
+    return meta && meta.kind === "origin"
+      ? { label: "出身 · " + run.saga.title, tint: "var(--neon-amber)" }
+      : { label: "链式事件", tint: "var(--neon-violet)" };
+  }
+
   function resolveSagaStep(step, silent) {
+    var tag = sagaTag();
     if (step.choices && step.choices.length && FC.events) {
       var sagaEv = {
         id: "saga_" + run.saga.id + "_" + run.saga.step,
         type: "opportunity",
         title: step.title || run.saga.title,
         body: step.text,
-        category: "链式事件",
+        category: tag.label,
         layerId: "L" + layerOf(),
         choices: step.choices.map(function (c, i) {
           return { id: String(i), label: c.text, d: c.d, result: c.text };
@@ -306,7 +314,7 @@
         var idx = res.choiceId != null ? parseInt(res.choiceId, 10) || 0 : 0;
         var applied = FC.Sim.advanceSaga(run, idx, income());
         pushLog({
-          t: ts(), tag: "链式事件", tint: "var(--neon-violet)",
+          t: ts(), tag: tag.label, tint: tag.tint,
           text: step.text, d: applied.applied
         });
         render(true);
@@ -315,7 +323,7 @@
       });
     }
     var applied = FC.Sim.advanceSaga(run, 0, income());
-    pushLog({ t: ts(), tag: "链式事件", tint: "var(--neon-violet)", text: step.text, d: applied.applied });
+    pushLog({ t: ts(), tag: tag.label, tint: tag.tint, text: step.text, d: applied.applied });
     return Promise.resolve(true);
   }
 
@@ -364,7 +372,7 @@
     if (run.month > 12) { run.month = 1; run.year++; }
     if (run.months % 12 === 0) run.age++;
 
-    FC.Sim.tryStartRandomSaga(run, era, origin);
+    if (!FC.Sim.tryStartOriginSaga(run, origin)) FC.Sim.tryStartRandomSaga(run, era, origin);
     var moves = [];
 
     var sagaChain = Promise.resolve();

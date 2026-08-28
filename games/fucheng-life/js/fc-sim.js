@@ -350,13 +350,31 @@
       return list[Math.floor(Math.random() * list.length)];
     },
 
-    startSaga: function (run, sagaId) {
+    /** 随机链 + 出身链共用同一个 run.saga 槽位，查找时两个池都要看。 */
+    sagaById: function (sagaId) {
       var pack = FC.Sim.pack;
-      if (!pack || run.saga) return false;
-      var saga = null;
-      pack.sagas.forEach(function (s) {
-        if (s.id === sagaId) saga = s;
+      if (!pack) return null;
+      var found = null;
+      (pack.sagas || []).concat(pack.originSagas || []).forEach(function (s) {
+        if (s.id === sagaId) found = s;
       });
+      return found;
+    },
+
+    originSagaFor: function (origin) {
+      var pack = FC.Sim.pack;
+      if (!pack || !pack.originSagas || !origin) return null;
+      var key = origin.storyId || origin.id;
+      var found = null;
+      pack.originSagas.forEach(function (s) {
+        if (s.originId === key) found = s;
+      });
+      return found;
+    },
+
+    startSaga: function (run, sagaId) {
+      if (run.saga) return false;
+      var saga = FC.Sim.sagaById(sagaId);
       if (!saga) return false;
       run.saga = { id: saga.id, step: 0, title: saga.title };
       return true;
@@ -364,11 +382,7 @@
 
     sagaStep: function (run) {
       if (!run.saga) return null;
-      var pack = FC.Sim.pack;
-      var saga = null;
-      pack.sagas.forEach(function (s) {
-        if (s.id === run.saga.id) saga = s;
-      });
+      var saga = FC.Sim.sagaById(run.saga.id);
       if (!saga || !saga.steps[run.saga.step]) {
         run.saga = null;
         return null;
@@ -387,6 +401,26 @@
       run.saga.step++;
       if (!FC.Sim.sagaStep(run)) run.saga = null;
       return { step: step, applied: applied };
+    },
+
+    /** 出身短链：入城后 3–18 月内一次性触发，窗口末月保底。 */
+    tryStartOriginSaga: function (run, origin) {
+      if (!run.done) run.done = {};
+      if (run.saga || run.done.originSaga) return false;
+      var saga = FC.Sim.originSagaFor(origin);
+      if (!saga) return false;
+      var bal = (FC.Sim.pack && FC.Sim.pack.balance) || {};
+      var minM = bal.originSagaMinMonths || 3;
+      var maxM = bal.originSagaMaxMonths || 18;
+      if (run.months < minM) return false;
+      if (run.months > maxM) {
+        run.done.originSaga = true;
+        return false;
+      }
+      if (run.months < maxM && Math.random() > (bal.originSagaMonthlyOdds || 0.2)) return false;
+      run.done.originSaga = true;
+      run.done["saga_" + saga.id] = true;
+      return FC.Sim.startSaga(run, saga.id);
     },
 
     tryStartRandomSaga: function (run, era, origin) {
