@@ -164,7 +164,9 @@ async function main() {
 
   /* 取消后推进再刷新：读档不得把显式 picked:false 强推回 true。 */
   const simSrc = fs.readFileSync(path.join(gameRoot, "js/fc-sim.js"), "utf8");
-  const migrateSrc = functionSection(simSrc, "migrateContract");
+  const migrateAt = simSrc.search(/migrateContract\s*:\s*function\s*\(/);
+  assert.ok(migrateAt >= 0, "migrateContract must be declared");
+  const migrateSrc = simSrc.slice(migrateAt, migrateAt + 900);
   assert.match(
     migrateSrc,
     /picked\s*==\s*null[\s\S]{0,200}months/,
