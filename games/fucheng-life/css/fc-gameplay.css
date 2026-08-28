@@ -315,8 +315,139 @@
   box-shadow: 0 0 20px rgba(255, 214, 102, 0.15);
 }
 
+/* --------------------------------------------------------------------------
+   Mobile sticky action dock — fixed to the bottom edge on ≤640px screens.
+   AP dots + the four high-frequency actions (上班/休息/探区/饭局) + a「更多」
+   button that opens the drawer with the rest. When AP hits 0 the row swaps
+   to a single primary「推进一月」button. Desktop never sees it.
+   -------------------------------------------------------------------------- */
+.fc-dock {
+  display: none;
+}
+
+.fc-dock__dots {
+  display: flex;
+  justify-content: center;
+  gap: 7px;
+  margin-bottom: 7px;
+}
+
+.fc-dock__row {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.fc-dock__row .fc-dock__btn {
+  align-items: center;
+  text-align: center;
+  gap: 1px;
+  padding: 7px 4px 6px;
+}
+
+.fc-dock__btn .fc-action-btn__icon { font-size: 16px; }
+.fc-dock__btn b { font-size: 12px; white-space: nowrap; }
+.fc-dock__btn span { font-size: 10px; }
+
+.fc-dock__tick {
+  grid-column: 1 / -1;
+  width: 100%;
+  padding: 12px 16px;
+}
+
+/* 「更多」drawer — bottom sheet above the dock, below event modals (z 300) */
+.fc-drawer {
+  position: fixed;
+  inset: 0;
+  z-index: 150;
+}
+
+.fc-drawer[hidden] { display: none !important; }
+
+.fc-drawer__scrim {
+  position: absolute;
+  inset: 0;
+  background: rgba(2, 4, 10, 0.62);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+}
+
+.fc-drawer__sheet {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: 20px 20px 0 0;
+  border-top: 1px solid var(--line-hi);
+  background: rgba(10, 14, 26, 0.97);
+  padding: 16px 16px calc(18px + var(--safe-b, 0px));
+  animation: fc-drawer-up 0.28s var(--ease-out) both;
+}
+
+@keyframes fc-drawer-up {
+  from { transform: translateY(100%); }
+}
+
+.fc-drawer__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.fc-drawer__head b {
+  font-size: 14px;
+  letter-spacing: 0.1em;
+  color: var(--text-hi);
+}
+
+.fc-drawer__close {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-hi);
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.fc-drawer__grid { grid-template-columns: repeat(2, 1fr); }
+
 @media (max-width: 640px) {
   .fc-actions { grid-template-columns: repeat(2, 1fr); }
+
+  .fc-dock {
+    display: block;
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 90;
+    padding: 8px 10px calc(9px + var(--safe-b, 0px));
+    background: rgba(7, 10, 20, 0.92);
+    border-top: 1px solid var(--line-hi);
+    backdrop-filter: blur(18px) saturate(140%);
+    -webkit-backdrop-filter: blur(18px) saturate(140%);
+  }
+
+  /* Room for the dock so the footnote and log tail stay reachable */
+  .fc-page {
+    padding-bottom: 168px;
+  }
+
+  /* Compact the vitals cards so 现金+健康 sit side by side at 390px */
+  .fc-hud {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+  .fc-stat { padding: 12px 13px 11px; }
+  .fc-stat__value { font-size: 21px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fc-drawer__sheet { animation: none !important; }
 }
 
 /* 3D tilt cards (origin / era pickers) */

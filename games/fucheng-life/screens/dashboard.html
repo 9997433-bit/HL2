@@ -57,37 +57,44 @@
 
   <div class="fc-saga-banner fc-rise" id="sagaBanner" hidden aria-live="polite">链式事件</div>
 
-  <!-- HUD -->
-  <section class="fc-hud fc-rise" style="margin-bottom:18px">
-    <div class="fc-stat" id="moneyStat" style="--tint:var(--neon-amber)">
-      <div class="fc-stat__label">￥ 现金 <span class="fc-stat__warn" id="moneyWarn" hidden>氧气不足</span></div>
-      <div class="fc-stat__value" id="sMoney">0</div>
-      <div class="fc-stat__delta" id="dMoney">月净流 —</div>
+  <!-- HUD · 生命体征（可折叠：默认只露 现金/健康，展开见 人脉/声望/年龄/负债） -->
+  <section class="fc-vitals fc-rise" id="vitalsPanel" style="margin-bottom:18px">
+    <div class="fc-vitals__head">
+      <h2 class="fc-vitals__title">生命体征 <span>VITALS</span></h2>
+      <button type="button" class="fc-vitals__toggle" id="vitalsToggle"
+              aria-expanded="true" aria-controls="vitalsGrid">收起 ▴</button>
     </div>
-    <div class="fc-stat" style="--tint:var(--neon-jade)">
-      <div class="fc-stat__label">♡ 健康</div>
-      <div class="fc-stat__value"><span id="sHealth">0</span><small>/100</small></div>
-      <div class="fc-stat__meter fc-meter fc-meter--jade"><i id="mHealth"></i></div>
-    </div>
-    <div class="fc-stat" style="--tint:var(--neon-violet)">
-      <div class="fc-stat__label">◎ 人脉</div>
-      <div class="fc-stat__value"><span id="sSocial">0</span><small>/100</small></div>
-      <div class="fc-stat__meter fc-meter fc-meter--violet"><i id="mSocial"></i></div>
-    </div>
-    <div class="fc-stat" style="--tint:var(--neon-cyan)">
-      <div class="fc-stat__label">✦ 声望</div>
-      <div class="fc-stat__value"><span id="sRep">0</span><small>/100</small></div>
-      <div class="fc-stat__meter fc-meter fc-meter--cyan"><i id="mRep"></i></div>
-    </div>
-    <div class="fc-stat" style="--tint:var(--neon-rose)">
-      <div class="fc-stat__label">⧗ 年龄</div>
-      <div class="fc-stat__value"><span id="sAge">22</span><small>岁</small></div>
-      <div class="fc-stat__delta" id="dAge">已在城中 0 个月</div>
-    </div>
-    <div class="fc-stat" style="--tint:var(--neon-blood)">
-      <div class="fc-stat__label">⚑ 负债</div>
-      <div class="fc-stat__value" id="sDebt">0</div>
-      <div class="fc-stat__delta" id="dDebt">无未结清账目</div>
+    <div class="fc-hud" id="vitalsGrid">
+      <div class="fc-stat" id="moneyStat" style="--tint:var(--neon-amber)">
+        <div class="fc-stat__label">￥ 现金 <span class="fc-stat__warn" id="moneyWarn" hidden>氧气不足</span></div>
+        <div class="fc-stat__value" id="sMoney">0</div>
+        <div class="fc-stat__delta" id="dMoney">月净流 —</div>
+      </div>
+      <div class="fc-stat" style="--tint:var(--neon-jade)">
+        <div class="fc-stat__label">♡ 健康</div>
+        <div class="fc-stat__value"><span id="sHealth">0</span><small>/100</small></div>
+        <div class="fc-stat__meter fc-meter fc-meter--jade"><i id="mHealth"></i></div>
+      </div>
+      <div class="fc-stat fc-hud__more" style="--tint:var(--neon-violet)">
+        <div class="fc-stat__label">◎ 人脉</div>
+        <div class="fc-stat__value"><span id="sSocial">0</span><small>/100</small></div>
+        <div class="fc-stat__meter fc-meter fc-meter--violet"><i id="mSocial"></i></div>
+      </div>
+      <div class="fc-stat fc-hud__more" style="--tint:var(--neon-cyan)">
+        <div class="fc-stat__label">✦ 声望</div>
+        <div class="fc-stat__value"><span id="sRep">0</span><small>/100</small></div>
+        <div class="fc-stat__meter fc-meter fc-meter--cyan"><i id="mRep"></i></div>
+      </div>
+      <div class="fc-stat fc-hud__more" style="--tint:var(--neon-rose)">
+        <div class="fc-stat__label">⧗ 年龄</div>
+        <div class="fc-stat__value"><span id="sAge">22</span><small>岁</small></div>
+        <div class="fc-stat__delta" id="dAge">已在城中 0 个月</div>
+      </div>
+      <div class="fc-stat fc-hud__more" style="--tint:var(--neon-blood)">
+        <div class="fc-stat__label">⚑ 负债</div>
+        <div class="fc-stat__value" id="sDebt">0</div>
+        <div class="fc-stat__delta" id="dDebt">无未结清账目</div>
+      </div>
     </div>
   </section>
 
@@ -229,6 +236,24 @@
     <a href="../index.html">返回游戏入口</a>
   </p>
 </main>
+
+<!-- Mobile sticky action dock（≤640px 显示；桌面端由 CSS 隐藏） -->
+<div class="fc-dock" id="mobileDock" role="group" aria-label="快捷行动">
+  <div class="fc-dock__dots" id="dockDots" aria-hidden="true"></div>
+  <div class="fc-dock__row" id="dockActions"></div>
+</div>
+
+<!-- 「更多」行动抽屉 -->
+<div class="fc-drawer" id="dockDrawer" hidden>
+  <div class="fc-drawer__scrim" data-drawer-close></div>
+  <div class="fc-drawer__sheet" role="dialog" aria-modal="true" aria-label="更多行动">
+    <div class="fc-drawer__head">
+      <b>更多行动</b>
+      <button type="button" class="fc-drawer__close" data-drawer-close aria-label="关闭">✕</button>
+    </div>
+    <div class="fc-actions fc-drawer__grid" id="drawerActions"></div>
+  </div>
+</div>
 
 <script src="../js/story-loader.js"></script>
 <script src="../js/fc-ui.js"></script>

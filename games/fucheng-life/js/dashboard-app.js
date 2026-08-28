@@ -240,25 +240,64 @@
     }
   }
 
+  /* 高频四行动常驻手机底栏；其余收进「更多」抽屉 */
+  var QUICK_ACTIONS = ["work", "rest", "explore", "network"];
+
+  function actionBtn(a, extra) {
+    var ok = FC.Sim.canAction(run, a, era, origin);
+    return '<button type="button" class="fc-action-btn' + (ok ? "" : " is-disabled") +
+      (extra ? " " + extra : "") + '" data-action="' +
+      a.id + '" ' + (ok ? "" : "disabled") + ">" +
+      '<span class="fc-action-btn__icon">' + esc(a.icon) + "</span>" +
+      "<b>" + esc(a.name) + "</b><span>−" + a.ap + " AP</span></button>";
+  }
+
+  function apDotsHtml() {
+    var html = "";
+    for (var i = 0; i < run.apMax; i++) {
+      html += '<span class="fc-ap-dot' + (i < run.ap ? " is-full" : "") + '"></span>';
+    }
+    return html;
+  }
+
+  /* 手机底栏：AP 点 + 4 高频行动 + 「更多」；AP 用尽时换成「推进一月」主按钮 */
+  function renderDock() {
+    var dock = $("mobileDock");
+    if (!dock) return;
+    var all = FC.Sim.actions();
+    var byId = {}, quick = [], rest = [], i;
+    for (i = 0; i < all.length; i++) byId[all[i].id] = all[i];
+    for (i = 0; i < QUICK_ACTIONS.length; i++) {
+      if (byId[QUICK_ACTIONS[i]]) quick.push(byId[QUICK_ACTIONS[i]]);
+    }
+    for (i = 0; i < all.length; i++) {
+      if (QUICK_ACTIONS.indexOf(all[i].id) < 0) rest.push(all[i]);
+    }
+
+    $("dockDots").innerHTML = apDotsHtml();
+    if (run.ap <= 0) {
+      $("dockActions").innerHTML =
+        '<button type="button" class="fc-btn fc-btn--primary fc-dock__tick" data-dock-tick>推进一月 ▸</button>';
+    } else {
+      $("dockActions").innerHTML = quick.map(function (a) {
+        return actionBtn(a, "fc-dock__btn");
+      }).join("") +
+        '<button type="button" class="fc-action-btn fc-dock__btn" data-dock-more aria-haspopup="dialog">' +
+        '<span class="fc-action-btn__icon">⋯</span><b>更多</b><span>' + rest.length + " 项</span></button>";
+    }
+    var drawerGrid = $("drawerActions");
+    if (drawerGrid) {
+      drawerGrid.innerHTML = rest.map(function (a) { return actionBtn(a); }).join("");
+    }
+  }
+
   function renderActions() {
     var grid = $("actionGrid");
     if (!grid) return;
-    grid.innerHTML = FC.Sim.actions().map(function (a) {
-      var ok = FC.Sim.canAction(run, a, era, origin);
-      return '<button type="button" class="fc-action-btn' + (ok ? "" : " is-disabled") + '" data-action="' +
-        a.id + '" ' + (ok ? "" : "disabled") + ">" +
-        '<span class="fc-action-btn__icon">' + esc(a.icon) + "</span>" +
-        "<b>" + esc(a.name) + "</b><span>−" + a.ap + " AP</span></button>";
-    }).join("");
+    grid.innerHTML = FC.Sim.actions().map(function (a) { return actionBtn(a); }).join("");
 
     $("apLabel").textContent = run.ap + "/" + run.apMax;
-    var dots = $("apDots");
-    dots.innerHTML = "";
-    for (var i = 0; i < run.apMax; i++) {
-      var d = document.createElement("span");
-      d.className = "fc-ap-dot" + (i < run.ap ? " is-full" : "");
-      dots.appendChild(d);
-    }
+    $("apDots").innerHTML = apDotsHtml();
     $("stageChip").textContent = FC.Sim.stage(run).label;
     $("tickBtn").disabled = run.ap > 0;
     $("apHint").textContent = run.zoneQueue
@@ -266,6 +305,7 @@
       : run.ap > 0
         ? "用完行动点后再推进一月。侧栏可设定探区目标。"
         : "行动点已用尽，可以推进一月。";
+    renderDock();
   }
 
   /* 人情账落地后附在日志末尾：「（人情账 · 陈姐 −2，欠着这个月的房租）」 */
@@ -407,7 +447,7 @@
         t: ts(), tag: "合约", tint: "var(--neon-gold)",
         text: "你签下了「" + def.name + "」。" + def.pitch +
           "　期限 " + def.deadline + " 个月，从这个月开始算。",
-        d: {}
+        d: {}, kind: "contract"
       });
       render(true);
       renderLog();
@@ -543,16 +583,30 @@
         (e.title ? '<h3 class="fc-log__card-title">' + esc(e.title) + "</h3>" : "") +
         '<p class="fc-log__card-text">' + esc(e.text) + '</p>' +
         '<div class="fc-log__delta">' + logDeltas(e.d) + "</div></article>";
-    return '<li class="fc-log__item fc-log__item--card is-new" style="--i:' + Math.min(i, 7) +
+    return '<li class="fc-log__item fc-log__item--card is-new"' +
+      (e.kind ? ' data-tag="' + e.kind + '"' : "") +
+      ' style="--i:' + Math.min(i, 7) +
       ";--tint:" + (e.tint || "var(--l2)") + '">' +
       '<div class="fc-log__time">' + e.t + '</div><div class="fc-log__body">' +
       body + "</div></li>";
   }
 
+  /* Timeline 分级：ambient 灰细条，O1/链式/人情/合约 走层色左边框 */
+  var LOG_MAJOR = { o1: 1, saga: 1, npc: 1, contract: 1 };
+
+  function logKindClass(e) {
+    if (e.kind === "ambient") return " fc-log__item--muted";
+    if (LOG_MAJOR[e.kind]) return " fc-log__item--major";
+    return "";
+  }
+
   function logItem(e, i) {
     if (e.card) return logCardItem(e, i);
     var deltas = logDeltas(e.d);
-    return '<li class="fc-log__item is-new" style="--i:' + Math.min(i, 7) + '">' +
+    var tint = LOG_MAJOR[e.kind] ? ";--tint:" + (e.tint || "var(--l2)") : "";
+    return '<li class="fc-log__item' + logKindClass(e) + ' is-new"' +
+      (e.kind ? ' data-tag="' + e.kind + '"' : "") +
+      ' style="--i:' + Math.min(i, 7) + tint + '">' +
       '<div class="fc-log__time">' + e.t + "</div><div class=fc-log__body>" +
       '<span class="fc-log__tag" style="color:' + e.tint + '">' + esc(e.tag) + "</span><p>" +
       esc(e.text) + '</p><div class="fc-log__delta">' + deltas + "</div></div></li>";
@@ -589,7 +643,8 @@
       tag: ev.category || "城市",
       tint: "var(--l" + layerNumOf(ev) + ")",
       text: ev.text || ev.title,
-      d: applied
+      d: applied,
+      kind: "ambient"
     };
     if (FC.events && FC.events.presentationOf(ev) === "inline") {
       entry.id = ev.id;
@@ -700,7 +755,8 @@
       tint: ev.contract ? "var(--neon-gold)"
         : ledger.length ? "var(--neon-amber)" : "var(--l" + ev.layerIndex + ")",
       text: "【" + ev.title + "】" + ((res.choice && res.choice.result) || "") + npcNote(ledger),
-      d: applied
+      d: applied,
+      kind: ev.contract ? "contract" : ledger.length ? "npc" : "o1"
     };
     if (res.inline) {
       /* res.event 是归一化后的 payload —— 原始事件不一定带 layer/body。 */
@@ -769,7 +825,7 @@
         var applied = FC.Sim.advanceSaga(run, idx, income());
         pushLog({
           t: ts(), tag: tag.label, tint: tag.tint,
-          text: step.text, d: applied.applied
+          text: step.text, d: applied.applied, kind: "saga"
         });
         render(true);
         renderLog();
@@ -777,7 +833,7 @@
       });
     }
     var applied = FC.Sim.advanceSaga(run, 0, income());
-    pushLog({ t: ts(), tag: tag.label, tint: tag.tint, text: step.text, d: applied.applied });
+    pushLog({ t: ts(), tag: tag.label, tint: tag.tint, text: step.text, d: applied.applied, kind: "saga" });
     return Promise.resolve(true);
   }
 
@@ -877,6 +933,63 @@
     FCMotion.stagger(nodes, { max: 8 });
   }
 
+  /* 生命体征折叠：手机默认收起（只露现金/健康，合约条紧随其下），桌面默认全开 */
+  function bindVitals() {
+    var panel = $("vitalsPanel");
+    var btn = $("vitalsToggle");
+    if (!panel || !btn) return;
+    function setOpen(open) {
+      panel.classList.toggle("is-collapsed", !open);
+      btn.setAttribute("aria-expanded", open ? "true" : "false");
+      btn.textContent = open ? "收起 ▴" : "展开全部 ▾";
+    }
+    var mobile = false;
+    try {
+      mobile = !!(window.matchMedia && window.matchMedia("(max-width: 640px)").matches);
+    } catch (e) { /* ignore */ }
+    setOpen(!mobile);
+    btn.addEventListener("click", function () {
+      setOpen(panel.classList.contains("is-collapsed"));
+    });
+  }
+
+  function openDrawer() {
+    var d = $("dockDrawer");
+    if (d) d.hidden = false;
+  }
+
+  function closeDrawer() {
+    var d = $("dockDrawer");
+    if (d) d.hidden = true;
+  }
+
+  function bindDock() {
+    var dock = $("mobileDock");
+    var drawer = $("dockDrawer");
+    if (dock) {
+      dock.addEventListener("click", function (e) {
+        var t = e.target.closest("[data-action],[data-dock-more],[data-dock-tick]");
+        if (!t || t.disabled) return;
+        if (t.hasAttribute("data-dock-tick")) { tick(false); return; }
+        if (t.hasAttribute("data-dock-more")) { openDrawer(); return; }
+        onAction(t.dataset.action);
+      });
+    }
+    if (drawer) {
+      drawer.addEventListener("click", function (e) {
+        if (e.target.closest("[data-drawer-close]")) { closeDrawer(); return; }
+        var btn = e.target.closest("[data-action]");
+        if (btn && !btn.disabled) {
+          onAction(btn.dataset.action);
+          closeDrawer();
+        }
+      });
+      document.addEventListener("keydown", function (e) {
+        if (e.key === "Escape" && !drawer.hidden) closeDrawer();
+      });
+    }
+  }
+
   function bindTabs() {
     document.querySelectorAll(".fc-tabs__btn").forEach(function (btn) {
       btn.addEventListener("click", function () {
@@ -940,6 +1053,8 @@
       $("locChip").addEventListener("click", openZonePicker);
     }
 
+    bindVitals();
+    bindDock();
     bindTabs();
     if (FC.events) FC.events.load();
     if (!run.log.length) {
