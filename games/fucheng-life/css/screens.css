@@ -1460,6 +1460,7 @@ button {
     width: 100%;
     flex-direction: row;
     align-items: baseline;
+    justify-content: flex-start;
     border-right: 0;
     border-bottom: 1px solid color-mix(in srgb, var(--tint) 24%, transparent);
     padding: 12px 14px;
