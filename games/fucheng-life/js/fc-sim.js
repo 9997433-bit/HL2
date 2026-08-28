@@ -172,6 +172,7 @@
         done: {},
         recent: [],
         recentModal: [],
+        recentZone: {},
         log: [],
         talents: (function () {
           var inh = null;
@@ -645,7 +646,25 @@
       var pack = FC.Sim.pack;
       if (!pack || !pack.zoneEvents || !pack.zoneEvents[zoneKey]) return null;
       var list = pack.zoneEvents[zoneKey];
-      return list[Math.floor(Math.random() * list.length)];
+      if (!list.length) return null;
+      if (!run.recentZone) run.recentZone = {};
+      var recent = run.recentZone[zoneKey] || [];
+      var candidates = [];
+      var i;
+      for (i = 0; i < list.length; i++) {
+        if (recent.indexOf(i) < 0) candidates.push(i);
+      }
+      /* Tiny custom packs can have fewer entries than the two-pick window.
+         In that case preserve the stronger rule: never repeat the last pick. */
+      if (!candidates.length) {
+        for (i = 0; i < list.length; i++) {
+          if (i !== recent[recent.length - 1]) candidates.push(i);
+        }
+      }
+      if (!candidates.length) candidates.push(0);
+      var pickedIndex = candidates[Math.floor(Math.random() * candidates.length)];
+      run.recentZone[zoneKey] = recent.concat(pickedIndex).slice(-2);
+      return list[pickedIndex];
     },
 
     /** 随机链 + 出身链共用同一个 run.saga 槽位，查找时两个池都要看。 */

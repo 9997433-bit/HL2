@@ -208,9 +208,9 @@
   ],
   "ambientEvents": [
     {
+      "layerId": "L1",
       "id": "U001",
       "category": "居住",
-      "layerId": "L1",
       "text": "合租房热水器坏了，房东说「凑活用」。你洗了一周冷水。",
       "d": {
         "health": -4,
@@ -220,9 +220,9 @@
       "title": "居住 · L1"
     },
     {
+      "layerId": "L2",
       "id": "U002",
       "category": "居住",
-      "layerId": "L2",
       "text": "物业通知电梯检修三天。你爬了十七层，到公司时衬衫湿透。",
       "d": {
         "health": -3,
@@ -232,9 +232,9 @@
       "title": "居住 · L2"
     },
     {
+      "layerId": "L2",
       "id": "U003",
       "category": "金钱",
-      "layerId": "L2",
       "text": "工资到账短信和花呗还款提醒几乎同时弹出。",
       "d": {
         "money": -1,
@@ -244,9 +244,9 @@
       "title": "金钱 · L2"
     },
     {
+      "layerId": "L2",
       "id": "U004",
       "category": "健康",
-      "layerId": "L2",
       "text": "体检报告建议「复查」。预约电话打了三次才接通。",
       "d": {
         "health": -3,
@@ -256,9 +256,9 @@
       "title": "健康 · L2"
     },
     {
+      "layerId": "L2",
       "id": "U005",
       "category": "职场",
-      "layerId": "L2",
       "text": "周会延长四十分钟，主题只有一个：「降本增效」。",
       "d": {
         "rep": -1,
@@ -268,9 +268,9 @@
       "title": "职场 · L2"
     },
     {
+      "layerId": "L2",
       "id": "U006",
       "category": "人情",
-      "layerId": "L2",
       "text": "同事结婚，礼金标准在群里「通气」过。你按中间档转过去。",
       "d": {
         "money": -2,
@@ -280,9 +280,9 @@
       "title": "人情 · L2"
     },
     {
+      "layerId": "L3",
       "id": "U007",
       "category": "教育",
-      "layerId": "L3",
       "text": "夜校招生简章写「周末两天，改变一生」。学费等于你半月伙食。",
       "d": {
         "money": -1,
@@ -292,9 +292,9 @@
       "title": "教育 · L3"
     },
     {
+      "layerId": "L3",
       "id": "U008",
       "category": "机会",
-      "layerId": "L3",
       "text": "前同事创业，朋友圈发招聘：「不看学历，看扛压。」",
       "d": {
         "rep": 2,
@@ -304,9 +304,9 @@
       "title": "机会 · L3"
     },
     {
+      "layerId": "L5",
       "id": "U009",
       "category": "风险",
-      "layerId": "L5",
       "text": "短信：「您的账户异常，请点击链接。」你删了，类似的一月还有七条。",
       "d": {
         "health": -1
@@ -315,9 +315,9 @@
       "title": "风险 · L5"
     },
     {
+      "layerId": "L1",
       "id": "U010",
       "category": "健康",
-      "layerId": "L1",
       "text": "外卖迟到四十分钟，骑手电话说「电梯坏了」。你给了差评又撤了。",
       "d": {
         "health": -2,
@@ -327,9 +327,9 @@
       "title": "健康 · L1"
     },
     {
+      "layerId": "L3",
       "id": "U011",
       "category": "职场",
-      "layerId": "L3",
       "text": "绩效面谈，主管用「潜力」这个词。你知道下一句通常是「但」。",
       "d": {
         "rep": -2,
@@ -339,9 +339,9 @@
       "title": "职场 · L3"
     },
     {
+      "layerId": "L3",
       "id": "U012",
       "category": "金钱",
-      "layerId": "L3",
       "text": "基金绿了一周。App 推送：「长期主义。」",
       "d": {
         "money": -1,
@@ -351,9 +351,9 @@
       "title": "金钱 · L3"
     },
     {
+      "layerId": "L3",
       "id": "U013",
       "category": "居住",
-      "layerId": "L3",
       "text": "邻居装修，电钻从八点响到六点。物业说「已备案」。",
       "d": {
         "health": -4
@@ -362,9 +362,9 @@
       "title": "居住 · L3"
     },
     {
+      "layerId": "L3",
       "id": "U014",
       "category": "人情",
-      "layerId": "L3",
       "text": "老家亲戚问「能不能帮孩子安排实习」。你解释了半小时城市规则。",
       "d": {
         "social": -2,
@@ -374,9 +374,9 @@
       "title": "人情 · L3"
     },
     {
+      "layerId": "L4",
       "id": "U015",
       "category": "机会",
-      "layerId": "L4",
       "text": "行业峰会邀请函，门票四位数。公司报销名额只有一个。",
       "d": {
         "rep": 3,
@@ -386,9 +386,9 @@
       "title": "机会 · L4"
     },
     {
+      "layerId": "L4",
       "id": "U016",
       "category": "职场",
-      "layerId": "L4",
       "text": "董事会旁听席。你第一次听见「现金流」被说得像天气。",
       "d": {
         "rep": 4,
@@ -398,9 +398,9 @@
       "title": "职场 · L4"
     },
     {
+      "layerId": "L4",
       "id": "U017",
       "category": "金钱",
-      "layerId": "L4",
       "text": "私人银行经理约茶，推荐一款「稳健型」产品。条款厚得像字典。",
       "d": {
         "money": -2,
@@ -410,9 +410,9 @@
       "title": "金钱 · L4"
     },
     {
+      "layerId": "L4",
       "id": "U018",
       "category": "健康",
-      "layerId": "L4",
       "text": "私家体检中心，护士说「您这年龄该加项了」。加项比基础贵三倍。",
       "d": {
         "money": -2,
@@ -422,9 +422,9 @@
       "title": "健康 · L4"
     },
     {
+      "layerId": "L4",
       "id": "U019",
       "category": "居住",
-      "layerId": "L4",
       "text": "物业费上调通知，理由写「提升服务品质」。",
       "d": {
         "money": -1,
@@ -434,9 +434,9 @@
       "title": "居住 · L4"
     },
     {
+      "layerId": "L2",
       "id": "U020",
       "category": "教育",
-      "layerId": "L2",
       "text": "孩子学校家委会征集「自愿」赞助。你看见别的家长已经接龙。",
       "d": {
         "money": -1,
@@ -447,9 +447,9 @@
       "title": "教育 · L2"
     },
     {
+      "layerId": "L2",
       "id": "U021",
       "category": "职场",
-      "layerId": "L2",
       "text": "工位换成开放式。降噪耳机成为办公室硬通货。",
       "d": {
         "health": -3,
@@ -459,9 +459,9 @@
       "title": "职场 · L2"
     },
     {
+      "layerId": "L1",
       "id": "U022",
       "category": "金钱",
-      "layerId": "L1",
       "text": "菜市场涨价，摊主说「进货也贵」。你数了数零钱，够买三天。",
       "d": {
         "money": -1,
@@ -471,9 +471,9 @@
       "title": "金钱 · L1"
     },
     {
+      "layerId": "L1",
       "id": "U023",
       "category": "人情",
-      "layerId": "L1",
       "text": "老乡群有人发拼多多砍一刀。你帮了，没人帮你的。",
       "d": {
         "social": -1
@@ -482,9 +482,9 @@
       "title": "人情 · L1"
     },
     {
+      "layerId": "L2",
       "id": "U024",
       "category": "机会",
-      "layerId": "L2",
       "text": "内部竞聘，岗位比申请人少一半。HR 说「流程公开透明」。",
       "d": {
         "rep": 2,
@@ -494,9 +494,9 @@
       "title": "机会 · L2"
     },
     {
+      "layerId": "L3",
       "id": "U025",
       "category": "风险",
-      "layerId": "L3",
       "text": "兼职刷单广告：「日结三百。」你举报了，类似弹窗还在。",
       "d": {
         "rep": 1
@@ -505,9 +505,9 @@
       "title": "风险 · L3"
     },
     {
+      "layerId": "L3",
       "id": "U026",
       "category": "健康",
-      "layerId": "L3",
       "text": "颈椎理疗，医保不报销。技师说「你这行普遍这样」。",
       "d": {
         "money": -1,
@@ -517,9 +517,9 @@
       "title": "健康 · L3"
     },
     {
+      "layerId": "L2",
       "id": "U027",
       "category": "职场",
-      "layerId": "L2",
       "text": "考勤改为人脸识别。你迟到那天的照片被自动发给了主管。",
       "d": {
         "rep": -3
@@ -528,9 +528,9 @@
       "title": "职场 · L2"
     },
     {
+      "layerId": "L2",
       "id": "U028",
       "category": "金钱",
-      "layerId": "L2",
       "text": "信用卡积分兑换，换到的东西不如直接买便宜。",
       "d": {
         "money": -1
@@ -539,9 +539,9 @@
       "title": "金钱 · L2"
     },
     {
+      "layerId": "L2",
       "id": "U029",
       "category": "居住",
-      "layerId": "L2",
       "text": "租约到期，房东涨租「市场价」。你算了算搬家成本，签了。",
       "d": {
         "money": -2,
@@ -551,9 +551,9 @@
       "title": "居住 · L2"
     },
     {
+      "layerId": "L3",
       "id": "U030",
       "category": "教育",
-      "layerId": "L3",
       "text": "职称评审材料装订费、照片费、复印费——加起来像一门小课。",
       "d": {
         "money": -1,
@@ -564,6 +564,7 @@
       "title": "教育 · L3"
     },
     {
+      "layerId": "L2",
       "id": "U031",
       "category": "职场",
       "text": "公司换打卡系统，人脸录入三次失败。IT 说「光线问题」。",
@@ -572,9 +573,10 @@
         "health": -2
       },
       "weight": 6,
-      "title": "职场 · 城市"
+      "title": "职场 · L2"
     },
     {
+      "layerId": "L2",
       "id": "U032",
       "category": "金钱",
       "text": "水电燃气「一户一表」改造，分摊费争议在群里吵了一周。",
@@ -583,9 +585,10 @@
         "health": -2
       },
       "weight": 6,
-      "title": "金钱 · 城市"
+      "title": "金钱 · L2"
     },
     {
+      "layerId": "L2",
       "id": "U033",
       "category": "健康",
       "text": "通勤单程九十分钟。你在地铁上睡着，坐过站两次。",
@@ -594,9 +597,10 @@
         "rep": -1
       },
       "weight": 7,
-      "title": "健康 · 城市"
+      "title": "健康 · L2"
     },
     {
+      "layerId": "L2",
       "once": true,
       "id": "M012",
       "category": "职场",
@@ -607,9 +611,10 @@
         "health": 2
       },
       "weight": 20,
-      "title": "职场 · 城市"
+      "title": "职场 · L2"
     },
     {
+      "layerId": "L2",
       "once": true,
       "id": "M024",
       "category": "金钱",
@@ -620,9 +625,10 @@
         "money": 1
       },
       "weight": 20,
-      "title": "金钱 · 城市"
+      "title": "金钱 · L2"
     },
     {
+      "layerId": "L2",
       "once": true,
       "id": "M036",
       "category": "居住",
@@ -633,9 +639,10 @@
         "rep": 2
       },
       "weight": 20,
-      "title": "居住 · 城市"
+      "title": "居住 · L2"
     },
     {
+      "layerId": "L2",
       "once": true,
       "id": "M048",
       "category": "职场",
@@ -647,9 +654,10 @@
       },
       "weight": 20,
       "minAge": 30,
-      "title": "职场 · 城市"
+      "title": "职场 · L2"
     },
     {
+      "layerId": "L2",
       "once": true,
       "id": "M060",
       "category": "人情",
@@ -661,9 +669,10 @@
       },
       "weight": 20,
       "minAge": 35,
-      "title": "人情 · 城市"
+      "title": "人情 · L2"
     },
     {
+      "layerId": "L2",
       "once": true,
       "id": "M072",
       "category": "金钱",
@@ -675,9 +684,10 @@
       },
       "weight": 20,
       "minAge": 38,
-      "title": "金钱 · 城市"
+      "title": "金钱 · L2"
     },
     {
+      "layerId": "L2",
       "once": true,
       "id": "M096",
       "category": "健康",
@@ -689,9 +699,10 @@
       },
       "weight": 20,
       "minAge": 40,
-      "title": "健康 · 城市"
+      "title": "健康 · L2"
     },
     {
+      "layerId": "L3",
       "once": true,
       "id": "M120",
       "category": "机会",
@@ -703,9 +714,10 @@
       },
       "weight": 20,
       "minAge": 42,
-      "title": "机会 · 城市"
+      "title": "机会 · L3"
     },
     {
+      "layerId": "L2",
       "era": "E1",
       "id": "E1_01",
       "category": "职场",
@@ -715,9 +727,10 @@
         "money": 1
       },
       "weight": 8,
-      "title": "职场 · 城市"
+      "title": "职场 · L2"
     },
     {
+      "layerId": "L2",
       "era": "E1",
       "id": "E1_02",
       "category": "职场",
@@ -727,9 +740,10 @@
         "social": -2
       },
       "weight": 7,
-      "title": "职场 · 城市"
+      "title": "职场 · L2"
     },
     {
+      "layerId": "L3",
       "era": "E1",
       "id": "E1_03",
       "category": "机会",
@@ -738,9 +752,10 @@
         "rep": 1
       },
       "weight": 5,
-      "title": "机会 · 城市"
+      "title": "机会 · L3"
     },
     {
+      "layerId": "L2",
       "era": "E1",
       "id": "E1_04",
       "category": "金钱",
@@ -750,9 +765,10 @@
         "health": 1
       },
       "weight": 8,
-      "title": "金钱 · 城市"
+      "title": "金钱 · L2"
     },
     {
+      "layerId": "L2",
       "era": "E1",
       "id": "E1_05",
       "category": "人情",
@@ -762,9 +778,10 @@
         "social": 4
       },
       "weight": 7,
-      "title": "人情 · 城市"
+      "title": "人情 · L2"
     },
     {
+      "layerId": "L3",
       "era": "E1",
       "id": "E1_06",
       "category": "教育",
@@ -774,9 +791,10 @@
         "social": -1
       },
       "weight": 6,
-      "title": "教育 · 城市"
+      "title": "教育 · L3"
     },
     {
+      "layerId": "L2",
       "era": "E1",
       "id": "E1_07",
       "category": "居住",
@@ -786,9 +804,10 @@
         "health": -2
       },
       "weight": 7,
-      "title": "居住 · 城市"
+      "title": "居住 · L2"
     },
     {
+      "layerId": "L2",
       "era": "E1",
       "id": "E1_08",
       "category": "职场",
@@ -798,9 +817,10 @@
         "rep": -1
       },
       "weight": 6,
-      "title": "职场 · 城市"
+      "title": "职场 · L2"
     },
     {
+      "layerId": "L2",
       "era": "E1",
       "id": "E1_09",
       "category": "健康",
@@ -809,9 +829,10 @@
         "health": -2
       },
       "weight": 6,
-      "title": "健康 · 城市"
+      "title": "健康 · L2"
     },
     {
+      "layerId": "L3",
       "era": "E1",
       "id": "E1_10",
       "category": "机会",
@@ -820,9 +841,10 @@
         "edu": 3
       },
       "weight": 5,
-      "title": "机会 · 城市"
+      "title": "机会 · L3"
     },
     {
+      "layerId": "L2",
       "era": "E1",
       "id": "E1_11",
       "category": "金钱",
@@ -833,9 +855,10 @@
       },
       "weight": 6,
       "minAge": 28,
-      "title": "金钱 · 城市"
+      "title": "金钱 · L2"
     },
     {
+      "layerId": "L2",
       "era": "E1",
       "id": "E1_12",
       "category": "职场",
@@ -845,9 +868,10 @@
         "social": 1
       },
       "weight": 6,
-      "title": "职场 · 城市"
+      "title": "职场 · L2"
     },
     {
+      "layerId": "L2",
       "era": "E1",
       "id": "E1_13",
       "category": "人情",
@@ -857,9 +881,10 @@
         "social": 2
       },
       "weight": 5,
-      "title": "人情 · 城市"
+      "title": "人情 · L2"
     },
     {
+      "layerId": "L5",
       "era": "E1",
       "id": "E1_14",
       "category": "风险",
@@ -869,9 +894,10 @@
         "health": -1
       },
       "weight": 4,
-      "title": "风险 · 城市"
+      "title": "风险 · L5"
     },
     {
+      "layerId": "L2",
       "era": "E1",
       "id": "E1_15",
       "category": "居住",
@@ -881,9 +907,10 @@
         "social": -1
       },
       "weight": 5,
-      "title": "居住 · 城市"
+      "title": "居住 · L2"
     },
     {
+      "layerId": "L3",
       "era": "E1",
       "id": "E1_16",
       "category": "教育",
@@ -893,9 +920,10 @@
         "health": -3
       },
       "weight": 6,
-      "title": "教育 · 城市"
+      "title": "教育 · L3"
     },
     {
+      "layerId": "L2",
       "era": "E1",
       "id": "E1_17",
       "category": "职场",
@@ -905,9 +933,10 @@
         "rep": 1
       },
       "weight": 7,
-      "title": "职场 · 城市"
+      "title": "职场 · L2"
     },
     {
+      "layerId": "L2",
       "era": "E1",
       "id": "E1_18",
       "category": "金钱",
@@ -917,9 +946,10 @@
         "rep": -1
       },
       "weight": 5,
-      "title": "金钱 · 城市"
+      "title": "金钱 · L2"
     },
     {
+      "layerId": "L3",
       "era": "E1",
       "id": "E1_19",
       "category": "机会",
@@ -929,9 +959,10 @@
         "rep": 1
       },
       "weight": 4,
-      "title": "机会 · 城市"
+      "title": "机会 · L3"
     },
     {
+      "layerId": "L2",
       "era": "E1",
       "id": "E1_20",
       "category": "健康",
@@ -940,9 +971,10 @@
         "health": -1
       },
       "weight": 5,
-      "title": "健康 · 城市"
+      "title": "健康 · L2"
     },
     {
+      "layerId": "L3",
       "era": "E2",
       "id": "E2_01",
       "category": "机会",
@@ -952,9 +984,10 @@
         "edu": 2
       },
       "weight": 8,
-      "title": "机会 · 城市"
+      "title": "机会 · L3"
     },
     {
+      "layerId": "L2",
       "era": "E2",
       "id": "E2_02",
       "category": "金钱",
@@ -964,9 +997,10 @@
         "health": -2
       },
       "weight": 7,
-      "title": "金钱 · 城市"
+      "title": "金钱 · L2"
     },
     {
+      "layerId": "L2",
       "era": "E2",
       "id": "E2_03",
       "category": "职场",
@@ -976,9 +1010,10 @@
         "rep": -1
       },
       "weight": 7,
-      "title": "职场 · 城市"
+      "title": "职场 · L2"
     },
     {
+      "layerId": "L5",
       "era": "E2",
       "id": "E2_04",
       "category": "风险",
@@ -988,9 +1023,10 @@
         "health": -1
       },
       "weight": 5,
-      "title": "风险 · 城市"
+      "title": "风险 · L5"
     },
     {
+      "layerId": "L3",
       "era": "E2",
       "id": "E2_05",
       "category": "机会",
@@ -1000,9 +1036,10 @@
         "money": -1
       },
       "weight": 6,
-      "title": "机会 · 城市"
+      "title": "机会 · L3"
     },
     {
+      "layerId": "L2",
       "era": "E2",
       "id": "E2_06",
       "category": "人情",
@@ -1012,9 +1049,10 @@
         "rep": -2
       },
       "weight": 6,
-      "title": "人情 · 城市"
+      "title": "人情 · L2"
     },
     {
+      "layerId": "L2",
       "era": "E2",
       "id": "E2_07",
       "category": "金钱",
@@ -1024,9 +1062,10 @@
         "health": -1
       },
       "weight": 7,
-      "title": "金钱 · 城市"
+      "title": "金钱 · L2"
     },
     {
+      "layerId": "L2",
       "era": "E2",
       "id": "E2_08",
       "category": "职场",
@@ -1036,9 +1075,10 @@
         "money": -1
       },
       "weight": 6,
-      "title": "职场 · 城市"
+      "title": "职场 · L2"
     },
     {
+      "layerId": "L2",
       "era": "E2",
       "id": "E2_09",
       "category": "居住",
@@ -1048,9 +1088,10 @@
         "health": -1
       },
       "weight": 7,
-      "title": "居住 · 城市"
+      "title": "居住 · L2"
     },
     {
+      "layerId": "L3",
       "era": "E2",
       "id": "E2_10",
       "category": "教育",
@@ -1060,9 +1101,10 @@
         "money": -1
       },
       "weight": 6,
-      "title": "教育 · 城市"
+      "title": "教育 · L3"
     },
     {
+      "layerId": "L3",
       "era": "E2",
       "id": "E2_11",
       "category": "机会",
@@ -1072,9 +1114,10 @@
         "health": -3
       },
       "weight": 5,
-      "title": "机会 · 城市"
+      "title": "机会 · L3"
     },
     {
+      "layerId": "L5",
       "era": "E2",
       "id": "E2_12",
       "category": "风险",
@@ -1084,9 +1127,10 @@
         "health": -2
       },
       "weight": 4,
-      "title": "风险 · 城市"
+      "title": "风险 · L5"
     },
     {
+      "layerId": "L2",
       "era": "E2",
       "id": "E2_13",
       "category": "职场",
@@ -1096,9 +1140,10 @@
         "money": -1
       },
       "weight": 7,
-      "title": "职场 · 城市"
+      "title": "职场 · L2"
     },
     {
+      "layerId": "L2",
       "era": "E2",
       "id": "E2_14",
       "category": "金钱",
@@ -1108,9 +1153,10 @@
         "rep": -4
       },
       "weight": 4,
-      "title": "金钱 · 城市"
+      "title": "金钱 · L2"
     },
     {
+      "layerId": "L2",
       "era": "E2",
       "id": "E2_15",
       "category": "人情",
@@ -1120,9 +1166,10 @@
         "health": -2
       },
       "weight": 5,
-      "title": "人情 · 城市"
+      "title": "人情 · L2"
     },
     {
+      "layerId": "L3",
       "era": "E2",
       "id": "E2_16",
       "category": "机会",
@@ -1132,9 +1179,10 @@
         "health": -4
       },
       "weight": 6,
-      "title": "机会 · 城市"
+      "title": "机会 · L3"
     },
     {
+      "layerId": "L2",
       "era": "E2",
       "id": "E2_17",
       "category": "居住",
@@ -1144,9 +1192,10 @@
         "money": -1
       },
       "weight": 7,
-      "title": "居住 · 城市"
+      "title": "居住 · L2"
     },
     {
+      "layerId": "L3",
       "era": "E2",
       "id": "E2_18",
       "category": "教育",
@@ -1156,9 +1205,10 @@
         "rep": -1
       },
       "weight": 6,
-      "title": "教育 · 城市"
+      "title": "教育 · L3"
     },
     {
+      "layerId": "L2",
       "era": "E2",
       "id": "E2_19",
       "category": "职场",
@@ -1168,9 +1218,10 @@
         "money": -1
       },
       "weight": 6,
-      "title": "职场 · 城市"
+      "title": "职场 · L2"
     },
     {
+      "layerId": "L2",
       "era": "E2",
       "id": "E2_20",
       "category": "健康",
@@ -1180,9 +1231,10 @@
         "health": 4
       },
       "weight": 5,
-      "title": "健康 · 城市"
+      "title": "健康 · L2"
     },
     {
+      "layerId": "L2",
       "era": "E3",
       "id": "E3_01",
       "category": "金钱",
@@ -1192,9 +1244,10 @@
         "rep": -1
       },
       "weight": 8,
-      "title": "金钱 · 城市"
+      "title": "金钱 · L2"
     },
     {
+      "layerId": "L3",
       "era": "E3",
       "id": "E3_02",
       "category": "机会",
@@ -1204,9 +1257,10 @@
         "social": -2
       },
       "weight": 6,
-      "title": "机会 · 城市"
+      "title": "机会 · L3"
     },
     {
+      "layerId": "L2",
       "era": "E3",
       "id": "E3_03",
       "category": "居住",
@@ -1217,9 +1271,10 @@
       },
       "weight": 8,
       "minAge": 25,
-      "title": "居住 · 城市"
+      "title": "居住 · L2"
     },
     {
+      "layerId": "L2",
       "era": "E3",
       "id": "E3_04",
       "category": "职场",
@@ -1229,9 +1284,10 @@
         "social": -1
       },
       "weight": 6,
-      "title": "职场 · 城市"
+      "title": "职场 · L2"
     },
     {
+      "layerId": "L2",
       "era": "E3",
       "id": "E3_05",
       "category": "金钱",
@@ -1241,9 +1297,10 @@
         "health": -2
       },
       "weight": 7,
-      "title": "金钱 · 城市"
+      "title": "金钱 · L2"
     },
     {
+      "layerId": "L3",
       "era": "E3",
       "id": "E3_06",
       "category": "机会",
@@ -1252,9 +1309,10 @@
         "rep": 2
       },
       "weight": 5,
-      "title": "机会 · 城市"
+      "title": "机会 · L3"
     },
     {
+      "layerId": "L2",
       "era": "E3",
       "id": "E3_07",
       "category": "人情",
@@ -1264,9 +1322,10 @@
         "money": -1
       },
       "weight": 6,
-      "title": "人情 · 城市"
+      "title": "人情 · L2"
     },
     {
+      "layerId": "L3",
       "era": "E3",
       "id": "E3_08",
       "category": "教育",
@@ -1277,9 +1336,10 @@
       },
       "weight": 5,
       "minAge": 28,
-      "title": "教育 · 城市"
+      "title": "教育 · L3"
     },
     {
+      "layerId": "L5",
       "era": "E3",
       "id": "E3_09",
       "category": "风险",
@@ -1289,9 +1349,10 @@
         "rep": 1
       },
       "weight": 4,
-      "title": "风险 · 城市"
+      "title": "风险 · L5"
     },
     {
+      "layerId": "L2",
       "era": "E3",
       "id": "E3_10",
       "category": "职场",
@@ -1301,9 +1362,10 @@
         "money": -1
       },
       "weight": 6,
-      "title": "职场 · 城市"
+      "title": "职场 · L2"
     },
     {
+      "layerId": "L2",
       "era": "E3",
       "id": "E3_11",
       "category": "居住",
@@ -1313,9 +1375,10 @@
         "health": -3
       },
       "weight": 7,
-      "title": "居住 · 城市"
+      "title": "居住 · L2"
     },
     {
+      "layerId": "L2",
       "era": "E3",
       "id": "E3_12",
       "category": "金钱",
@@ -1326,9 +1389,10 @@
       },
       "weight": 5,
       "minAge": 32,
-      "title": "金钱 · 城市"
+      "title": "金钱 · L2"
     },
     {
+      "layerId": "L3",
       "era": "E3",
       "id": "E3_13",
       "category": "机会",
@@ -1338,9 +1402,10 @@
         "rep": 1
       },
       "weight": 5,
-      "title": "机会 · 城市"
+      "title": "机会 · L3"
     },
     {
+      "layerId": "L2",
       "era": "E3",
       "id": "E3_14",
       "category": "健康",
@@ -1351,9 +1416,10 @@
       },
       "weight": 6,
       "minAge": 28,
-      "title": "健康 · 城市"
+      "title": "健康 · L2"
     },
     {
+      "layerId": "L2",
       "era": "E3",
       "id": "E3_15",
       "category": "职场",
@@ -1363,9 +1429,10 @@
         "rep": -1
       },
       "weight": 6,
-      "title": "职场 · 城市"
+      "title": "职场 · L2"
     },
     {
+      "layerId": "L2",
       "era": "E3",
       "id": "E3_16",
       "category": "人情",
@@ -1375,9 +1442,10 @@
         "social": 4
       },
       "weight": 6,
-      "title": "人情 · 城市"
+      "title": "人情 · L2"
     },
     {
+      "layerId": "L3",
       "era": "E3",
       "id": "E3_17",
       "category": "教育",
@@ -1388,9 +1456,10 @@
       },
       "weight": 4,
       "minAge": 30,
-      "title": "教育 · 城市"
+      "title": "教育 · L3"
     },
     {
+      "layerId": "L2",
       "era": "E3",
       "id": "E3_18",
       "category": "金钱",
@@ -1399,9 +1468,10 @@
         "rep": -1
       },
       "weight": 5,
-      "title": "金钱 · 城市"
+      "title": "金钱 · L2"
     },
     {
+      "layerId": "L3",
       "era": "E3",
       "id": "E3_19",
       "category": "机会",
@@ -1411,9 +1481,10 @@
         "money": -1
       },
       "weight": 5,
-      "title": "机会 · 城市"
+      "title": "机会 · L3"
     },
     {
+      "layerId": "L5",
       "era": "E3",
       "id": "E3_20",
       "category": "风险",
@@ -1423,9 +1494,10 @@
         "health": -3
       },
       "weight": 4,
-      "title": "风险 · 城市"
+      "title": "风险 · L5"
     },
     {
+      "layerId": "L2",
       "era": "E4",
       "id": "E4_01",
       "category": "职场",
@@ -1435,9 +1507,10 @@
         "edu": 2
       },
       "weight": 7,
-      "title": "职场 · 城市"
+      "title": "职场 · L2"
     },
     {
+      "layerId": "L3",
       "era": "E4",
       "id": "E4_02",
       "category": "机会",
@@ -1447,9 +1520,10 @@
         "social": 2
       },
       "weight": 7,
-      "title": "机会 · 城市"
+      "title": "机会 · L3"
     },
     {
+      "layerId": "L2",
       "era": "E4",
       "id": "E4_03",
       "category": "金钱",
@@ -1460,9 +1534,10 @@
         "rep": 2
       },
       "weight": 6,
-      "title": "金钱 · 城市"
+      "title": "金钱 · L2"
     },
     {
+      "layerId": "L3",
       "era": "E4",
       "id": "E4_04",
       "category": "教育",
@@ -1472,9 +1547,10 @@
         "money": -1
       },
       "weight": 5,
-      "title": "教育 · 城市"
+      "title": "教育 · L3"
     },
     {
+      "layerId": "L2",
       "era": "E4",
       "id": "E4_05",
       "category": "职场",
@@ -1484,9 +1560,10 @@
         "money": 1
       },
       "weight": 8,
-      "title": "职场 · 城市"
+      "title": "职场 · L2"
     },
     {
+      "layerId": "L3",
       "era": "E4",
       "id": "E4_06",
       "category": "机会",
@@ -1496,9 +1573,10 @@
         "social": 1
       },
       "weight": 6,
-      "title": "机会 · 城市"
+      "title": "机会 · L3"
     },
     {
+      "layerId": "L2",
       "era": "E4",
       "id": "E4_07",
       "category": "金钱",
@@ -1507,9 +1585,10 @@
         "edu": 2
       },
       "weight": 6,
-      "title": "金钱 · 城市"
+      "title": "金钱 · L2"
     },
     {
+      "layerId": "L5",
       "era": "E4",
       "id": "E4_08",
       "category": "风险",
@@ -1519,9 +1598,10 @@
         "rep": -3
       },
       "weight": 5,
-      "title": "风险 · 城市"
+      "title": "风险 · L5"
     },
     {
+      "layerId": "L2",
       "era": "E4",
       "id": "E4_09",
       "category": "人情",
@@ -1531,9 +1611,10 @@
         "social": 1
       },
       "weight": 5,
-      "title": "人情 · 城市"
+      "title": "人情 · L2"
     },
     {
+      "layerId": "L2",
       "era": "E4",
       "id": "E4_10",
       "category": "居住",
@@ -1543,9 +1624,10 @@
         "social": -2
       },
       "weight": 7,
-      "title": "居住 · 城市"
+      "title": "居住 · L2"
     },
     {
+      "layerId": "L2",
       "era": "E4",
       "id": "E4_11",
       "category": "职场",
@@ -1555,9 +1637,10 @@
         "rep": 1
       },
       "weight": 6,
-      "title": "职场 · 城市"
+      "title": "职场 · L2"
     },
     {
+      "layerId": "L2",
       "era": "E4",
       "id": "E4_12",
       "category": "健康",
@@ -1567,9 +1650,10 @@
         "health": 4
       },
       "weight": 6,
-      "title": "健康 · 城市"
+      "title": "健康 · L2"
     },
     {
+      "layerId": "L3",
       "era": "E4",
       "id": "E4_13",
       "category": "机会",
@@ -1579,9 +1663,10 @@
         "social": 2
       },
       "weight": 6,
-      "title": "机会 · 城市"
+      "title": "机会 · L3"
     },
     {
+      "layerId": "L3",
       "era": "E4",
       "id": "E4_14",
       "category": "教育",
@@ -1591,9 +1676,10 @@
         "money": -2
       },
       "weight": 5,
-      "title": "教育 · 城市"
+      "title": "教育 · L3"
     },
     {
+      "layerId": "L2",
       "era": "E4",
       "id": "E4_15",
       "category": "金钱",
@@ -1603,9 +1689,10 @@
         "edu": 2
       },
       "weight": 6,
-      "title": "金钱 · 城市"
+      "title": "金钱 · L2"
     },
     {
+      "layerId": "L2",
       "era": "E4",
       "id": "E4_16",
       "category": "职场",
@@ -1615,9 +1702,10 @@
         "edu": 3
       },
       "weight": 6,
-      "title": "职场 · 城市"
+      "title": "职场 · L2"
     },
     {
+      "layerId": "L3",
       "era": "E4",
       "id": "E4_17",
       "category": "机会",
@@ -1627,9 +1715,10 @@
         "health": -4
       },
       "weight": 5,
-      "title": "机会 · 城市"
+      "title": "机会 · L3"
     },
     {
+      "layerId": "L5",
       "era": "E4",
       "id": "E4_18",
       "category": "风险",
@@ -1639,9 +1728,10 @@
         "health": -2
       },
       "weight": 4,
-      "title": "风险 · 城市"
+      "title": "风险 · L5"
     },
     {
+      "layerId": "L2",
       "era": "E4",
       "id": "E4_19",
       "category": "人情",
@@ -1651,9 +1741,10 @@
         "social": 2
       },
       "weight": 6,
-      "title": "人情 · 城市"
+      "title": "人情 · L2"
     },
     {
+      "layerId": "L2",
       "era": "E4",
       "id": "E4_20",
       "category": "健康",
@@ -1663,9 +1754,10 @@
         "money": -1
       },
       "weight": 7,
-      "title": "健康 · 城市"
+      "title": "健康 · L2"
     },
     {
+      "layerId": "L2",
       "era": "E5",
       "id": "E5_01",
       "category": "职场",
@@ -1675,9 +1767,10 @@
         "health": -2
       },
       "weight": 7,
-      "title": "职场 · 城市"
+      "title": "职场 · L2"
     },
     {
+      "layerId": "L3",
       "era": "E5",
       "id": "E5_02",
       "category": "机会",
@@ -1687,9 +1780,10 @@
         "edu": 2
       },
       "weight": 7,
-      "title": "机会 · 城市"
+      "title": "机会 · L3"
     },
     {
+      "layerId": "L2",
       "era": "E5",
       "id": "E5_03",
       "category": "金钱",
@@ -1698,9 +1792,10 @@
         "money": 1
       },
       "weight": 6,
-      "title": "金钱 · 城市"
+      "title": "金钱 · L2"
     },
     {
+      "layerId": "L2",
       "era": "E5",
       "id": "E5_04",
       "category": "居住",
@@ -1710,9 +1805,10 @@
         "health": -3
       },
       "weight": 6,
-      "title": "居住 · 城市"
+      "title": "居住 · L2"
     },
     {
+      "layerId": "L2",
       "era": "E5",
       "id": "E5_05",
       "category": "职场",
@@ -1722,9 +1818,10 @@
         "health": -2
       },
       "weight": 7,
-      "title": "职场 · 城市"
+      "title": "职场 · L2"
     },
     {
+      "layerId": "L3",
       "era": "E5",
       "id": "E5_06",
       "category": "机会",
@@ -1734,9 +1831,10 @@
         "rep": 3
       },
       "weight": 5,
-      "title": "机会 · 城市"
+      "title": "机会 · L3"
     },
     {
+      "layerId": "L5",
       "era": "E5",
       "id": "E5_07",
       "category": "风险",
@@ -1745,9 +1843,10 @@
         "rep": 1
       },
       "weight": 4,
-      "title": "风险 · 城市"
+      "title": "风险 · L5"
     },
     {
+      "layerId": "L3",
       "era": "E5",
       "id": "E5_08",
       "category": "教育",
@@ -1757,9 +1856,10 @@
         "edu": 1
       },
       "weight": 6,
-      "title": "教育 · 城市"
+      "title": "教育 · L3"
     },
     {
+      "layerId": "L2",
       "era": "E5",
       "id": "E5_09",
       "category": "人情",
@@ -1768,9 +1868,10 @@
         "social": -1
       },
       "weight": 5,
-      "title": "人情 · 城市"
+      "title": "人情 · L2"
     },
     {
+      "layerId": "L2",
       "era": "E5",
       "id": "E5_10",
       "category": "健康",
@@ -1779,9 +1880,10 @@
         "health": -2
       },
       "weight": 5,
-      "title": "健康 · 城市"
+      "title": "健康 · L2"
     },
     {
+      "layerId": "L2",
       "era": "E5",
       "id": "E5_11",
       "category": "金钱",
@@ -1791,9 +1893,10 @@
         "rep": 1
       },
       "weight": 7,
-      "title": "金钱 · 城市"
+      "title": "金钱 · L2"
     },
     {
+      "layerId": "L2",
       "era": "E5",
       "id": "E5_12",
       "category": "职场",
@@ -1803,9 +1906,10 @@
         "social": -1
       },
       "weight": 6,
-      "title": "职场 · 城市"
+      "title": "职场 · L2"
     },
     {
+      "layerId": "L3",
       "era": "E5",
       "id": "E5_13",
       "category": "机会",
@@ -1815,9 +1919,10 @@
         "social": 2
       },
       "weight": 5,
-      "title": "机会 · 城市"
+      "title": "机会 · L3"
     },
     {
+      "layerId": "L5",
       "era": "E5",
       "id": "E5_14",
       "category": "风险",
@@ -1827,9 +1932,10 @@
         "edu": 2
       },
       "weight": 4,
-      "title": "风险 · 城市"
+      "title": "风险 · L5"
     },
     {
+      "layerId": "L2",
       "era": "E5",
       "id": "E5_15",
       "category": "居住",
@@ -1839,9 +1945,10 @@
         "social": -1
       },
       "weight": 7,
-      "title": "居住 · 城市"
+      "title": "居住 · L2"
     },
     {
+      "layerId": "L2",
       "era": "E5",
       "id": "E5_16",
       "category": "职场",
@@ -1851,9 +1958,10 @@
         "edu": 2
       },
       "weight": 7,
-      "title": "职场 · 城市"
+      "title": "职场 · L2"
     },
     {
+      "layerId": "L3",
       "era": "E5",
       "id": "E5_17",
       "category": "教育",
@@ -1864,9 +1972,10 @@
       },
       "weight": 5,
       "minAge": 30,
-      "title": "教育 · 城市"
+      "title": "教育 · L3"
     },
     {
+      "layerId": "L2",
       "era": "E5",
       "id": "E5_18",
       "category": "金钱",
@@ -1876,9 +1985,10 @@
         "health": -2
       },
       "weight": 8,
-      "title": "金钱 · 城市"
+      "title": "金钱 · L2"
     },
     {
+      "layerId": "L3",
       "era": "E5",
       "id": "E5_19",
       "category": "机会",
@@ -1888,9 +1998,10 @@
         "social": 3
       },
       "weight": 5,
-      "title": "机会 · 城市"
+      "title": "机会 · L3"
     },
     {
+      "layerId": "L2",
       "era": "E5",
       "id": "E5_20",
       "category": "健康",
@@ -1900,9 +2011,10 @@
         "money": -1
       },
       "weight": 6,
-      "title": "健康 · 城市"
+      "title": "健康 · L2"
     },
     {
+      "layerId": "L2",
       "era": "E6",
       "id": "E6_01",
       "category": "职场",
@@ -1913,9 +2025,10 @@
         "health": -3
       },
       "weight": 8,
-      "title": "职场 · 城市"
+      "title": "职场 · L2"
     },
     {
+      "layerId": "L3",
       "era": "E6",
       "id": "E6_02",
       "category": "机会",
@@ -1925,9 +2038,10 @@
         "health": -3
       },
       "weight": 7,
-      "title": "机会 · 城市"
+      "title": "机会 · L3"
     },
     {
+      "layerId": "L2",
       "era": "E6",
       "id": "E6_03",
       "category": "金钱",
@@ -1937,9 +2051,10 @@
         "health": -3
       },
       "weight": 6,
-      "title": "金钱 · 城市"
+      "title": "金钱 · L2"
     },
     {
+      "layerId": "L2",
       "era": "E6",
       "id": "E6_04",
       "category": "居住",
@@ -1950,9 +2065,10 @@
       },
       "weight": 7,
       "minAge": 30,
-      "title": "居住 · 城市"
+      "title": "居住 · L2"
     },
     {
+      "layerId": "L2",
       "era": "E6",
       "id": "E6_05",
       "category": "职场",
@@ -1962,9 +2078,10 @@
         "rep": 1
       },
       "weight": 7,
-      "title": "职场 · 城市"
+      "title": "职场 · L2"
     },
     {
+      "layerId": "L3",
       "era": "E6",
       "id": "E6_06",
       "category": "教育",
@@ -1977,9 +2094,10 @@
       "weight": 6,
       "minAge": 22,
       "maxAge": 28,
-      "title": "教育 · 城市"
+      "title": "教育 · L3"
     },
     {
+      "layerId": "L3",
       "era": "E6",
       "id": "E6_07",
       "category": "机会",
@@ -1989,9 +2107,10 @@
         "money": 1
       },
       "weight": 5,
-      "title": "机会 · 城市"
+      "title": "机会 · L3"
     },
     {
+      "layerId": "L5",
       "era": "E6",
       "id": "E6_08",
       "category": "风险",
@@ -2000,9 +2119,10 @@
         "health": -4
       },
       "weight": 5,
-      "title": "风险 · 城市"
+      "title": "风险 · L5"
     },
     {
+      "layerId": "L2",
       "era": "E6",
       "id": "E6_09",
       "category": "人情",
@@ -2012,9 +2132,10 @@
         "social": 1
       },
       "weight": 7,
-      "title": "人情 · 城市"
+      "title": "人情 · L2"
     },
     {
+      "layerId": "L2",
       "era": "E6",
       "id": "E6_10",
       "category": "健康",
@@ -2023,9 +2144,10 @@
         "health": -2
       },
       "weight": 6,
-      "title": "健康 · 城市"
+      "title": "健康 · L2"
     },
     {
+      "layerId": "L2",
       "era": "E6",
       "id": "E6_11",
       "category": "金钱",
@@ -2035,9 +2157,10 @@
         "health": -2
       },
       "weight": 7,
-      "title": "金钱 · 城市"
+      "title": "金钱 · L2"
     },
     {
+      "layerId": "L2",
       "era": "E6",
       "id": "E6_12",
       "category": "职场",
@@ -2049,9 +2172,10 @@
       "weight": 8,
       "minAge": 32,
       "maxAge": 38,
-      "title": "职场 · 城市"
+      "title": "职场 · L2"
     },
     {
+      "layerId": "L3",
       "era": "E6",
       "id": "E6_13",
       "category": "机会",
@@ -2061,9 +2185,10 @@
         "health": -2
       },
       "weight": 6,
-      "title": "机会 · 城市"
+      "title": "机会 · L3"
     },
     {
+      "layerId": "L3",
       "era": "E6",
       "id": "E6_14",
       "category": "教育",
@@ -2073,9 +2198,10 @@
         "health": -2
       },
       "weight": 5,
-      "title": "教育 · 城市"
+      "title": "教育 · L3"
     },
     {
+      "layerId": "L2",
       "era": "E6",
       "id": "E6_15",
       "category": "居住",
@@ -2086,9 +2212,10 @@
       },
       "weight": 6,
       "minAge": 28,
-      "title": "居住 · 城市"
+      "title": "居住 · L2"
     },
     {
+      "layerId": "L2",
       "era": "E6",
       "id": "E6_16",
       "category": "职场",
@@ -2098,9 +2225,10 @@
         "social": 1
       },
       "weight": 6,
-      "title": "职场 · 城市"
+      "title": "职场 · L2"
     },
     {
+      "layerId": "L2",
       "era": "E6",
       "id": "E6_17",
       "category": "金钱",
@@ -2110,9 +2238,10 @@
         "health": -2
       },
       "weight": 6,
-      "title": "金钱 · 城市"
+      "title": "金钱 · L2"
     },
     {
+      "layerId": "L3",
       "era": "E6",
       "id": "E6_18",
       "category": "机会",
@@ -2122,9 +2251,10 @@
         "money": -1
       },
       "weight": 5,
-      "title": "机会 · 城市"
+      "title": "机会 · L3"
     },
     {
+      "layerId": "L2",
       "era": "E6",
       "id": "E6_19",
       "category": "健康",
@@ -2134,9 +2264,10 @@
         "health": 5
       },
       "weight": 6,
-      "title": "健康 · 城市"
+      "title": "健康 · L2"
     },
     {
+      "layerId": "L5",
       "era": "E6",
       "id": "E6_20",
       "category": "风险",
@@ -2146,9 +2277,10 @@
         "rep": -4
       },
       "weight": 4,
-      "title": "风险 · 城市"
+      "title": "风险 · L5"
     },
     {
+      "layerId": "L2",
       "era": "E7",
       "id": "E7_01",
       "category": "职场",
@@ -2158,9 +2290,10 @@
         "rep": 1
       },
       "weight": 8,
-      "title": "职场 · 城市"
+      "title": "职场 · L2"
     },
     {
+      "layerId": "L3",
       "era": "E7",
       "id": "E7_02",
       "category": "机会",
@@ -2170,9 +2303,10 @@
         "health": -3
       },
       "weight": 7,
-      "title": "机会 · 城市"
+      "title": "机会 · L3"
     },
     {
+      "layerId": "L2",
       "era": "E7",
       "id": "E7_03",
       "category": "金钱",
@@ -2182,9 +2316,10 @@
         "edu": 2
       },
       "weight": 7,
-      "title": "金钱 · 城市"
+      "title": "金钱 · L2"
     },
     {
+      "layerId": "L2",
       "era": "E7",
       "id": "E7_04",
       "category": "居住",
@@ -2195,9 +2330,10 @@
       },
       "weight": 6,
       "minAge": 28,
-      "title": "居住 · 城市"
+      "title": "居住 · L2"
     },
     {
+      "layerId": "L2",
       "era": "E7",
       "id": "E7_05",
       "category": "职场",
@@ -2207,9 +2343,10 @@
         "health": -2
       },
       "weight": 8,
-      "title": "职场 · 城市"
+      "title": "职场 · L2"
     },
     {
+      "layerId": "L3",
       "era": "E7",
       "id": "E7_06",
       "category": "机会",
@@ -2219,9 +2356,10 @@
         "social": 2
       },
       "weight": 6,
-      "title": "机会 · 城市"
+      "title": "机会 · L3"
     },
     {
+      "layerId": "L5",
       "era": "E7",
       "id": "E7_07",
       "category": "风险",
@@ -2230,9 +2368,10 @@
         "health": -3
       },
       "weight": 5,
-      "title": "风险 · 城市"
+      "title": "风险 · L5"
     },
     {
+      "layerId": "L3",
       "era": "E7",
       "id": "E7_08",
       "category": "教育",
@@ -2242,9 +2381,10 @@
         "edu": 1
       },
       "weight": 5,
-      "title": "教育 · 城市"
+      "title": "教育 · L3"
     },
     {
+      "layerId": "L2",
       "era": "E7",
       "id": "E7_09",
       "category": "人情",
@@ -2255,9 +2395,10 @@
       },
       "weight": 6,
       "minAge": 32,
-      "title": "人情 · 城市"
+      "title": "人情 · L2"
     },
     {
+      "layerId": "L2",
       "era": "E7",
       "id": "E7_10",
       "category": "健康",
@@ -2267,9 +2408,10 @@
         "money": -1
       },
       "weight": 7,
-      "title": "健康 · 城市"
+      "title": "健康 · L2"
     },
     {
+      "layerId": "L2",
       "era": "E7",
       "id": "E7_11",
       "category": "金钱",
@@ -2279,9 +2421,10 @@
         "rep": 1
       },
       "weight": 7,
-      "title": "金钱 · 城市"
+      "title": "金钱 · L2"
     },
     {
+      "layerId": "L2",
       "era": "E7",
       "id": "E7_12",
       "category": "职场",
@@ -2291,9 +2434,10 @@
         "rep": 1
       },
       "weight": 7,
-      "title": "职场 · 城市"
+      "title": "职场 · L2"
     },
     {
+      "layerId": "L3",
       "era": "E7",
       "id": "E7_13",
       "category": "机会",
@@ -2303,9 +2447,10 @@
         "money": -1
       },
       "weight": 6,
-      "title": "机会 · 城市"
+      "title": "机会 · L3"
     },
     {
+      "layerId": "L2",
       "era": "E7",
       "id": "E7_14",
       "category": "居住",
@@ -2316,9 +2461,10 @@
       },
       "weight": 5,
       "minAge": 35,
-      "title": "居住 · 城市"
+      "title": "居住 · L2"
     },
     {
+      "layerId": "L5",
       "era": "E7",
       "id": "E7_15",
       "category": "风险",
@@ -2328,9 +2474,10 @@
         "money": -1
       },
       "weight": 4,
-      "title": "风险 · 城市"
+      "title": "风险 · L5"
     },
     {
+      "layerId": "L2",
       "era": "E7",
       "id": "E7_16",
       "category": "职场",
@@ -2340,9 +2487,10 @@
         "edu": 2
       },
       "weight": 7,
-      "title": "职场 · 城市"
+      "title": "职场 · L2"
     },
     {
+      "layerId": "L3",
       "era": "E7",
       "id": "E7_17",
       "category": "机会",
@@ -2351,9 +2499,10 @@
         "money": 1
       },
       "weight": 5,
-      "title": "机会 · 城市"
+      "title": "机会 · L3"
     },
     {
+      "layerId": "L3",
       "era": "E7",
       "id": "E7_18",
       "category": "教育",
@@ -2364,9 +2513,10 @@
       },
       "weight": 6,
       "minAge": 30,
-      "title": "教育 · 城市"
+      "title": "教育 · L3"
     },
     {
+      "layerId": "L2",
       "era": "E7",
       "id": "E7_19",
       "category": "健康",
@@ -2376,9 +2526,10 @@
         "health": -2
       },
       "weight": 6,
-      "title": "健康 · 城市"
+      "title": "健康 · L2"
     },
     {
+      "layerId": "L2",
       "era": "E7",
       "id": "E7_20",
       "category": "金钱",
@@ -2388,7 +2539,7 @@
         "edu": 2
       },
       "weight": 5,
-      "title": "金钱 · 城市"
+      "title": "金钱 · L2"
     },
     {
       "layerId": "L1",
@@ -6753,6 +6904,36 @@
     }
   },
   "originBias": {
+    "ordinary-worker": {
+      "layers": [
+        "L2",
+        "L3"
+      ],
+      "tags": [
+        "职场",
+        "金钱"
+      ]
+    },
+    "middle-class": {
+      "layers": [
+        "L3",
+        "L4"
+      ],
+      "tags": [
+        "教育",
+        "居住"
+      ]
+    },
+    "urban-village": {
+      "layers": [
+        "L1",
+        "L2"
+      ],
+      "tags": [
+        "居住",
+        "人情"
+      ]
+    },
     "humble-scholar": {
       "layers": [
         "L1",

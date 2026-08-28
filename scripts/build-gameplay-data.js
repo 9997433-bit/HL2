@@ -12,8 +12,19 @@ const sagasExtra = require("./curated/sagas-extra");
 const originSagas = require("./curated/origin-sagas");
 
 const LAYERS = ["L1", "L2", "L3", "L4", "L5"];
+/* Backfill legacy ambient rows by their strongest semantic signal. Everyday
+   categories stay in the salary layer; education/opportunity use the upward
+   channel and risk uses the undercurrent. Unknown categories safely use L2. */
+const AMBIENT_LAYER_BY_CATEGORY = {
+  教育: "L3",
+  机会: "L3",
+  风险: "L5"
+};
 
 const ORIGIN_BIAS = {
+  "ordinary-worker": { layers: ["L2", "L3"], tags: ["职场", "金钱"] },
+  "middle-class": { layers: ["L3", "L4"], tags: ["教育", "居住"] },
+  "urban-village": { layers: ["L1", "L2"], tags: ["居住", "人情"] },
   "humble-scholar": { layers: ["L1", "L3"], tags: ["教育", "机会"] },
   orphan: { layers: ["L1", "L5"], tags: ["风险", "机会"] },
   "wealthy-merchant": { layers: ["L4", "L5"], tags: ["金钱", "人情"] },
@@ -127,7 +138,9 @@ function buildAmbientEvents() {
   function push(ev) {
     if (seen.has(ev.id)) throw new Error("duplicate event id: " + ev.id);
     seen.add(ev.id);
-    events.push(normalizeEvent(ev, {}));
+    events.push(normalizeEvent(ev, {
+      layerId: AMBIENT_LAYER_BY_CATEGORY[ev.category] || "L2"
+    }));
   }
 
   ambientCore.universal.forEach((e) => push(Object.assign({}, e)));
