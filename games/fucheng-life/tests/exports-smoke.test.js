@@ -64,6 +64,45 @@ function assertFunctions(object, names, label) {
   }
 }
 
+/* The file:// lifeboat has to answer with real choices, and it may only ever
+   restate story.json — nothing in fc-events.js is allowed to author branching. */
+async function assertOfflineMirror() {
+  const source = fs.readFileSync(path.join(gameRoot, "js/fc-events.js"), "utf8");
+  assert.ok(!/SCRIPT\s*\[/.test(source),
+    "fc-events.js must not look choices up in a module-level script table");
+
+  const offline = vm.createContext({
+    ...sandbox,
+    FC: {},
+    document: { activeElement: null, currentScript: null, addEventListener() {} },
+    window: undefined
+  });
+  offline.window = offline;
+  vm.runInContext(source, offline, { filename: "js/fc-events.js (offline)" });
+
+  /* The mirror is built inside the VM realm, so compare canonical shapes
+     rather than object identity. */
+  const canonical = (choices) => Array.from(choices, (choice) => [
+    choice.id,
+    choice.label,
+    choice.cost,
+    choice.risk === true,
+    Object.keys(choice.d).sort().map((stat) => `${stat}:${choice.d[stat]}`).join(","),
+    choice.result
+  ].join(" | "));
+
+  const seedDeck = await offline.FC.events.load();
+  assert.ok(seedDeck.length >= 10, "the offline mirror must carry at least ten events");
+  for (const [index, event] of seedDeck.entries()) {
+    const authored = story.events[index];
+    assert.equal(event.id, authored.id, `offline mirror entry ${index} must track story.json`);
+    assert.equal(event.title, authored.title, `${event.id} title must match story.json`);
+    assert.equal(event.body, authored.body, `${event.id} body must match story.json`);
+    assert.deepEqual(canonical(event.choices), canonical(authored.choices),
+      `${event.id} choices must match story.json`);
+  }
+}
+
 async function main() {
   evaluate("js/fc-motion.js");
   assertFunctions(
@@ -108,6 +147,8 @@ async function main() {
     "every deck entry must reach the overlay with its choices");
   assert.equal(context.FC.events.deck(), deck, "FC.events.deck must expose the loaded deck");
   assert.ok(context.FC.events.pick({ layer: 2, allowRedline: false }), "FC.events.pick must return an event");
+
+  await assertOfflineMirror();
 
   const gameplay = JSON.parse(fs.readFileSync(path.join(gameRoot, "data/gameplay-pack.json"), "utf8"));
   context.FC.gameplay = gameplay;

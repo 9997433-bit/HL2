@@ -116,129 +116,17 @@
     }, true);
   }
 
-  /* ------------------------------------------------------- legacy 分支表
-     story.json is the SSOT: every event there carries its own `choices`.
-     This table only answers for the offline SEED below, whose entries predate
-     the migration and still ship without branching.
-
-     Money deltas are written in units of "about a third of a month's income"
+  /* --------------------------------------------------------------- 数据装载
+     Money deltas are authored in units of "about a third of a month's income"
      rather than absolute ¥: a life in 1984 and a life in 2026 are lived at
      different magnitudes, and a choice should cost the same share of either.
      `FC.events.moneyOf` turns a unit into the ¥ the player will see. */
-  var SCRIPT = {
-    EV01: {
-      choices: [
-        { id: "run", label: "接下这一单", cost: "整夜 −", d: { money: 1, health: -3 },
-          result: "你把手机塞回外套内袋。第一笔到账短信来的时候，天还没有亮透。" },
-        { id: "sleep", label: "再睡两个小时", cost: "收入 −", d: { health: 4, money: -1 },
-          result: "闹钟被按掉两次。醒来时太阳已经越过巷口，欠的那部分还在原处等你。" },
-        { id: "ask", label: "在站点群里问问长期的活", cost: "先欠个人情", d: { social: 4, health: -1 },
-          result: "站长记下了你的名字，说下个月排班时想着你。这句话不值钱，但可以先记着。" }
-      ]
-    },
-    EV02: {
-      choices: [
-        { id: "split", label: "按人头平摊", cost: "现金 −", d: { money: -1, social: 2 },
-          result: "你转出那一份，群里很快恢复表情包。合租的默契就是不追问细节。" },
-        { id: "exact", label: "把自己那份算清楚", cost: "关系 −", d: { social: -3, rep: 2 },
-          result: "你把用量截图发了出去，数字没有人反驳。之后几天，厨房安静了一些。" },
-        { id: "cover", label: "先垫上，不提这事", cost: "现金 −−", d: { money: -2, social: 5 },
-          result: "你先把账缴了。有人说下次一定还，你点了点头，没有记在备忘录里。" }
-      ]
-    },
-    EV03: {
-      choices: [
-        { id: "back", label: "回工位再改一版", cost: "健康 −", d: { rep: 4, health: -5 },
-          result: "你在空掉的办公室里改到两点。第二天没有人提起，文件安静地过了。" },
-        { id: "tomorrow", label: "回复「明早处理」", cost: "声望 −", d: { rep: -2, health: 3 },
-          result: "消息发出后你把手机倒扣。第二天九点，那句「再改一版」还在，你也还在。" },
-        { id: "onboard", label: "在车上改", cost: "折中", d: { rep: 2, health: -3 },
-          result: "笔记本架在膝盖上，改到出站才发的。你分不清是效率，还是不肯浪费的那点时间。" }
-      ]
-    },
-    EV04: {
-      choices: [
-        { id: "finish", label: "把最后一道大题写完", cost: "多留十分钟", d: { rep: 5, health: -3 },
-          result: "收卷铃响时你才落笔。走出考场，雨已经停了，路面还亮着。" },
-        { id: "leave", label: "提前交卷", cost: "声望 −", d: { rep: -1, health: 3 },
-          result: "你比大多数人早出来。空荡的走廊里，你第一次听见自己的脚步声。" }
-      ]
-    },
-    EV05: {
-      choices: [
-        { id: "photo", label: "拍一张，发给家里", cost: "两分钟", d: { social: 3, health: 2 },
-          result: "家里回了一句「真好看」，然后问你吃饭没有。你说吃过了，其实还没有。" },
-        { id: "form", label: "继续把表填完", cost: "健康 −", d: { rep: 3, health: -3 },
-          result: "表格在天黑前提交。窗外的金色退回成灰色，办公室的灯准时替它上岗。" },
-        { id: "early", label: "提前十分钟下班", cost: "声望 −", d: { rep: -2, health: 4 },
-          result: "你在电梯里遇见同一层的陌生人。街上的风还带着白天的温度。" }
-      ]
-    },
-    EV06: {
-      choices: [
-        { id: "queue", label: "排进终面的队伍", cost: "一个下午", d: { rep: 5, health: -4 },
-          result: "你站到下午三点。面试八分钟，对方说会有通知，通知一直没有具体日期。" },
-        { id: "two", label: "投两个摊位就走", cost: "机会 −", d: { social: 2, health: 1 },
-          result: "两份简历，两句客气话。你把手环收进包里，它比 offer 先到手。" },
-        { id: "refer", label: "退出，转投熟人内推", cost: "人情 −", d: { social: 5, rep: -1 },
-          result: "学长答应帮你递进去，附了一句「别抱太大希望」。这话你听得懂。" }
-      ]
-    },
-    EV07: {
-      choices: [
-        { id: "up", label: "跟着进去", cost: "现金 −−", d: { social: 6, rep: 2, money: -2 },
-          result: "有人替你介绍了半句身份，剩下半句留给你自己补。你补得还算得体。" },
-        { id: "lobby", label: "在大堂等人下来", cost: "四十分钟", d: { social: -1, health: 1 },
-          result: "你在沙发上坐了四十分钟。散场时有人和你握手，说下次一起上去。" },
-        { id: "go", label: "说句抱歉，先走", cost: "人脉 −", d: { social: -3, health: 3 },
-          result: "你在门口叫了车。回程路上，城市的灯一格一格退到身后。" }
-      ]
-    },
-    EV08: {
-      choices: [
-        { id: "pay", label: "把账结了", cost: "现金 −−−", d: { money: -3, social: 4, rep: 3 },
-          result: "你去前台签了单，回来时没有说。第二天有人在群里提了一句，你说小事。" },
-        { id: "owe", label: "让对方结，记下这笔", cost: "人情 ▲", d: { social: 6, rep: -2 },
-          result: "这一顿你没有付钱。人情账本上多了一行，落款是你。" },
-        { id: "aa", label: "AA，把话说明白", cost: "关系 −", d: { money: -1, social: -2, rep: 2 },
-          result: "你提议平摊，桌上短暂安静，然后有人笑着答应。此后联系少了一些。" }
-      ]
-    },
-    EV09: {
-      choices: [
-        { id: "repay", label: "按纸上的数还回去", cost: "现金 −−−−", d: { money: -4, rep: 4 },
-          result: "你把钱转过去，对方发来一个句号。借据被撕掉，名字终于不再流通。" },
-        { id: "stall", label: "先拖着，等对方开口", cost: "风险 ▲", risk: true,
-          d: { money: 1, rep: -5, social: -2 },
-          result: "没有人来催。三周后，一个陌生号码开始每天固定时间响两声。" },
-        { id: "broker", label: "找中间人重新谈", cost: "风险 ▲", risk: true,
-          d: { money: -2, social: -3, rep: -1 },
-          result: "中间人把数字压下来一些，条件是这件事以后由他记着。" }
-      ]
-    },
-    EV10: {
-      choices: [
-        { id: "urgent", label: "先还最急的那笔", cost: "现金 −−", d: { money: -2, rep: 2 },
-          result: "你按到期日排了序，还掉最上面的一笔。剩下的往后挪了一个月。" },
-        { id: "instal", label: "分期，把利息摊开", cost: "以后 −", d: { money: -1, health: -1, rep: -2 },
-          result: "分期页面只要三次点击。每月多出的那个数字很小，也一直都在。" },
-        { id: "mute", label: "关掉短信提醒", cost: "风险 ▲", risk: true, d: { health: 2, rep: -3 },
-          result: "世界安静了两天。第三天，电话代替短信找了过来。" }
-      ]
-    }
-  };
-
-  /* --------------------------------------------------------------- 数据装载 */
   var deck = null;
   var loading = null;
 
   function toPayload(raw) {
     var type = CATEGORY_TYPE[raw.category] || "opportunity";
     var layer = raw.layerId || raw.layer || "L2";
-    /* story.json owns the branching; SCRIPT only covers the offline SEED */
-    var choices = (raw.choices && raw.choices.length)
-      ? raw.choices
-      : ((SCRIPT[raw.id] || {}).choices || []);
     return {
       id: raw.id,
       type: raw.type || type,
@@ -249,7 +137,7 @@
       title: raw.title,
       body: raw.body || raw.text,
       weight: raw.weight || 8,
-      choices: choices
+      choices: raw.choices || []
     };
   }
 
@@ -642,28 +530,107 @@
 
   /* ------------------------------------------------------- offline mirror
      A ten-event lifeboat for the case where story.json cannot be read at all
-     (typically file://). It is deliberately not the full deck — story.json is
-     the SSOT — so these entries borrow their branching from SCRIPT above. */
+     (typically file://), so a double-clicked page still offers real choices.
+     It mirrors the first ten entries of data/story.json — 与 story.json 同步维护
+     —— and is deliberately not the full deck: story.json is the SSOT. */
   var SEED = [
-    { id: "EV01", title: "凌晨四点的灯", layerId: "L1", category: "生计",
-      text: "外卖站的卷帘门升起一半。有人开始今天，有人还没结束昨天。你的手机先亮了，余额没有。" },
-    { id: "EV02", title: "水表之后", layerId: "L2", category: "居住",
-      text: "合租群里安静了三分钟，随后每个人都算出自己该付的那一份。城市把亲密切成精确的小数。" },
-    { id: "EV03", title: "末班地铁", layerId: "L2", category: "职场",
-      text: "末班车关门前，你收到一句“再改一版”。隧道没有信号，短暂替你保住了沉默。" },
-    { id: "EV04", title: "考场窗外", layerId: "L3", category: "教育",
-      text: "雨落在答题卡之外。两小时后，有些人得到一条上行通道，有些人只得到标准答案。" },
-    { id: "EV05", title: "玻璃幕墙的落日", layerId: "L2", category: "职场",
-      text: "夕阳把整栋写字楼镀成金色，工位上的人没有抬头。美景不计入本季度绩效。" },
-    { id: "EV06", title: "校招手环", layerId: "L3", category: "机会",
-      text: "大厅里发放同一种蓝色手环。有人凭它进入终面，有人把它留作来过这座城市的证明。" },
-    { id: "EV07", title: "会所电梯", layerId: "L4", category: "人情",
-      text: "电梯没有楼层按钮。侍者认得邀请人的姓氏，也认得所有不该出现在这里的人。" },
-    { id: "EV08", title: "第二种货币", layerId: "L4", category: "关系",
-      text: "饭局散后，没有人提起菜单价格。真正昂贵的部分，已经记进彼此的人情账本。" },
-    { id: "EV09", title: "潮汐线下的借据", layerId: "L5", category: "风险",
-      text: "江水准时退去，露出一张被雨泡软的借据。名字还清楚，承诺已经晕开。" },
-    { id: "EV10", title: "账单日", layerId: "L1", category: "金钱",
-      text: "闹钟还没响，扣款短信先到了。没钱的人没有秘密，账单就是他们的隐私。" }
+    { id: "EV01", title: "凌晨四点的灯", layerId: "L1", category: "生计", weight: 10,
+      body: "外卖站的卷帘门升起一半。有人开始今天，有人还没结束昨天。你的手机先亮了，余额没有。",
+      choices: [
+        { id: "run", label: "接下这一单", cost: "整夜 −",
+          d: { money: 1, health: -3 }, result: "你把手机塞回外套内袋。第一笔到账短信来的时候，天还没有亮透。" },
+        { id: "sleep", label: "再睡两个小时", cost: "收入 −",
+          d: { health: 4, money: -1 }, result: "闹钟被按掉两次。醒来时太阳已经越过巷口，欠的那部分还在原处等你。" },
+        { id: "ask", label: "在站点群里问问长期的活", cost: "先欠个人情",
+          d: { social: 4, health: -1 }, result: "站长记下了你的名字，说下个月排班时想着你。这句话不值钱，但可以先记着。" }
+      ] },
+    { id: "EV02", title: "水表之后", layerId: "L2", category: "居住", weight: 9,
+      body: "合租群里安静了三分钟，随后每个人都算出自己该付的那一份。城市把亲密切成精确的小数。",
+      choices: [
+        { id: "split", label: "按人头平摊", cost: "现金 −",
+          d: { money: -1, social: 2 }, result: "你转出那一份，群里很快恢复表情包。合租的默契就是不追问细节。" },
+        { id: "exact", label: "把自己那份算清楚", cost: "关系 −",
+          d: { social: -3, rep: 2 }, result: "你把用量截图发了出去，数字没有人反驳。之后几天，厨房安静了一些。" },
+        { id: "cover", label: "先垫上，不提这事", cost: "现金 −−",
+          d: { money: -2, social: 5 }, result: "你先把账缴了。有人说下次一定还，你点了点头，没有记在备忘录里。" }
+      ] },
+    { id: "EV03", title: "末班地铁", layerId: "L2", category: "职场", weight: 10,
+      body: "末班车关门前，你收到一句“再改一版”。隧道没有信号，短暂替你保住了沉默。",
+      choices: [
+        { id: "back", label: "回工位再改一版", cost: "健康 −",
+          d: { rep: 4, health: -5 }, result: "你在空掉的办公室里改到两点。第二天没有人提起，文件安静地过了。" },
+        { id: "tomorrow", label: "回复「明早处理」", cost: "声望 −",
+          d: { rep: -2, health: 3 }, result: "消息发出后你把手机倒扣。第二天九点，那句「再改一版」还在，你也还在。" },
+        { id: "onboard", label: "在车上改", cost: "折中",
+          d: { rep: 2, health: -3 }, result: "笔记本架在膝盖上，改到出站才发的。你分不清是效率，还是不肯浪费的那点时间。" }
+      ] },
+    { id: "EV04", title: "考场窗外", layerId: "L3", category: "教育", weight: 9,
+      body: "雨落在答题卡之外。两小时后，有些人得到一条上行通道，有些人只得到标准答案。",
+      choices: [
+        { id: "finish", label: "把最后一道大题写完", cost: "多留十分钟",
+          d: { rep: 5, health: -3 }, result: "收卷铃响时你才落笔。走出考场，雨已经停了，路面还亮着。" },
+        { id: "leave", label: "提前交卷", cost: "声望 −",
+          d: { rep: -1, health: 3 }, result: "你比大多数人早出来。空荡的走廊里，你第一次听见自己的脚步声。" }
+      ] },
+    { id: "EV05", title: "玻璃幕墙的落日", layerId: "L2", category: "职场", weight: 8,
+      body: "夕阳把整栋写字楼镀成金色，工位上的人没有抬头。美景不计入本季度绩效。",
+      choices: [
+        { id: "photo", label: "拍一张，发给家里", cost: "两分钟",
+          d: { social: 3, health: 2 }, result: "家里回了一句「真好看」，然后问你吃饭没有。你说吃过了，其实还没有。" },
+        { id: "form", label: "继续把表填完", cost: "健康 −",
+          d: { rep: 3, health: -3 }, result: "表格在天黑前提交。窗外的金色退回成灰色，办公室的灯准时替它上岗。" },
+        { id: "early", label: "提前十分钟下班", cost: "声望 −",
+          d: { rep: -2, health: 4 }, result: "你在电梯里遇见同一层的陌生人。街上的风还带着白天的温度。" }
+      ] },
+    { id: "EV06", title: "校招手环", layerId: "L3", category: "机会", weight: 10,
+      body: "大厅里发放同一种蓝色手环。有人凭它进入终面，有人把它留作来过这座城市的证明。",
+      choices: [
+        { id: "queue", label: "排进终面的队伍", cost: "一个下午",
+          d: { rep: 5, health: -4 }, result: "你站到下午三点。面试八分钟，对方说会有通知，通知一直没有具体日期。" },
+        { id: "two", label: "投两个摊位就走", cost: "机会 −",
+          d: { social: 2, health: 1 }, result: "两份简历，两句客气话。你把手环收进包里，它比 offer 先到手。" },
+        { id: "refer", label: "退出，转投熟人内推", cost: "人情 −",
+          d: { social: 5, rep: -1 }, result: "学长答应帮你递进去，附了一句「别抱太大希望」。这话你听得懂。" }
+      ] },
+    { id: "EV07", title: "会所电梯", layerId: "L4", category: "人情", weight: 8,
+      body: "电梯没有楼层按钮。侍者认得邀请人的姓氏，也认得所有不该出现在这里的人。",
+      choices: [
+        { id: "up", label: "跟着进去", cost: "现金 −−",
+          d: { social: 6, rep: 2, money: -2 }, result: "有人替你介绍了半句身份，剩下半句留给你自己补。你补得还算得体。" },
+        { id: "lobby", label: "在大堂等人下来", cost: "四十分钟",
+          d: { social: -1, health: 1 }, result: "你在沙发上坐了四十分钟。散场时有人和你握手，说下次一起上去。" },
+        { id: "go", label: "说句抱歉，先走", cost: "人脉 −",
+          d: { social: -3, health: 3 }, result: "你在门口叫了车。回程路上，城市的灯一格一格退到身后。" }
+      ] },
+    { id: "EV08", title: "第二种货币", layerId: "L4", category: "关系", weight: 8,
+      body: "饭局散后，没有人提起菜单价格。真正昂贵的部分，已经记进彼此的人情账本。",
+      choices: [
+        { id: "pay", label: "把账结了", cost: "现金 −−−",
+          d: { money: -3, social: 4, rep: 3 }, result: "你去前台签了单，回来时没有说。第二天有人在群里提了一句，你说小事。" },
+        { id: "owe", label: "让对方结，记下这笔", cost: "人情 ▲",
+          d: { social: 6, rep: -2 }, result: "这一顿你没有付钱。人情账本上多了一行，落款是你。" },
+        { id: "aa", label: "AA，把话说明白", cost: "关系 −",
+          d: { money: -1, social: -2, rep: 2 }, result: "你提议平摊，桌上短暂安静，然后有人笑着答应。此后联系少了一些。" }
+      ] },
+    { id: "EV09", title: "潮汐线下的借据", layerId: "L5", category: "风险", weight: 7, type: "redline",
+      body: "江水准时退去，露出一张被雨泡软的借据。名字还清楚，承诺已经晕开。",
+      choices: [
+        { id: "repay", label: "按纸上的数还回去", cost: "现金 −−−−",
+          d: { money: -4, rep: 4 }, result: "你把钱转过去，对方发来一个句号。借据被撕掉，名字终于不再流通。" },
+        { id: "stall", label: "先拖着，等对方开口", cost: "风险 ▲", risk: true,
+          d: { money: 1, rep: -5, social: -2 }, result: "没有人来催。三周后，一个陌生号码开始每天固定时间响两声。" },
+        { id: "broker", label: "找中间人重新谈", cost: "风险 ▲", risk: true,
+          d: { money: -2, social: -3, rep: -1 }, result: "中间人把数字压下来一些，条件是这件事以后由他记着。" }
+      ] },
+    { id: "EV10", title: "账单日", layerId: "L1", category: "金钱", weight: 10,
+      body: "闹钟还没响，扣款短信先到了。没钱的人没有秘密，账单就是他们的隐私。",
+      choices: [
+        { id: "urgent", label: "先还最急的那笔", cost: "现金 −−",
+          d: { money: -2, rep: 2 }, result: "你按到期日排了序，还掉最上面的一笔。剩下的往后挪了一个月。" },
+        { id: "instal", label: "分期，把利息摊开", cost: "以后 −",
+          d: { money: -1, health: -1, rep: -2 }, result: "分期页面只要三次点击。每月多出的那个数字很小，也一直都在。" },
+        { id: "mute", label: "关掉短信提醒", cost: "风险 ▲", risk: true,
+          d: { health: 2, rep: -3 }, result: "世界安静了两天。第三天，电话代替短信找了过来。" }
+      ] }
   ];
 })(window);
