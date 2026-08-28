@@ -42,9 +42,10 @@
             '<p class="fc-ending__summary">' + esc(payload.summary) + "</p>" +
             '<dl class="fc-kv fc-ending__stats">' +
               payload.stats.map(function (s) {
-                var g = grade(s.v);
+                var numeric = typeof s.v === "number";
+                var g = numeric ? grade(s.v) : { t: "", c: "var(--text-hi)" };
                 return "<dt>" + esc(s.k) + "</dt><dd style='color:" + g.c + "'>" +
-                  esc(String(s.v)) + " · " + g.t + "</dd>";
+                  esc(String(s.v)) + (g.t ? " · " + g.t : "") + "</dd>";
               }).join("") +
             "</dl>" +
             '<p class="fc-quote fc-ending__inherit">带走一个印记，进入下一局：</p>' +
@@ -102,23 +103,34 @@
     },
 
     buildPayload: function (run, era, origin, kind) {
-      var meta = FC.Sim.endingMeta(kind);
+      var meta = (FC.Sim.endingMetaForRun
+        ? FC.Sim.endingMetaForRun(kind, run, era, origin)
+        : FC.Sim.endingMeta(kind));
+      var stats = [
+        { k: "现金结余", v: "¥" + run.money.toLocaleString("zh-CN") },
+        { k: "健康", v: run.health },
+        { k: "人脉", v: run.social },
+        { k: "声望", v: run.rep },
+        { k: "学历", v: run.edu },
+        { k: "职业", v: FC.Sim.careerTitle(run) },
+        { k: "圈层", v: "L" + FC.Sim.layerOf(run, origin) },
+        { k: "年龄", v: run.age + " 岁" }
+      ];
+      if (kind === "challenge" && FC.Sim.scoreChallenge) {
+        var scored = FC.Sim.scoreChallenge(run, era, origin);
+        stats.unshift(
+          { k: "综合评分", v: scored.score },
+          { k: "评级", v: scored.grade },
+          { k: "主目标", v: scored.goalName + " · " + scored.progress + "%" }
+        );
+      }
       return {
         kind: kind,
         title: meta.title,
         summary: meta.summary + " 你在" + era.name + "以" + origin.name + "的身份生活了 " +
           run.months + " 个月。",
         inherited: (run.talents || []).slice(0, 2),
-        stats: [
-          { k: "现金结余", v: "¥" + run.money.toLocaleString("zh-CN") },
-          { k: "健康", v: run.health },
-          { k: "人脉", v: run.social },
-          { k: "声望", v: run.rep },
-          { k: "学历", v: run.edu },
-          { k: "职业", v: FC.Sim.careerTitle(run) },
-          { k: "圈层", v: "L" + FC.Sim.layerOf(run, origin) },
-          { k: "年龄", v: run.age + " 岁" }
-        ]
+        stats: stats
       };
     }
   };

@@ -264,6 +264,7 @@
           } catch (e) { /* ignore */ }
           return mode === "challenge" ? 60 : 0;
         })(),
+        goal: null,
         ended: false
       };
     },
@@ -303,6 +304,7 @@
         try { if (FC.read) mode = FC.read().playMode; } catch (e) { /* ignore */ }
         run.challengeMonths = mode === "challenge" ? 60 : 0;
       }
+      if (run.goal === undefined) run.goal = null;
       run.version = 4;
       return run;
     },
@@ -789,6 +791,41 @@
         }
       }
 
+      /* R11：闯城主目标牵引建议（健康/讨债/进行中合约仍优先）。 */
+      if (run.goal && run.challengeMonths > 0) {
+        var gp = FC.Sim.goalProgress(run, era, origin);
+        if (gp < 100) {
+          if (run.goal.id === "hukou") {
+            return {
+              actionId: "study",
+              reason: "主目标「落户上岸」：进修抬学历与落户分。",
+              urgency: "mid"
+            };
+          }
+          if (run.goal.id === "debtfree") {
+            return {
+              actionId: "work",
+              reason: "主目标「还清负债」：先稳住收入再还。",
+              urgency: "mid"
+            };
+          }
+          if (run.goal.id === "rise") {
+            return {
+              actionId: "work",
+              reason: "主目标「" + (run.goal.name || "向上爬一层") + "」：上班抬声望与现金。",
+              urgency: "mid"
+            };
+          }
+          if (run.goal.id === "downpay") {
+            return {
+              actionId: "side",
+              reason: "主目标「攒够首付」：副业往基金里塞钱。",
+              urgency: "mid"
+            };
+          }
+        }
+      }
+
       if (run.zoneQueue) {
         return {
           actionId: "explore",
@@ -1106,6 +1143,133 @@
       return null;
     },
 
+    /** R11：闯城主目标。仅 challenge 档强制选择。 */
+    CHALLENGE_GOALS: [
+      {
+        id: "hukou", name: "落户上岸",
+        blurb: "签下并完成落户合约，把户口钉进这座城。"
+      },
+      {
+        id: "debtfree", name: "还清负债",
+        blurb: "把债务清零，别让账单替你决定下个月。"
+      },
+      {
+        id: "rise", name: "向上爬一层",
+        blurb: "比入城时再高一层。起点越高，门禁越狠。"
+      },
+      {
+        id: "downpay", name: "攒够首付",
+        blurb: "现金加副业基金，凑齐约两年收入的首付目标。"
+      }
+    ],
+
+    challengeGoals: function () {
+      return FC.Sim.CHALLENGE_GOALS;
+    },
+
+    goalDef: function (id) {
+      var found = null;
+      FC.Sim.CHALLENGE_GOALS.forEach(function (g) {
+        if (g.id === id) found = g;
+      });
+      return found;
+    },
+
+    needsChallengeGoal: function (run) {
+      return !!(run && run.challengeMonths > 0 && !run.goal);
+    },
+
+    pickChallengeGoal: function (run, id, era, origin) {
+      var def = FC.Sim.goalDef(id);
+      if (!run || !def || !(run.challengeMonths > 0)) return false;
+      var inc = FC.Sim.income(run, era, origin) || 3000;
+      var downpayGoal = Math.max(60000, Math.round(inc * 24 / 1000) * 1000);
+      var startLayer = (origin && origin.layer) || FC.Sim.layerOf(run, origin) || 2;
+      var targetLayer = Math.min(4, Math.max(startLayer + 1, 3));
+      run.goal = {
+        id: def.id,
+        name: def.name,
+        pickedAt: run.months || 0,
+        startDebt: Math.max(0, run.debt || 0),
+        startMoney: Math.max(0, run.money || 0),
+        startLayer: startLayer,
+        targetLayer: targetLayer,
+        downpayGoal: downpayGoal,
+        doneMonth: null
+      };
+      if (id === "rise") {
+        run.goal.name = "升到 L" + targetLayer;
+      }
+      return true;
+    },
+
+    goalProgress: function (run, era, origin) {
+      if (!run || !run.goal) return 0;
+      var id = run.goal.id;
+      var pct = 0;
+      if (id === "hukou") {
+        var c = run.contract;
+        if (c && c.id === "hukou" && c.status === "won") pct = 100;
+        else if (c && c.id === "hukou" && c.status === "active") {
+          pct = FC.Sim.contractProgress(run);
+        } else {
+          pct = clamp((run.edu || 0) * 0.35, 0, 45);
+        }
+      } else if (id === "debtfree") {
+        if ((run.debt || 0) <= 0) pct = 100;
+        else {
+          var base = Math.max(run.goal.startDebt || 0, FC.Sim.income(run, era, origin) * 8, 1);
+          pct = clamp(100 - (run.debt / base) * 100, 0, 99);
+        }
+      } else if (id === "rise") {
+        var layer = FC.Sim.layerOf(run, origin);
+        var target = run.goal.targetLayer || 3;
+        var start = run.goal.startLayer || 2;
+        if (layer >= target) pct = 100;
+        else if (layer > start) {
+          pct = 55 + clamp((run.rep || 0) / 100 * 30, 0, 30);
+        } else {
+          pct = 15 + clamp((run.rep || 0) / 100 * 35, 0, 35);
+        }
+      } else if (id === "downpay") {
+        var cash = (run.money || 0) + ((run.assets && run.assets.sideFund) || 0);
+        var need = Math.max(1, run.goal.downpayGoal || 80000);
+        if (run.contract && run.contract.id === "home" && run.contract.status === "won") pct = 100;
+        else pct = clamp(cash / need * 100, 0, 100);
+      }
+      pct = round1(clamp(pct, 0, 100));
+      if (pct >= 100 && run.goal.doneMonth == null) {
+        run.goal.doneMonth = run.months || 0;
+      }
+      return pct;
+    },
+
+    scoreChallenge: function (run, era, origin) {
+      var progress = FC.Sim.goalProgress(run, era, origin);
+      var def = run.goal ? FC.Sim.goalDef(run.goal.id) : null;
+      var survival = clamp(
+        (run.health || 0) * 0.35 + (run.social || 0) * 0.2 + (run.rep || 0) * 0.25 +
+          Math.min(30, Math.max(0, (run.money || 0) / 5000)),
+        0, 100
+      );
+      var early = 0;
+      if (run.goal && run.goal.doneMonth != null && run.challengeMonths > 0) {
+        early = clamp((run.challengeMonths - run.goal.doneMonth) / run.challengeMonths * 15, 0, 15);
+      }
+      var score = Math.round(clamp(progress * 0.7 + survival * 0.25 + early, 0, 100));
+      var grade = score >= 90 ? "S" : score >= 75 ? "A" : score >= 60 ? "B" : score >= 40 ? "C" : "D";
+      return {
+        score: score,
+        grade: grade,
+        progress: progress,
+        survival: Math.round(survival),
+        earlyBonus: Math.round(early),
+        goalId: run.goal && run.goal.id,
+        goalName: (def && def.name) || (run.goal && run.goal.name) || "未选目标",
+        done: progress >= 100
+      };
+    },
+
     /** R10：关系 Tab 主动互动。kind = repay | dine | ask */
     npcInteractOptions: function (run, npcId) {
       var npc = FC.Sim.npcById(run, npcId);
@@ -1167,6 +1331,19 @@
       var pack = FC.Sim.pack;
       if (!pack || !pack.endings) return { title: "终局", summary: "" };
       return pack.endings[kind] || pack.endings.elder;
+    },
+
+    endingMetaForRun: function (kind, run, era, origin) {
+      var meta = FC.Sim.endingMeta(kind);
+      if (kind !== "challenge" || !run || !(run.challengeMonths > 0)) return meta;
+      var scored = FC.Sim.scoreChallenge(run, era, origin);
+      return {
+        title: "闯城交卷 · " + scored.grade,
+        summary: "主目标「" + scored.goalName + "」完成度 " + scored.progress +
+          "%。综合评分 " + scored.score + "（生存 " + scored.survival +
+          (scored.earlyBonus ? "，提前完成 +" + scored.earlyBonus : "") + "）。" +
+          (scored.done ? "目标已达成，这座城给你盖了章。" : "目标未满，但六十个月已经写进履历。")
+      };
     },
 
     netIncome: function (run, era, origin) {
