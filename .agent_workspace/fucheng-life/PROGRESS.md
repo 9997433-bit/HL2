@@ -38,7 +38,7 @@
 | Round | Status |
 |-------|--------|
 | Round 1 | complete — 6/6 done |
-| Round 2 | in_progress — 0/6 dispatched |
+| Round 2 | complete — 6/6 done |
 | Round 3 | pending |
 
 ## Subagent Status (Round 1)
@@ -60,11 +60,9 @@
 ## Subagent Status (Round 2)
 | Agent | Model | Status |
 |-------|-------|--------|
-| fable-r2-gap-matrix | fable | dispatched ☁️ |
-| fable-r2-overlay-spec | fable | dispatched ☁️ |
-| opus-r2-visual-polish | opus-fast | dispatched ☁️ |
-| opus-r2-event-overlay | opus-fast | dispatched |
-| gpt-sol-r2-story-wire | gpt-sol | dispatched |
-| gpt-sol-r2-effects-merge | gpt-sol | dispatched |
-
-Round 2 上下文：`.agent_workspace/fucheng-life/round2/ROUND2_CONTEXT.md`
+| fable-r2-gap-matrix | fable | ✅ done → `a99f0ba` |
+| fable-r2-overlay-spec | fable | ✅ done → `841c768` |
+| opus-r2-visual-polish | opus-fast | ✅ done → `65b6d88` |
+| opus-r2-event-overlay | opus-fast | ✅ done → `29db60d` |
+| gpt-sol-r2-story-wire | gpt-sol | ✅ done → `78292ca` |
+| gpt-sol-r2-effects-merge | gpt-sol | ✅ done → `ac75606` |
