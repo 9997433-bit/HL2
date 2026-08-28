@@ -31,8 +31,9 @@
       if (!run || !run.career) return false;
       run.career.track = trackId || suggestTrack();
       run.career.picked = true;
-      run.career.level = 0;
-      run.career.kpi = 48;
+      /* 推迟选轨期间可能已攒 KPI/职级；只在缺省时填入门值，勿清零。 */
+      if (typeof run.career.level !== "number") run.career.level = 0;
+      if (typeof run.career.kpi !== "number") run.career.kpi = 48;
       return true;
     },
 

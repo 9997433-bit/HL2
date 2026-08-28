@@ -205,8 +205,8 @@ python3 -m http.server 8000
     教学增量文案默认不 bump KEY，仅结构性改版才升版；本轮文案修正继续使用 `fucheng.guide.v7`，不会强制已读玩家重看。  
     R18 专项测试与 `./scripts/run-fucheng-life-tests.sh` 全绿。
 
-42. [ ] **R19 · 选轨关闭语义 + §40 dismiss 措辞对齐**  
-    从仪表盘「选择职业轨道」手动入口打开选轨面板时，按 Escape 或点击遮罩可取消关闭；取消后不应用推荐轨、不写入 `null` 日志，手动入口继续保留。  
+42. [x] **R19 · 选轨关闭语义 + §40 dismiss 措辞对齐**  
+    从仪表盘「选择职业轨道」手动入口打开选轨面板时，按 Escape 或点击遮罩可取消关闭；取消后不应用推荐轨、不写入 `null` 日志，手动入口继续保留；读档也不会因已推进月数把 `picked:false` 强推回 true。  
     boot 自动流打开的选轨面板保持原语义：按 Escape 仍接受并应用推荐轨。  
     §40 已对齐 dismiss 语义：发生过 `pendingModal` 补弹（含被关闭/dismiss）时，当次 boot 推迟自动选轨、签约与聚光灯教学。  
     `node games/fucheng-life/tests/r19-career-dismiss.test.js` 与 `./scripts/run-fucheng-life-tests.sh` 全绿。

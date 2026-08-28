@@ -162,6 +162,28 @@ async function main() {
     "ACCEPTANCE §40 must say replay includes dismissed/closed modals"
   );
 
+  /* 取消后推进再刷新：读档不得把显式 picked:false 强推回 true。 */
+  const simSrc = fs.readFileSync(path.join(gameRoot, "js/fc-sim.js"), "utf8");
+  const migrateSrc = functionSection(simSrc, "migrateContract");
+  assert.match(
+    migrateSrc,
+    /picked\s*==\s*null[\s\S]{0,200}months/,
+    "migrateContract must only default picked when the field is missing"
+  );
+  assert.doesNotMatch(
+    migrateSrc,
+    /if\s*\(\s*\(\s*run\.months[\s\S]{0,40}\)\s*>\s*0\s*\)\s*run\.career\.picked\s*=\s*true/,
+    "migrateContract must not force picked=true merely because months > 0"
+  );
+
+  const applySrc = careerSrc.match(/applyTrack\s*:\s*function[\s\S]{0,320}/);
+  assert.ok(applySrc, "applyTrack must be declared");
+  assert.doesNotMatch(
+    applySrc[0],
+    /career\.level\s*=\s*0[\s\S]{0,80}career\.kpi\s*=\s*48/,
+    "applyTrack must not zero earned level/kpi when the player deferred the pick"
+  );
+
   console.log("R19 cancelable career dismiss, manual dashboard path, and §40 wording passed.");
 }
 
