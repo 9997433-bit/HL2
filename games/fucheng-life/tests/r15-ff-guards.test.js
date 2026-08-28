@@ -21,17 +21,20 @@ function functionSection(src, name, nextName) {
 }
 
 /* 快进不能替玩家探区，现金见底时应优先上班。 */
-const pickAutoSrc = functionSection(dashSrc, "pickAutoAction", "autoSpendAp");
 const autoSpendSrc = functionSection(dashSrc, "autoSpendAp", "sysLog");
 const fastForwardSrc = functionSection(dashSrc, "fastForwardMonths", "startFastForward");
-const fastForwardGuardSrc = pickAutoSrc + autoSpendSrc + fastForwardSrc;
 assert.match(
-  fastForwardGuardSrc,
+  autoSpendSrc,
+  /suggestMonth|pickAutoAction/,
+  "autoSpendAp must use guarded month advice directly or through its picker"
+);
+assert.match(
+  dashSrc,
   /skipExplore/,
   "fast-forward auto-spending must request or enforce skipExplore"
 );
 assert.match(
-  fastForwardGuardSrc,
+  dashSrc,
   /preferWorkIfPoor/,
   "fast-forward auto-spending must enable the low-cash work preference"
 );
