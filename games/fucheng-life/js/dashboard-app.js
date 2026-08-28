@@ -160,7 +160,7 @@
         '<div class="fc-zone-picker__body"></div>' +
         '<p class="fc-quote" style="margin:12px 0 0;font-size:12px">例：选「拍卖行」≠ 立刻进场；还要再点一次「探区」行动。</p>' +
         '<a class="fc-btn fc-btn--ghost fc-sheet__done" href="city-map.html" style="width:100%;margin-top:12px">打开完整城市地图</a>' +
-        '<button type="button" class="fc-btn fc-btn--primary fc-sheet__done" style="width:100%;margin-top:8px">选好了，回去点「探区」</button>' +
+        '<button type="button" class="fc-btn fc-btn--primary fc-sheet__done" style="width:100%;margin-top:8px">选好了，点「探区」行动</button>' +
       "</div>";
 
     var panel = zonePickerHost.querySelector(".fc-sheet__panel");
@@ -361,7 +361,7 @@
     } else if (tip && tip.reason) {
       $("apHint").textContent = tip.reason;
     } else {
-      $("apHint").textContent = "用完行动点后再推进一月。侧栏可设定探区目标。";
+      $("apHint").textContent = "用完行动点后再推进一月。上方可设定探区目标。";
     }
     renderMonthAdvice();
     renderDock();
@@ -1191,6 +1191,23 @@
     if (drawer) {
       drawer.addEventListener("click", function (e) {
         if (e.target.closest("[data-drawer-close]")) { closeDrawer(); return; }
+        if (e.target.closest("[data-drawer-tick6]")) {
+          closeDrawer();
+          if (!window.confirm("快进会连续推进 3 个月（每月仍需先花完行动点）。确定？")) return;
+          (function step(i) {
+            if (i >= 3) return;
+            tick(i < 2).then(function (hit) {
+              if (!hit) step(i + 1);
+              else pushLog({ t: ts(), tag: "系统", tint: "var(--text-faint)", text: "快进被一件事打断。", d: {} });
+            });
+          })(0);
+          return;
+        }
+        if (e.target.closest("[data-drawer-reset]")) {
+          closeDrawer();
+          if ($("resetBtn")) $("resetBtn").click();
+          return;
+        }
         var btn = e.target.closest("[data-action]");
         if (btn && !btn.disabled) {
           onAction(btn.dataset.action);

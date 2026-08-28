@@ -522,18 +522,162 @@
     -webkit-backdrop-filter: blur(18px) saturate(140%);
   }
 
-  /* Room for the dock so the footnote and log tail stay reachable */
-  .fc-page {
-    padding-bottom: 168px;
+  /* 手机一屏游玩：底栏负责行动，页内不再堆第二套按钮 */
+  #actionGrid,
+  #apDots {
+    display: none !important;
   }
 
-  /* Compact the vitals cards so 现金+健康 sit side by side at 390px */
+  .fc-dash-tools #tickBtn,
+  .fc-dash-tools #tick6Btn,
+  .fc-dash-tools #resetBtn {
+    display: none !important;
+  }
+
+  .fc-dash-pillars,
+  .fc-page > .fc-footnote {
+    display: none !important;
+  }
+
+  /* 圈层电梯在手机上占高，探区已前置，先藏掉 */
+  #elevatorPanel {
+    display: none !important;
+  }
+
+  .fc-page {
+    padding-top: 12px;
+    padding-bottom: calc(108px + var(--safe-b, 0px));
+  }
+
+  /* 身份条压成一行可读摘要 */
+  .fc-dash-id {
+    margin-bottom: 8px !important;
+    padding: 10px 12px;
+  }
+  .fc-dash-id__eyebrow { display: none; }
+  .fc-dash-id__title {
+    font-size: 15px !important;
+    margin-bottom: 2px !important;
+    line-height: 1.35;
+  }
+  .fc-dash-id__chips {
+    gap: 6px;
+  }
+  .fc-dash-id__chips .fc-chip {
+    font-size: 10px;
+    padding: 2px 8px;
+  }
+  .fc-dash-id__clock .fc-actionbar__label,
+  .fc-dash-id__clock #season {
+    display: none;
+  }
+  .fc-dash-id__clock #clock {
+    font-size: 15px !important;
+  }
+
+  .fc-vitals {
+    margin-bottom: 8px !important;
+  }
+  .fc-vitals__head {
+    margin-bottom: 6px;
+  }
+  .fc-vitals__title span { display: none; }
+
   .fc-hud {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+  .fc-stat { padding: 10px 11px 9px; }
+  .fc-stat__value { font-size: 20px; }
+  .fc-stat__delta { font-size: 11px; }
+
+  .fc-contract-hud {
+    margin-bottom: 8px;
     gap: 10px;
   }
-  .fc-stat { padding: 12px 13px 11px; }
-  .fc-stat__value { font-size: 21px; }
+
+  .fc-tabs {
+    position: sticky;
+    top: 0;
+    z-index: 40;
+    margin-bottom: 8px;
+    padding: 4px 0 6px;
+    background: rgba(5, 7, 15, 0.92);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+
+  .fc-life-main {
+    padding: 12px 12px 10px;
+  }
+  .fc-life-main__title {
+    font-size: 12px;
+    margin-bottom: 8px;
+  }
+  .fc-life-main__title span { display: none; }
+
+  .fc-apbar {
+    margin-bottom: 8px;
+    padding: 0;
+    border: 0;
+    background: transparent;
+  }
+  .fc-apbar__hint {
+    display: none;
+  }
+
+  .fc-loc--inline {
+    margin: 8px 0 0;
+  }
+  .fc-loc__hint {
+    margin: 6px 0 0;
+    font-size: 11px;
+  }
+
+  .fc-dash-tools {
+    gap: 6px;
+    margin: 8px 0;
+  }
+  .fc-dash-tools .fc-btn {
+    padding: 8px 10px;
+    font-size: 12px;
+  }
+
+  .fc-life-main__rule {
+    margin: 8px 0;
+  }
+
+  /* 日志在视口内滚动，避免整页被流水账拉长 */
+  .fc-log {
+    max-height: min(42vh, 340px);
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+    margin: 0;
+    padding-right: 2px;
+  }
+
+  .fc-dash-rail {
+    margin-top: 10px;
+    gap: 10px;
+  }
+  .fc-dash-rail .fc-panel {
+    padding: 12px;
+  }
+
+  .fc-drawer__extra {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+  }
+}
+
+@media (min-width: 641px) {
+  .fc-drawer__extra { display: none; }
+  .fc-loc__hint { margin: 8px 0 0; font-size: 12px; }
 }
 
 @media (prefers-reduced-motion: reduce) {

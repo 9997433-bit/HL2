@@ -36,18 +36,18 @@
 <main class="fc-page fc-page--wide">
 
   <!-- Identity strip -->
-  <section class="fc-panel fc-rise" style="margin-bottom:18px">
+  <section class="fc-panel fc-rise fc-dash-id" style="margin-bottom:18px">
     <div class="fc-rowgap" style="justify-content:space-between;align-items:flex-start">
       <div style="min-width:0">
-        <p class="fc-eyebrow" style="margin-bottom:8px">LIFE DASHBOARD · 人生仪表盘</p>
-        <h1 class="fc-title" style="font-size:clamp(24px,3.4vw,34px);margin-bottom:8px" id="identity">正在读取市民档案……</h1>
-        <div class="fc-rowgap">
+        <p class="fc-eyebrow fc-dash-id__eyebrow" style="margin-bottom:8px">LIFE DASHBOARD · 人生仪表盘</p>
+        <h1 class="fc-title fc-dash-id__title" style="font-size:clamp(24px,3.4vw,34px);margin-bottom:8px" id="identity">正在读取市民档案……</h1>
+        <div class="fc-rowgap fc-dash-id__chips">
           <span class="fc-chip fc-chip--accent" id="eraChip">E7 · 当前时代</span>
           <span class="fc-chip" id="originChip">普通工薪</span>
           <span class="fc-chip" id="layerChip">L2 工薪层</span>
         </div>
       </div>
-      <div style="text-align:right">
+      <div class="fc-dash-id__clock" style="text-align:right">
         <div class="fc-actionbar__label">City Clock</div>
         <div class="fc-mono" id="clock" style="font-size:22px;color:var(--text-hi);letter-spacing:.04em">2020.03</div>
         <div class="fc-quote" id="season" style="font-size:12px">雨季 · 账单日临近</div>
@@ -136,8 +136,8 @@
   <div class="fc-split fc-split--main">
 
     <!-- Event log -->
-    <section class="fc-panel fc-rise">
-      <h2 class="fc-sectiontitle">事件日志 <span>EVENT LOG</span></h2>
+    <section class="fc-panel fc-rise fc-life-main">
+      <h2 class="fc-sectiontitle fc-life-main__title">事件日志 <span>EVENT LOG</span></h2>
 
       <div class="fc-apbar" id="apBar">
         <div class="fc-apbar__head">
@@ -146,36 +146,38 @@
         </div>
         <div class="fc-apbar__dots" id="apDots" aria-hidden="true"></div>
         <div class="fc-month-advice" id="monthAdvice" hidden aria-live="polite"></div>
-        <div class="fc-actions" id="actionGrid"></div>
-        <p class="fc-quote fc-apbar__hint" id="apHint">先安排这月的行动，再点「推进一月」。侧栏可设定探区。</p>
-      </div>
 
-      <div class="fc-rowgap">
-        <button class="fc-btn fc-btn--primary" id="tickBtn" disabled>推进一个月 ▸</button>
-        <button class="fc-btn fc-btn--ghost" id="tick6Btn" disabled>快进三月 ▸▸</button>
-        <button class="fc-btn fc-btn--ghost" id="resetBtn" disabled>重开人生</button>
-        <button class="fc-btn fc-btn--ghost" id="guideBtn" type="button">新手教学</button>
-        <a class="fc-btn fc-btn--ghost" href="city-map.html">打开城市地图</a>
-      </div>
-      <hr class="fc-hr">
-      <ul class="fc-log" id="log"></ul>
-    </section>
-
-    <!-- Side rail -->
-    <aside class="fc-stack fc-rise">
-
-      <div class="fc-panel" id="elevatorPanel">
-        <h2 class="fc-sectiontitle">圈层 <span>LAYER</span></h2>
-        <div class="fc-loc" id="locPanel">
+        <!-- 探区目标提前到行动区：手机不必滚过整段日志再去侧栏 -->
+        <div class="fc-loc fc-loc--inline" id="locPanel">
           <p class="fc-loc__label">探区目标 <span>ZONE TARGET</span></p>
           <button type="button" class="fc-loc-chip" id="locChip" aria-haspopup="dialog" aria-controls="zonePicker">
             <span class="fc-loc-chip__pin" aria-hidden="true">◎</span>
             <span class="fc-loc-chip__text" id="locChipText">未设探区</span>
             <span class="fc-loc-chip__action">选</span>
           </button>
-          <p class="fc-quote" style="margin:8px 0 0;font-size:12px">先在这里选地点，再点行动「探区」才会去。</p>
+          <p class="fc-quote fc-loc__hint">先选地点，再用底栏「探区」行动。</p>
         </div>
-        <hr class="fc-hr" style="margin:14px 0">
+
+        <div class="fc-actions" id="actionGrid"></div>
+        <p class="fc-quote fc-apbar__hint" id="apHint">先安排这月的行动，再点「推进一月」。侧栏可设定探区。</p>
+      </div>
+
+      <div class="fc-rowgap fc-dash-tools">
+        <button class="fc-btn fc-btn--primary" id="tickBtn" disabled>推进一个月 ▸</button>
+        <button class="fc-btn fc-btn--ghost" id="tick6Btn" disabled>快进三月 ▸▸</button>
+        <button class="fc-btn fc-btn--ghost" id="resetBtn" disabled>重开人生</button>
+        <button class="fc-btn fc-btn--ghost" id="guideBtn" type="button">新手教学</button>
+        <a class="fc-btn fc-btn--ghost" href="city-map.html">打开城市地图</a>
+      </div>
+      <hr class="fc-hr fc-life-main__rule">
+      <ul class="fc-log" id="log"></ul>
+    </section>
+
+    <!-- Side rail -->
+    <aside class="fc-stack fc-rise fc-dash-rail">
+
+      <div class="fc-panel" id="elevatorPanel">
+        <h2 class="fc-sectiontitle">圈层 <span>LAYER</span></h2>
         <div class="fc-elevator" id="elevator"></div>
         <p class="fc-quote" id="layerNote" style="margin:14px 0 0;font-size:12px">
           城市把人放在不同的高度，然后收不同的租。
@@ -193,7 +195,7 @@
                 style="width:100%;margin-top:12px" disabled>查看结算单</button>
       </div>
 
-      <div class="fc-panel">
+      <div class="fc-panel fc-dash-pillars">
         <h2 class="fc-sectiontitle">承重柱 <span>PILLARS</span></h2>
         <div class="fc-taglist">
           <span class="fc-chip">教育</span><span class="fc-chip">公权力</span>
@@ -256,6 +258,10 @@
       <button type="button" class="fc-drawer__close" data-drawer-close aria-label="关闭">✕</button>
     </div>
     <div class="fc-actions fc-drawer__grid" id="drawerActions"></div>
+    <div class="fc-drawer__extra">
+      <button type="button" class="fc-btn fc-btn--ghost" data-drawer-tick6>快进三月</button>
+      <button type="button" class="fc-btn fc-btn--ghost" data-drawer-reset>重开人生</button>
+    </div>
   </div>
 </div>
 

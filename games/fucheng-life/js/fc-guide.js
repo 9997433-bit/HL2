@@ -11,20 +11,21 @@
   var STEPS = [
     {
       title: "① 行动点 AP",
-      body: "每个月有 3 点行动点。点下面这些按钮（上班、休息、探区…）把它们花完 —— 这是你这个月在城里做的事。",
+      body: "每个月有 3 点行动点。电脑用上方按钮，手机用底部行动栏（上班、休息、探区…）把它们花完。",
       target: "actionGrid",
-      fallback: "apDots"
+      fallback: "mobileDock"
     },
     {
       title: "② 探区：先选地点",
-      body: "侧栏「当前位置」用来选你要去的街区。选好以后，再点行动里的「探区」才会消耗 1 点 AP，并在那里触发一件事。只选地点、不点「探区」，什么都不会发生。",
+      body: "先点「探区目标」选街区，再点行动「探区」才会花 1 点 AP 去触发事件。只选地点、不点「探区」，什么都不会发生。",
       target: "locChip",
       fallback: "locPanel"
     },
     {
       title: "③ 推进一个月",
-      body: "行动点用尽后，点这里结算收支、抽城市事件。没花完 AP 时它会是灰的。",
-      target: "tickBtn"
+      body: "行动点用尽后，点「推进一个月」结算收支、抽城市事件。手机端它会出现在底部行动栏。",
+      target: "tickBtn",
+      fallback: "mobileDock"
     },
     {
       title: "④ 人生合约",
@@ -34,7 +35,7 @@
     },
     {
       title: "⑤ 生命体征",
-      body: "现金、健康、人脉、声望在这里跳动。现金见底会危险，健康掉光也会提前离场。",
+      body: "现金、健康、人脉、声望在这里跳动。现金见底会危险，健康掉光也会提前离场。手机可点「展开」看完整项。",
       target: "vitalsPanel",
       fallback: "moneyStat"
     },
@@ -54,13 +55,22 @@
   }
 
   function resolveTarget(step) {
+    function usable(el) {
+      if (!el) return false;
+      try {
+        var style = global.getComputedStyle(el);
+        if (style.display === "none" || style.visibility === "hidden") return false;
+      } catch (e) { /* ignore */ }
+      var r = el.getBoundingClientRect();
+      /* fixed 底栏 offsetParent 常为 null，改用尺寸判断 */
+      return r.width > 2 && r.height > 2;
+    }
     var el = doc.getElementById(step.target);
-    if (el && el.offsetParent !== null) return el;
+    if (usable(el)) return el;
     if (step.fallback) {
       el = doc.getElementById(step.fallback);
-      if (el && el.offsetParent !== null) return el;
+      if (usable(el)) return el;
     }
-    /* offsetParent 对 fixed/sticky 可能为 null；再退一步只看是否存在。 */
     el = doc.getElementById(step.target);
     return el || (step.fallback ? doc.getElementById(step.fallback) : null);
   }
