@@ -30,3 +30,15 @@
 ## 冲突纪律
 - O1 独占 trap；O4/O5 不得改 trap，只可改各自 swap 或 skip。
 - O2/O3 分文件，ARIA id 约定：`fcCareerTitle` / `fcCareerLede`（选轨）、`fcChallengeTitle` / `fcChallengeLede`（闯城）——写进 commit message。
+
+## Agent IDs
+- F1: bc-15cb723a-7c9f-5d06-91a5-19f025d45c57
+- F2: bc-67b07650-e080-5334-ae9e-41b50b7e450e
+- F3: bc-dd1fd98d-97cf-571c-af62-cb1fd992a438
+- O1: bc-5c199ca2-1e47-5edf-bcda-0c32b21549cf
+- O2: bc-084909ba-e1ac-582d-9bda-6adf26203b47
+- O3: bc-3aec73a1-2a55-5a7f-8a6d-d83215d8aea3
+- O4: bc-6daca0bb-f6ed-530e-8363-10005070285f
+- O5: bc-7b294398-5255-5e74-a092-5ef0987fc465
+- G1: bc-d179360e-b96a-5a30-9f26-1b86e6c04332
+- G2: bc-17157b54-3a2f-5632-aa70-9d610f2458a7
