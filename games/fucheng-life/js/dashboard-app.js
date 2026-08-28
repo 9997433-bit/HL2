@@ -1350,13 +1350,14 @@
     }, { pending: false }).then(function () { return true; });
   }
 
-  /* 挂账那一刻合约还在手上，补弹时可能已经结算、换签或进度跑出了区间 ——
-     入池时的门禁在这里重验一次，过期的通知不该再敲门。 */
+  /* 挂账那一刻合约还在手上，补弹时可能已经结算或换签 —— 只拦「合约没了 /
+     换签了 / 已结算」；进度/期限窗口漂移仍补弹，避免 KPI 回落把 EV97 一类
+     门禁卡永久销掉。 */
   function pendingContractStale(ev) {
     if (!ev || !ev.contract) return false;
-    if (!FC.events || typeof FC.events.meetsContract !== "function") return false;
     if (!FC.Sim || typeof FC.Sim.contractCtx !== "function") return false;
-    return !FC.events.meetsContract(FC.Sim.contractCtx(run), ev);
+    var ctx = FC.Sim.contractCtx(run);
+    return !ctx || ctx.id !== ev.contract || ctx.status !== "active";
   }
 
   /* 进门时补弹：上一局停在「危机 / O1 已经敲过门但没答完」，这里把那张卡

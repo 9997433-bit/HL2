@@ -19,7 +19,7 @@ function functionSection(src, name) {
   return src.slice(start, end > start ? end : src.length);
 }
 
-/* 挂账的合约事件补弹前必须重验当前合约；过期卡销账并留下系统说明。 */
+/* 挂账的合约事件补弹前必须重验当前合约；仅结算/换签/消失才销账并留下系统说明。 */
 const replaySrc = functionSection(dashSrc, "replayPendingModal");
 const staleHelperMatch = replaySrc.match(/\b([A-Za-z_$][\w$]*Contract[A-Za-z_$\w]*)\s*\(\s*ev\s*\)/);
 const validationSrc = staleHelperMatch
@@ -28,16 +28,18 @@ const validationSrc = staleHelperMatch
 
 assert.match(
   replaySrc,
-  /(?:meetsContract|[A-Za-z_$][\w$]*Contract[A-Za-z_$\w]*\s*\(\s*ev\s*\))/,
+  /[A-Za-z_$][\w$]*Contract[A-Za-z_$\w]*\s*\(\s*ev\s*\)/,
   "replayPendingModal must branch through a current-contract validation"
 );
-assert.match(validationSrc, /\bmeetsContract\b/,
-  "pending contract replay must reuse the event contract gate");
 assert.match(validationSrc, /\bcontractCtx\b/,
   "pending contract replay must rebuild contract context from the current run");
+assert.match(validationSrc, /status\s*!==\s*["']active["']/,
+  "stale check must drop only settled or missing contracts, not progress-window drift");
+assert.doesNotMatch(validationSrc, /\bmeetsContract\b/,
+  "replay stale check must not reuse full meetsContract (progress/monthsLeft windows)");
 
 const staleBranchAt = replaySrc.search(
-  /if\s*\([\s\S]{0,160}(?:meetsContract|[A-Za-z_$][\w$]*Contract[A-Za-z_$\w]*\s*\(\s*ev\s*\))/
+  /if\s*\([\s\S]{0,160}[A-Za-z_$][\w$]*Contract[A-Za-z_$\w]*\s*\(\s*ev\s*\)/
 );
 assert.ok(staleBranchAt >= 0, "replayPendingModal must branch on stale contract state");
 const staleBranchSrc = replaySrc.slice(staleBranchAt);
