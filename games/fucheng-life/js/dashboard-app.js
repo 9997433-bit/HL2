@@ -1168,6 +1168,7 @@
       : { label: "链式事件", tint: "var(--neon-violet)" };
   }
 
+  /* 返回值是「这一步弹过窗没有」，不是「玩家选没选」—— 月度弹窗额度按敲门次数算。 */
   function resolveSagaStep(step, silent) {
     var tag = sagaTag();
     if (step.choices && step.choices.length && FC.events) {
@@ -1183,7 +1184,7 @@
         })
       };
       return FC.events.show(sagaEv, { moneyRef: income() }).then(function (res) {
-        if (res.dismissed) return false;
+        if (res.dismissed) return true;
         var idx = res.choiceId != null ? parseInt(res.choiceId, 10) || 0 : 0;
         var applied = FC.Sim.advanceSaga(run, idx, income());
         pushLog({
@@ -1197,10 +1198,10 @@
     }
     var applied = FC.Sim.advanceSaga(run, 0, income());
     pushLog({ t: ts(), tag: tag.label, tint: tag.tint, text: step.text, d: applied.applied, kind: "saga" });
-    return Promise.resolve(true);
+    return Promise.resolve(false);
   }
 
-  function finishMonth(moves, silent) {
+  function finishMonth(moves, silent, sagaShown) {
     /* R12：人情余波先落账，再走城市 ambient —— 人比天气先敲门。 */
     var ripple = FC.Sim.dueNpcRipple ? FC.Sim.dueNpcRipple(run) : null;
     if (ripple && FC.Sim.resolveNpcRipple) {
@@ -1281,7 +1282,41 @@
         renderLog();
         flyMoney([scApplied.money], null);
       }
-      return monthModal(settled, silent);
+      return monthModal(settled, silent, sagaShown);
+    });
+  }
+
+  /* 要约被「再想想」推掉也算敲过门：picker 会把当月记进 done。 */
+  function offerShownThisMonth() {
+    var d = run.done || {};
+    return d.secondarySkipped === run.months || d.contractSkipped === run.months;
+  }
+
+  /* R14：一个月最多敲一次门 —— 合约结算 > 二级/主合约要约 > 危机 / O1。
+     命中的那一扇负责把账本补上，后面的强弹窗一律顺延到下个月；链式事件
+     这个月已经弹过窗的话，最低优先级的危机 / O1 也让位。 */
+  function monthModal(settled, silent, sagaShown) {
+    if (settled && FC.contract && FC.contract.resolutionEvent) {
+      var resolution = FC.contract.resolutionEvent(run);
+      /* openEvent 结束时自己会 maybeShowLedger，这里不必再叫一次。 */
+      if (resolution) return openEvent(resolution, silent).then(function () { return true; });
+    }
+    return maybeOfferSecondaryContract().then(function (hit) {
+      if (hit) return true;
+      return maybeOfferContract();
+    }).then(function (hit) {
+      if (hit) {
+        maybeShowLedger(silent);
+        return true;
+      }
+      /* 被推掉的要约、以及本月已经弹过的链式事件，都占掉这个月的名额。 */
+      if (offerShownThisMonth() || sagaShown) {
+        maybeShowLedger(silent);
+        return true;
+      }
+      var ev = drawModalEvent();
+      if (!ev) { maybeShowLedger(silent); return false; }
+      return openEvent(ev, silent);
     });
   }
 
@@ -1300,14 +1335,14 @@
     if (!FC.Sim.tryStartOriginSaga(run, origin)) FC.Sim.tryStartRandomSaga(run, era, origin);
     var moves = [];
 
-    var sagaChain = Promise.resolve();
+    var sagaChain = Promise.resolve(false);
     if (run.saga) {
       var step = FC.Sim.sagaStep(run);
       if (step) sagaChain = resolveSagaStep(step, silent);
     }
 
-    return sagaChain.then(function () {
-      return finishMonth(moves, silent);
+    return sagaChain.then(function (sagaShown) {
+      return finishMonth(moves, silent, sagaShown);
     });
   }
 
