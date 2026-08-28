@@ -375,7 +375,549 @@ body.fc-scroll-lock {
   white-space: nowrap;
 }
 
-/* ------------------------------------------------------------ responsive */
+/* ==========================================================================
+   R5-B · 事件呈现分化 — 同一份数据，四种口气
+   modal 在上面。以下是 toast（顶部通知）、letter（信纸）、inline（日志卡）。
+   三者共用 .fc-event 的层色 / 类型色变量约定，所以一条事件换壳不换颜色。
+   ========================================================================== */
+
+/* ------------------------------------------------------------------ toast
+   小插曲：顶部落下一条，四秒后自己走。不锁滚动，不抢焦点。 */
+.fc-toast {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: var(--z-toast);
+  display: flex;
+  justify-content: center;
+  padding: 14px 12px 0;
+  pointer-events: none;
+  --tint: var(--l2, #7fa8d4);
+  --tint-deep: var(--l2-deep, #22364f);
+  --etint: var(--neon-cyan, #35e0ff);
+}
+
+.fc-toast[data-layer="L1"] { --tint: var(--l1); --tint-deep: var(--l1-deep); }
+.fc-toast[data-layer="L2"] { --tint: var(--l2); --tint-deep: var(--l2-deep); }
+.fc-toast[data-layer="L3"] { --tint: var(--l3); --tint-deep: var(--l3-deep); }
+.fc-toast[data-layer="L4"] { --tint: var(--l4); --tint-deep: var(--l4-deep); }
+.fc-toast[data-layer="L5"] { --tint: var(--l5); --tint-deep: var(--l5-deep); }
+
+.fc-toast[data-type="opportunity"] { --etint: var(--neon-cyan); }
+.fc-toast[data-type="bill"] { --etint: var(--neon-amber); }
+.fc-toast[data-type="relation"] { --etint: var(--neon-violet); }
+.fc-toast[data-type="redline"] { --etint: var(--neon-blood); }
+
+.fc-toast__card {
+  position: relative;
+  pointer-events: auto;
+  width: min(420px, 100%);
+  padding: 14px 16px 12px;
+  overflow: hidden;
+  border-radius: var(--r-lg, 20px);
+  background: rgba(10, 15, 28, 0.94);
+  border: 1px solid color-mix(in srgb, var(--tint) 30%, var(--line-hi, rgba(160, 190, 240, 0.34)));
+  backdrop-filter: blur(18px) saturate(140%);
+  -webkit-backdrop-filter: blur(18px) saturate(140%);
+  box-shadow:
+    var(--shadow-lift, 0 26px 70px rgba(0, 0, 0, 0.68)),
+    0 0 36px color-mix(in srgb, var(--tint) 14%, transparent);
+  opacity: 0;
+  transform: translateY(-14px);
+  transition: opacity var(--ov-t-fast) var(--ov-ease-out),
+    transform var(--ov-t-panel) var(--ov-ease-out);
+}
+
+.fc-toast.is-open .fc-toast__card { opacity: 1; transform: none; }
+.fc-toast.is-closing .fc-toast__card { opacity: 0; transform: translateY(-10px); }
+
+.fc-toast__accent {
+  position: absolute;
+  top: 0;
+  left: 18%;
+  right: 18%;
+  height: 2px;
+  border-radius: 99px;
+  background: linear-gradient(90deg, transparent, var(--etint), transparent);
+  box-shadow: 0 0 12px var(--etint);
+}
+
+.fc-toast__head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.fc-toast__scene {
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 10.5px;
+  letter-spacing: 0.12em;
+  color: var(--tint);
+}
+
+.fc-toast__badge {
+  margin-left: auto;
+  padding: 2px 8px;
+  border-radius: 99px;
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  color: var(--etint);
+  border: 1px solid color-mix(in srgb, var(--etint) 34%, transparent);
+  background: color-mix(in srgb, var(--etint) 10%, transparent);
+}
+
+.fc-toast__title {
+  margin: 8px 0 4px;
+  font-family: var(--font-serif, Georgia, serif);
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 700;
+  color: var(--text-hi, #f2f6ff);
+}
+
+.fc-toast__body {
+  margin: 0;
+  font-size: 13.5px;
+  line-height: 21px;
+  color: var(--text, #c8d3e8);
+}
+
+.fc-toast__result {
+  margin: 6px 0 0;
+  font-family: var(--font-serif, Georgia, serif);
+  font-size: 12.5px;
+  line-height: 20px;
+  color: var(--text-dim, #8494b3);
+}
+
+.fc-toast__foot {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.fc-toast__dots {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.fc-toast__ack {
+  margin-left: auto;
+  flex: none;
+  padding: 6px 14px;
+  border-radius: 99px;
+  border: 1px solid color-mix(in srgb, var(--etint) 40%, transparent);
+  background: color-mix(in srgb, var(--etint) 10%, rgba(255, 255, 255, 0.04));
+  color: var(--text-hi, #f2f6ff);
+  font-size: 12.5px;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  transition: all 0.2s var(--ease, ease);
+}
+
+.fc-toast__ack:hover,
+.fc-toast__ack:focus-visible {
+  border-color: color-mix(in srgb, var(--etint) 70%, transparent);
+  background: color-mix(in srgb, var(--etint) 18%, rgba(255, 255, 255, 0.04));
+}
+
+.fc-toast__ack:focus-visible {
+  outline: 2px solid var(--neon-cyan, #35e0ff);
+  outline-offset: 2px;
+}
+
+@keyframes fc-toast-timer {
+  from { transform: scaleX(1); }
+  to { transform: scaleX(0); }
+}
+
+/* The four seconds are visible, so the notice never disappears unannounced. */
+.fc-toast__timer {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  height: 2px;
+  width: 100%;
+  background: var(--etint);
+  opacity: 0.55;
+  transform-origin: left;
+  animation: fc-toast-timer 4s linear forwards;
+}
+
+.fc-toast .fc-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* ----------------------------------------------------------------- letter
+   账单 / 合同 / 人事：铺一张纸，底下只有签字和撕掉两个动作。 */
+.fc-letter {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-modal);
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  --tint: var(--l2, #7fa8d4);
+  --tint-deep: var(--l2-deep, #22364f);
+  --etint: var(--neon-amber, #ffb547);
+  --paper: #efe6d6;
+  --ink: #23201a;
+}
+
+.fc-letter[data-layer="L1"] { --tint: var(--l1); --tint-deep: var(--l1-deep); }
+.fc-letter[data-layer="L2"] { --tint: var(--l2); --tint-deep: var(--l2-deep); }
+.fc-letter[data-layer="L3"] { --tint: var(--l3); --tint-deep: var(--l3-deep); }
+.fc-letter[data-layer="L4"] { --tint: var(--l4); --tint-deep: var(--l4-deep); }
+.fc-letter[data-layer="L5"] { --tint: var(--l5); --tint-deep: var(--l5-deep); }
+
+.fc-letter[data-type="redline"] { --etint: var(--neon-blood); }
+.fc-letter[data-type="relation"] { --etint: var(--neon-violet); }
+
+.fc-letter__scrim {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(90% 70% at 50% -10%,
+      color-mix(in srgb, var(--tint-deep) 58%, transparent), transparent 70%),
+    rgba(4, 6, 13, 0.84);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  opacity: 0;
+  transition: opacity var(--ov-t-fast) ease-out;
+}
+
+.fc-letter.is-open .fc-letter__scrim { opacity: 1; }
+.fc-letter.is-closing .fc-letter__scrim { opacity: 0; }
+
+/* Paper, not glass: the one surface in the game that is lit from the front. */
+.fc-letter__sheet {
+  position: relative;
+  width: min(480px, 100%);
+  max-height: min(88vh, 760px);
+  overflow-y: auto;
+  padding: 26px 26px 22px;
+  border-radius: 4px 4px 3px 3px;
+  color: var(--ink);
+  background:
+    repeating-linear-gradient(
+      180deg,
+      transparent 0 27px,
+      rgba(35, 32, 26, 0.07) 27px 28px
+    ),
+    linear-gradient(160deg, #f6efe1, var(--paper) 62%, #e2d6c1);
+  box-shadow:
+    var(--shadow-lift, 0 26px 70px rgba(0, 0, 0, 0.68)),
+    0 0 60px color-mix(in srgb, var(--etint) 16%, transparent);
+  opacity: 0;
+  transform: translateY(18px) rotate(-0.4deg);
+  transition: opacity var(--ov-t-panel) var(--ov-ease-out),
+    transform var(--ov-t-panel) var(--ov-ease-out);
+}
+
+.fc-letter.is-open .fc-letter__sheet { opacity: 1; transform: none; }
+.fc-letter.is-closing .fc-letter__sheet { opacity: 0; transform: translateY(10px); }
+.fc-letter__sheet:focus { outline: none; }
+.fc-letter__sheet.is-denied { animation: fc-deny 0.24s var(--ease, ease); }
+
+.fc-letter__head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(35, 32, 26, 0.18);
+}
+
+.fc-letter__from {
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  color: rgba(35, 32, 26, 0.6);
+}
+
+/* The stamp is the only saturated thing on the page. */
+.fc-letter__stamp {
+  margin-left: auto;
+  padding: 3px 10px;
+  border-radius: 3px;
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  color: color-mix(in srgb, var(--etint) 70%, #6b1f1f);
+  border: 1.5px solid color-mix(in srgb, var(--etint) 55%, #6b1f1f);
+  transform: rotate(-3deg);
+}
+
+.fc-letter__title {
+  margin: 18px 0 12px;
+  font-family: var(--font-serif, Georgia, serif);
+  font-size: 23px;
+  line-height: 32px;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.fc-letter__body {
+  margin: 0;
+  font-family: var(--font-serif, Georgia, serif);
+  font-size: 15.5px;
+  line-height: 28px;
+  color: rgba(35, 32, 26, 0.86);
+}
+
+.fc-letter__rule {
+  height: 1px;
+  margin: 20px 0 16px;
+  background: linear-gradient(90deg,
+    rgba(35, 32, 26, 0.28), rgba(35, 32, 26, 0.05));
+}
+
+.fc-letter__face--read {
+  transition: opacity var(--ov-t-fast) var(--ov-ease-out),
+    transform var(--ov-t-fast) var(--ov-ease-out);
+}
+
+.fc-letter__face--read.is-leaving {
+  opacity: 0;
+  transform: translateY(-8px);
+}
+
+.fc-letter__acts {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+
+.fc-letter__act {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 48px;
+  padding: 10px 14px;
+  text-align: left;
+  cursor: pointer;
+  border-radius: 3px;
+  border: 1px solid rgba(35, 32, 26, 0.28);
+  background: rgba(255, 255, 255, 0.4);
+  color: var(--ink);
+  transition: all 0.2s var(--ease, ease);
+}
+
+.fc-letter__act:hover,
+.fc-letter__act:focus-visible {
+  border-color: rgba(35, 32, 26, 0.55);
+  background: rgba(255, 255, 255, 0.72);
+  transform: translateY(-1px);
+}
+
+.fc-letter__act:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--etint) 70%, #6b1f1f);
+  outline-offset: 2px;
+}
+
+.fc-letter__act.is-cooling {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* 签字用蓝黑墨水，撕掉用红笔，先收着保持铅笔灰。 */
+.fc-letter__act--sign { border-left: 3px solid #26406b; }
+.fc-letter__act--tear { border-left: 3px solid #8d2b2b; }
+.fc-letter__act--hold { border-left: 3px solid rgba(35, 32, 26, 0.45); }
+.fc-letter__act.is-risk { border-left-color: #8d2b2b; }
+
+.fc-letter__mark {
+  flex: none;
+  font-size: 15px;
+  line-height: 1;
+  color: rgba(35, 32, 26, 0.7);
+}
+
+.fc-letter__act--sign .fc-letter__mark { color: #26406b; }
+.fc-letter__act--tear .fc-letter__mark { color: #8d2b2b; }
+
+.fc-letter__act-label {
+  flex: 1;
+  min-width: 0;
+  font-size: 14px;
+  line-height: 1.5;
+  font-weight: 600;
+}
+
+.fc-letter__act-cost {
+  flex: none;
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 11px;
+  color: rgba(35, 32, 26, 0.55);
+}
+
+/* The preview dots are drawn for a dark card; on paper they need a rim. */
+.fc-letter__act .fc-dot {
+  box-shadow: 0 0 0 1px rgba(35, 32, 26, 0.35);
+  opacity: 1;
+}
+
+.fc-letter__result {
+  margin: 0 0 14px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(35, 32, 26, 0.2);
+  font-family: var(--font-serif, Georgia, serif);
+  font-size: 14.5px;
+  line-height: 1.8;
+  color: rgba(35, 32, 26, 0.86);
+}
+
+.fc-letter .fc-event__delta-row {
+  color: rgba(35, 32, 26, 0.62);
+}
+
+.fc-letter .fc-event__delta-row.up b { color: #1f6b4c; }
+.fc-letter .fc-event__delta-row.down b { color: #9a2531; }
+
+.fc-letter__done {
+  width: 100%;
+}
+
+.fc-letter .fc-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* ----------------------------------------------------------------- inline
+   FC.events.showInline() 吐出的那张卡。只有皮肤没有定位 —— 它被插进日志流
+   （或者别的列表）里，位置归宿主管。卡里只有叙事，增减由宿主接在下面。 */
+.fc-inline {
+  position: relative;
+  display: block;
+  padding: 12px 14px 11px;
+  overflow: hidden;
+  border-radius: 14px;
+  border: 1px solid color-mix(in srgb, var(--tint, #7fa8d4) 26%, var(--line, rgba(140, 165, 214, 0.16)));
+  background:
+    linear-gradient(180deg,
+      color-mix(in srgb, var(--tint, #7fa8d4) 9%, transparent),
+      rgba(255, 255, 255, 0.02));
+  --tint: var(--l2, #7fa8d4);
+  --etint: var(--neon-cyan, #35e0ff);
+}
+
+.fc-inline[data-layer="L1"] { --tint: var(--l1); }
+.fc-inline[data-layer="L2"] { --tint: var(--l2); }
+.fc-inline[data-layer="L3"] { --tint: var(--l3); }
+.fc-inline[data-layer="L4"] { --tint: var(--l4); }
+.fc-inline[data-layer="L5"] { --tint: var(--l5); }
+
+.fc-inline[data-type="bill"] { --etint: var(--neon-amber); }
+.fc-inline[data-type="relation"] { --etint: var(--neon-violet); }
+.fc-inline[data-type="redline"] { --etint: var(--neon-blood); }
+
+.fc-inline__accent {
+  position: absolute;
+  top: 10px;
+  bottom: 10px;
+  left: 0;
+  width: 2px;
+  border-radius: 99px;
+  background: var(--tint);
+  box-shadow: 0 0 10px color-mix(in srgb, var(--tint) 60%, transparent);
+}
+
+.fc-inline__tag {
+  display: inline-block;
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 10.5px;
+  letter-spacing: 0.14em;
+  color: var(--tint);
+}
+
+.fc-inline__title {
+  margin: 5px 0 4px;
+  font-family: var(--font-serif, Georgia, serif);
+  font-size: 15px;
+  line-height: 22px;
+  font-weight: 700;
+  color: var(--text-hi, #f2f6ff);
+}
+
+.fc-inline__text {
+  margin: 0;
+  font-size: 13px;
+  line-height: 21px;
+  color: var(--text, #c8d3e8);
+}
+
+.fc-inline__note {
+  margin: 5px 0 0;
+  font-family: var(--font-serif, Georgia, serif);
+  font-size: 12.5px;
+  line-height: 20px;
+  color: var(--text-dim, #8494b3);
+}
+
+/* -------------------------------------------- responsive · toast / letter */
+@media (max-width: 560px) {
+  .fc-toast {
+    padding: 10px 10px 0;
+  }
+  .fc-toast__card {
+    padding: 12px 14px 10px;
+  }
+  .fc-toast__title {
+    font-size: 15px;
+    line-height: 22px;
+  }
+  .fc-letter {
+    padding: 10px;
+    align-items: end;
+  }
+  .fc-letter__sheet {
+    padding: 20px 18px 18px;
+    max-height: calc(100vh - 20px);
+  }
+  .fc-letter__title {
+    font-size: 20px;
+    line-height: 29px;
+  }
+  .fc-letter__body {
+    font-size: 15px;
+    line-height: 26px;
+  }
+  .fc-letter__act-cost {
+    display: none; /* same trade as the modal: the dots carry it */
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fc-toast__card,
+  .fc-letter__sheet,
+  .fc-letter__scrim {
+    transition: none;
+    opacity: 1;
+    transform: none;
+  }
+  .fc-letter__sheet.is-denied {
+    animation: none;
+  }
+  /* 计时条不动，但四秒照走 —— 动效可以关，时限不能关。 */
+  .fc-toast__timer {
+    animation: none;
+    opacity: 0.35;
+  }
+}
+
+/* --------------------------------------------------- responsive · modal */
 @media (max-width: 560px) {
   .fc-event {
     padding: 12px;

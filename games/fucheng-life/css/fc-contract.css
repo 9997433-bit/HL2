@@ -1,0 +1,329 @@
+/* 中期人生合约 — HUD 常驻进度条 + 三选一签约弹窗 */
+
+.fc-contract-hud {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin: 0 0 18px;
+  padding: 14px 18px;
+  border-radius: var(--r-md);
+  background: rgba(6, 10, 22, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: inset 3px 0 0 0 var(--tint, var(--neon-cyan));
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.fc-contract-hud[hidden] { display: none !important; }
+.fc-contract-hud.is-idle { opacity: 0.72; }
+
+.fc-contract-hud.is-awaiting {
+  border-color: rgba(255, 169, 64, 0.55);
+  box-shadow: inset 3px 0 0 0 var(--warn),
+    0 0 0 1px rgba(255, 169, 64, 0.25),
+    0 0 28px rgba(255, 169, 64, 0.12);
+  animation: fc-contract-pulse 2.4s ease-in-out infinite;
+}
+
+@keyframes fc-contract-pulse {
+  0%, 100% {
+    border-color: rgba(255, 169, 64, 0.35);
+    box-shadow: inset 3px 0 0 0 var(--warn),
+      0 0 0 1px rgba(255, 169, 64, 0.15),
+      0 0 18px rgba(255, 169, 64, 0.08);
+  }
+  50% {
+    border-color: rgba(255, 169, 64, 0.75);
+    box-shadow: inset 3px 0 0 0 var(--warn),
+      0 0 0 2px rgba(255, 169, 64, 0.35),
+      0 0 36px rgba(255, 169, 64, 0.2);
+  }
+}
+
+.fc-contract-hud__ring-wrap {
+  position: relative;
+  flex: 0 0 auto;
+  width: 52px;
+  height: 52px;
+}
+
+.fc-contract-hud__ring {
+  display: block;
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+
+.fc-contract-hud__ring-track {
+  stroke: rgba(255, 255, 255, 0.1);
+  stroke-width: 3;
+}
+
+.fc-contract-hud__ring-arc {
+  stroke: var(--tint, var(--neon-cyan));
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-dasharray: 100.53;
+  stroke-dashoffset: 100.53;
+  transition: stroke-dashoffset 0.5s var(--ease-out),
+    stroke 0.3s;
+  filter: drop-shadow(0 0 6px var(--tint, var(--neon-cyan)));
+}
+
+.fc-contract-hud.is-awaiting .fc-contract-hud__ring-arc {
+  stroke: var(--warn);
+  filter: drop-shadow(0 0 6px rgba(255, 169, 64, 0.55));
+}
+
+.fc-contract-hud__ring-label {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font: 700 11px/1 var(--font-mono);
+  color: var(--text-hi);
+  pointer-events: none;
+}
+
+.fc-contract-hud__prompt {
+  margin: 0 0 8px;
+  font: 600 13px/1.4 var(--font-sans);
+  color: var(--warn);
+  letter-spacing: 0.02em;
+}
+
+.fc-contract-hud__prompt[hidden] { display: none !important; }
+
+.fc-contract-hud__main { flex: 1 1 auto; min-width: 0; }
+
+.fc-contract-hud__head {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 9px;
+}
+
+.fc-contract-hud__eyebrow {
+  font: 600 10px/1 var(--font-mono);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+
+.fc-contract-hud__name {
+  font: 700 15px/1.2 var(--font-sans);
+  color: var(--tint, var(--neon-cyan));
+}
+
+.fc-contract-hud__state {
+  padding: 2px 9px;
+  border-radius: var(--r-sm);
+  font: 600 11px/1.5 var(--font-sans);
+  color: var(--text-dim);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.fc-contract-hud__state.is-won { color: var(--ok); border-color: rgba(61, 232, 160, 0.4); }
+.fc-contract-hud__state.is-failed { color: var(--bad); border-color: rgba(255, 92, 92, 0.4); }
+.fc-contract-hud__state.is-urgent { color: var(--warn); border-color: rgba(255, 169, 64, 0.45); }
+
+.fc-contract-hud__meter {
+  height: 7px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.07);
+}
+
+.fc-contract-hud__meter i {
+  display: block;
+  height: 100%;
+  width: 0;
+  border-radius: 999px;
+  background: var(--tint, var(--neon-cyan));
+  box-shadow: 0 0 14px var(--tint, var(--neon-cyan));
+  transition: width 0.45s var(--ease-out);
+}
+
+.fc-contract-hud.is-active .fc-contract-hud__meter i {
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--tint, var(--neon-cyan)) 65%, #000),
+    var(--tint, var(--neon-cyan)),
+    color-mix(in srgb, var(--tint, var(--neon-cyan)) 55%, #fff)
+  );
+}
+
+.fc-contract-hud__foot {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 8px;
+  font: 500 12px/1.4 var(--font-mono);
+  color: var(--text-dim);
+}
+
+.fc-contract-hud__btn { flex: 0 0 auto; }
+.fc-contract-hud__btn[hidden] { display: none !important; }
+
+@media (max-width: 640px) {
+  .fc-contract-hud { flex-direction: column; align-items: stretch; }
+  .fc-contract-hud__ring-wrap { align-self: center; }
+  .fc-contract-hud__btn { width: 100%; }
+}
+
+/* ------------------------------------------------------------ 签约弹窗 */
+
+.fc-contract-pick {
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  opacity: 0;
+  transition: opacity 0.2s var(--ease-out);
+}
+
+.fc-contract-pick.is-open { opacity: 1; }
+.fc-contract-pick.is-closing { opacity: 0; }
+
+.fc-contract-pick__scrim {
+  position: absolute;
+  inset: 0;
+  background: rgba(2, 4, 10, 0.86);
+  backdrop-filter: blur(10px);
+}
+
+.fc-contract-pick__panel {
+  position: relative;
+  width: min(880px, 100%);
+  max-height: 92vh;
+  overflow: auto;
+  padding: 26px 24px 22px;
+  border-radius: var(--r-lg);
+  background: var(--fc-glass-2-bg);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: var(--shadow-lift), var(--fc-glass-highlight);
+  transform: translateY(18px) scale(0.98);
+  transition: transform 0.24s var(--ease-out);
+}
+
+.fc-contract-pick.is-open .fc-contract-pick__panel { transform: none; }
+
+.fc-contract-pick__eyebrow {
+  margin: 0 0 8px;
+  font: 600 10px/1 var(--font-mono);
+  letter-spacing: 0.2em;
+  color: var(--text-faint);
+}
+
+.fc-contract-pick__title {
+  margin: 0 0 10px;
+  font: 700 clamp(20px, 3vw, 26px)/1.3 var(--font-serif);
+  color: var(--text-hi);
+}
+
+.fc-contract-pick__lede {
+  margin: 0 0 20px;
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--text-dim);
+}
+
+.fc-contract-pick__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.fc-contract-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  padding: 16px 16px 14px;
+  border-radius: var(--r-md);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-top: 2px solid var(--tint);
+  background: rgba(255, 255, 255, 0.035);
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+  transition: transform 0.14s var(--ease-out), border-color 0.18s, box-shadow 0.18s;
+}
+
+.fc-contract-card:hover,
+.fc-contract-card:focus-visible {
+  transform: translateY(-3px);
+  border-color: var(--tint);
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.45);
+  outline: none;
+}
+
+.fc-contract-card:active { transform: translateY(-1px) scale(0.99); }
+
+.fc-contract-card__en {
+  font: 600 9px/1 var(--font-mono);
+  letter-spacing: 0.16em;
+  color: var(--text-faint);
+}
+
+.fc-contract-card__name {
+  font: 700 19px/1.2 var(--font-serif);
+  color: var(--tint);
+}
+
+.fc-contract-card__pitch {
+  /* 三张卡文案长短不一，按两行锁定高度让 meta 行对齐 */
+  min-height: 3.2em;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--text-hi);
+}
+
+.fc-contract-card__meta {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 2px 10px;
+  width: 100%;
+  margin: 6px 0 2px;
+  padding: 8px 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+  font-size: 12px;
+}
+
+.fc-contract-card__meta dt { color: var(--text-faint); }
+.fc-contract-card__meta dd {
+  margin: 0;
+  text-align: right;
+  font-family: var(--font-mono);
+  color: var(--tint);
+}
+
+.fc-contract-card__detail {
+  min-height: 4.5em;
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--text-dim);
+}
+
+.fc-contract-card__source {
+  margin-top: auto;
+  font: 500 11px/1.5 var(--font-mono);
+  color: var(--text-faint);
+}
+
+.fc-contract-pick__skip { width: 100%; }
+
+@media (prefers-reduced-motion: reduce) {
+  .fc-contract-pick,
+  .fc-contract-pick__panel,
+  .fc-contract-card,
+  .fc-contract-hud__meter i,
+  .fc-contract-hud__ring-arc { transition: none; }
+  .fc-contract-pick__panel { transform: none; }
+  .fc-contract-hud.is-awaiting { animation: none; }
+}

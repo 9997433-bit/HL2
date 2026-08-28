@@ -24,24 +24,29 @@ function exactIds(items, expected, label) {
   assert.deepEqual(ids.slice().sort(), expected.slice().sort(), `${label} IDs differ from the expected set`);
 }
 
+const MIN_EVENTS = 50;
+const EVENT_CATEGORIES = new Set([
+  "职场", "金钱", "生计", "人情", "关系", "机会", "风险", "居住", "教育"
+]);
+const DELTA_STATS = new Set(["money", "health", "social", "rep"]);
+
 assert.ok(story && typeof story === "object" && !Array.isArray(story), "story.json must contain an object");
 assert.ok(Array.isArray(story.eras), "story.eras must be an array");
 assert.ok(Array.isArray(story.origins), "story.origins must be an array");
 assert.ok(Array.isArray(story.cityLayers), "story.cityLayers must be an array");
-assert.ok(Array.isArray(story.sampleEvents), "story.sampleEvents must be an array");
+assert.ok(Array.isArray(story.events), "story.events must be an array");
 
 assert.equal(story.eras.length, 7, "story.json must define exactly 7 eras");
 assert.equal(story.origins.length, 10, "story.json must define exactly 10 origins");
 assert.equal(story.cityLayers.length, 5, "story.json must define exactly 5 city layers");
-assert.equal(story.sampleEvents.length, 10, "story.json must define exactly 10 sample events");
+assert.ok(story.events.length >= MIN_EVENTS,
+  `story.json must define at least ${MIN_EVENTS} modal events (found ${story.events.length})`);
 
 exactIds(story.eras, ["E1", "E2", "E3", "E4", "E5", "E6", "E7"], "Era");
 exactIds(story.cityLayers, ["L1", "L2", "L3", "L4", "L5"], "City layer");
-exactIds(
-  story.sampleEvents,
-  ["EV01", "EV02", "EV03", "EV04", "EV05", "EV06", "EV07", "EV08", "EV09", "EV10"],
-  "Event"
-);
+
+const eventIds = story.events.map((event) => event.id);
+assert.equal(new Set(eventIds).size, eventIds.length, "Event IDs must be unique");
 
 for (const [index, era] of story.eras.entries()) {
   const label = `eras[${index}]`;
@@ -87,12 +92,56 @@ for (const [index, layer] of story.cityLayers.entries()) {
 }
 
 const layerIds = new Set(story.cityLayers.map((layer) => layer.id));
-for (const [index, event] of story.sampleEvents.entries()) {
-  const label = `sampleEvents[${index}]`;
+const coveredLayers = new Set();
+
+for (const [index, event] of story.events.entries()) {
+  const label = `events[${index}]`;
+  nonEmptyString(event.id, `${label}.id`);
   nonEmptyString(event.title, `${label}.title`);
   nonEmptyString(event.category, `${label}.category`);
-  nonEmptyString(event.text, `${label}.text`);
+  nonEmptyString(event.body, `${label}.body`);
+  assert.ok(EVENT_CATEGORIES.has(event.category),
+    `${label}.category must be one of ${[...EVENT_CATEGORIES].join("/")}`);
   assert.ok(layerIds.has(event.layerId), `${label}.layerId must reference a defined city layer`);
+  coveredLayers.add(event.layerId);
+  finiteNumber(event.weight, `${label}.weight`);
+  assert.ok(event.weight > 0, `${label}.weight must be positive`);
+  if (event.type !== undefined) {
+    assert.ok(["opportunity", "bill", "relation", "redline"].includes(event.type),
+      `${label}.type must be a known overlay type`);
+  }
+  if (event.category === "风险") {
+    assert.equal(event.type, "redline", `${label} is a 风险 event and must declare type "redline"`);
+  }
+
+  assert.ok(Array.isArray(event.choices), `${label}.choices must be an array`);
+  assert.ok(event.choices.length >= 2 && event.choices.length <= 3,
+    `${label}.choices must offer 2-3 options (found ${event.choices.length})`);
+
+  const choiceIds = new Set();
+  for (const [choiceIndex, choice] of event.choices.entries()) {
+    const choiceLabel = `${label}.choices[${choiceIndex}]`;
+    nonEmptyString(choice.id, `${choiceLabel}.id`);
+    assert.ok(!choiceIds.has(choice.id), `${choiceLabel}.id must be unique within the event`);
+    choiceIds.add(choice.id);
+    nonEmptyString(choice.label, `${choiceLabel}.label`);
+    nonEmptyString(choice.result, `${choiceLabel}.result`);
+
+    const deltas = choice.d || choice.deltas;
+    assert.ok(deltas && typeof deltas === "object" && !Array.isArray(deltas),
+      `${choiceLabel} must carry a d/deltas object`);
+    const stats = Object.keys(deltas);
+    assert.ok(stats.length > 0, `${choiceLabel} must move at least one stat`);
+    for (const stat of stats) {
+      assert.ok(DELTA_STATS.has(stat), `${choiceLabel}.d.${stat} is not a known stat`);
+      finiteNumber(deltas[stat], `${choiceLabel}.d.${stat}`);
+      assert.ok(deltas[stat] !== 0, `${choiceLabel}.d.${stat} must not be zero`);
+    }
+  }
 }
 
-console.log("Story schema: 7 eras, 10 origins, 5 layers, and 10 events passed.");
+assert.equal(coveredLayers.size, layerIds.size, "story.events must cover every city layer");
+
+console.log(
+  `Story schema: 7 eras, 10 origins, 5 layers, and ${story.events.length} events passed.`
+);

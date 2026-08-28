@@ -22,9 +22,10 @@
     }
 
     var layers = raw.layers || raw.cityLayers;
+    /* `sampleEvents` is the pre-migration spelling of `events`. */
     var events = raw.events || raw.sampleEvents;
     if (!Array.isArray(layers) || !Array.isArray(events)) {
-      throw new Error("story.json is missing cityLayers or sampleEvents");
+      throw new Error("story.json is missing cityLayers or events");
     }
 
     return {
@@ -94,5 +95,41 @@
       throw error;
     });
   };
-  FC.ready = FC.loadStory();
+  function loadGameplay() {
+    var gpUrl = storyUrl.replace(/story\.json$/, "gameplay-pack.json");
+    if (global.location.protocol === "file:") {
+      return new Promise(function (resolve, reject) {
+        try {
+          var xhr = new XMLHttpRequest();
+          xhr.open("GET", gpUrl, false);
+          xhr.send(null);
+          if ((xhr.status === 0 || (xhr.status >= 200 && xhr.status < 300)) && xhr.responseText) {
+            resolve(JSON.parse(xhr.responseText));
+            return;
+          }
+          reject(new Error("gameplay-pack.json unavailable"));
+        } catch (err) {
+          reject(err);
+        }
+      });
+    }
+    return global.fetch(gpUrl, { cache: "no-store" }).then(function (r) {
+      if (!r.ok) throw new Error("gameplay-pack HTTP " + r.status);
+      return r.json();
+    });
+  }
+
+  function publishGameplay(raw) {
+    FC.gameplay = raw;
+    if (FC.Sim && FC.Sim.install) FC.Sim.install(raw);
+    return raw;
+  }
+
+  /* Resolve with the story itself: screens.js chains installStory onto
+     FC.ready and must receive the story, not the gameplay pack. */
+  FC.ready = FC.loadStory().then(function (story) {
+    return loadGameplay().then(publishGameplay).then(function () {
+      return story;
+    });
+  });
 })(window);

@@ -1,0 +1,7127 @@
+{
+  "version": 2,
+  "balance": {
+    "apBase": 3,
+    "sagaStartMonths": 18,
+    "sagaMonthlyOdds": 0.09,
+    "recentAmbientWindow": 18,
+    "minMonthsBeforeBankruptcy": 48,
+    "minMonthsBeforeRedline": 72,
+    "originSagaMinMonths": 3,
+    "originSagaMaxMonths": 18,
+    "originSagaMonthlyOdds": 0.2
+  },
+  "actions": [
+    {
+      "id": "work",
+      "name": "上班",
+      "icon": "⌁",
+      "ap": 1,
+      "d": {
+        "money": 1,
+        "health": -2,
+        "rep": 2
+      },
+      "text": "打卡、开会、改一版。城市按小时计费。"
+    },
+    {
+      "id": "overtime",
+      "name": "加班",
+      "icon": "◐",
+      "ap": 1,
+      "d": {
+        "money": 1,
+        "health": -5,
+        "rep": 3
+      },
+      "text": "灯亮到深夜。绩效表上多一格，体检报告多一个箭头。"
+    },
+    {
+      "id": "study",
+      "name": "进修",
+      "icon": "✎",
+      "ap": 1,
+      "d": {
+        "money": -1,
+        "rep": 4,
+        "health": -2
+      },
+      "edu": 6,
+      "text": "证书班的座位永远靠窗。学费是另一种房租。"
+    },
+    {
+      "id": "network",
+      "name": "饭局",
+      "icon": "◎",
+      "ap": 1,
+      "d": {
+        "money": -1,
+        "social": 6,
+        "rep": 1
+      },
+      "text": "桌上没人递名片——都认识彼此，只有你需要介绍。"
+    },
+    {
+      "id": "side",
+      "name": "副业",
+      "icon": "⚡",
+      "ap": 1,
+      "d": {
+        "money": 1,
+        "health": -3,
+        "rep": 1
+      },
+      "text": "深夜私活尾款到账。屏幕亮一下，又暗下去。"
+    },
+    {
+      "id": "rest",
+      "name": "休息",
+      "icon": "☾",
+      "ap": 1,
+      "d": {
+        "health": 6,
+        "money": -1
+      },
+      "text": "什么都没发生。这也很贵。"
+    },
+    {
+      "id": "explore",
+      "name": "探区",
+      "icon": "⌖",
+      "ap": 1,
+      "zone": true,
+      "text": "你在地图上选一处，城市会回你一句报价。"
+    },
+    {
+      "id": "invest",
+      "name": "理财",
+      "icon": "¥",
+      "ap": 2,
+      "d": {
+        "money": 2,
+        "rep": -1
+      },
+      "minLayer": 3,
+      "text": "数字在 App 里跳动。涨跌都不问你的睡眠。"
+    }
+  ],
+  "contracts": [
+    {
+      "id": "hukou",
+      "name": "落户积分",
+      "en": "RESIDENCY POINTS",
+      "tint": "var(--neon-cyan)",
+      "deadline": 36,
+      "goal": 100,
+      "pitch": "把学历、社保和居住年限换成一张准迁证。",
+      "detail": "36 个月内攒满 100 分。学历分打底，进修行动、居住年限和加分项补差额。",
+      "source": "进度来源 · 学历 + 进修行动 + 落户事件",
+      "reward": {
+        "rep": 8,
+        "social": 4,
+        "health": 3
+      },
+      "penalty": {
+        "rep": -5,
+        "health": -4
+      },
+      "won": {
+        "title": "准迁证",
+        "body": "窗口把回执推出来，纸角还带着打印机的余温。上面印着你的名字、你的编号，以及一个排了三年才排到的行政事实。",
+        "label": "收下这张纸",
+        "result": "你把回执折好塞进内袋。走出大厅时外面正下雨，你第一次没有去算这场雨要多花多少钱。"
+      },
+      "failed": {
+        "title": "窗口关上了",
+        "body": "细则又改了一版，年限那一栏往后挪。轮到你的时候，工作人员说这批已经截止，让你明年再来——明年这句话，你听过三次了。",
+        "label": "认下这笔账",
+        "result": "你把材料袋抱回出租屋，塞进床底。它还在，只是从今天起不再是一件正在进行的事。"
+      }
+    },
+    {
+      "id": "home",
+      "name": "攒首付",
+      "en": "DOWN PAYMENT",
+      "tint": "var(--neon-gold)",
+      "deadline": 48,
+      "goal": 0,
+      "goalMonthsOfIncome": 70,
+      "goalMin": 60000,
+      "goalMax": 1500000,
+      "pitch": "用四年时间，把一个地址从租来的变成写自己名字的。",
+      "detail": "48 个月内让现金加副业基金越过首付线。首付线按签约当月的收入折算。",
+      "source": "进度来源 · 现金余额 + 副业基金",
+      "reward": {
+        "rep": 8,
+        "health": 5,
+        "social": 3
+      },
+      "penalty": {
+        "health": -6,
+        "social": -3
+      },
+      "won": {
+        "title": "首付线",
+        "body": "余额界面上的数字第一次越过那条线。你截了图，又删掉，又重新截一次，像是怕它自己缩回去。",
+        "label": "把它变成地址",
+        "result": "签约那天售楼处放着很吵的音乐。你在合同末页写下名字，笔尖顿了顿，然后一笔到底。"
+      },
+      "failed": {
+        "title": "又涨了一轮",
+        "body": "四年过去，你攒钱的速度没有输给自己，只输给了挂在中介橱窗里的那张价目表。同一个户型，如今多出一辆车的钱。",
+        "label": "认下这笔账",
+        "result": "你把那个账户改了名字，从「首付」改成「备用」。改完之后它还是原来的数字。"
+      }
+    },
+    {
+      "id": "promote",
+      "name": "升职",
+      "en": "PROMOTION",
+      "tint": "var(--neon-violet)",
+      "deadline": 24,
+      "goal": 100,
+      "pitch": "两年之内挤进能签字的那一层。",
+      "detail": "24 个月内做到职级 2 且 KPI 不低于 70。进度由职级（55）与 KPI（45）合成。",
+      "source": "进度来源 · 职级 + KPI",
+      "reward": {
+        "rep": 7,
+        "social": 5,
+        "money": 3
+      },
+      "penalty": {
+        "rep": -4,
+        "health": -4
+      },
+      "won": {
+        "title": "新的工位",
+        "body": "任命邮件发在周五下午，抄送整个部门。你的名字后面多了两个字，座位从窗边挪进走廊尽头那间有门的屋子。",
+        "label": "收下这一页",
+        "result": "第一次以新身份主持会议，你讲得很慢。散会后有人留下来问你要不要喝咖啡，你说好。"
+      },
+      "failed": {
+        "title": "名单上没有你",
+        "body": "名单贴出来那天你正在改第七版方案。你从头看到尾，又从尾看到头，确认自己没有看漏——两年就这样结算完毕。",
+        "label": "认下这笔账",
+        "result": "你把方案存成最终版，关掉电脑。楼下便利店的关东煮还冒着热气，你买了一份站着吃完。"
+      }
+    }
+  ],
+  "secondaryContracts": [
+    {
+      "id": "rent",
+      "name": "换租升级",
+      "en": "RENT UP",
+      "tint": "var(--neon-jade)",
+      "deadline": 12,
+      "goalMonthsOfIncome": 8,
+      "goalMin": 6000,
+      "goalMax": 80000,
+      "pitch": "从合租换到整租，或者离地铁更近的一站。",
+      "detail": "12 个月内现金越过换租线。线按当前月收入折算。",
+      "reward": { "health": 4, "rep": 3 }
+    },
+    {
+      "id": "marriage",
+      "name": "结婚备案",
+      "en": "REGISTRY",
+      "tint": "var(--neon-violet)",
+      "deadline": 18,
+      "goal": 100,
+      "pitch": "把关系写进系统：人脉与声望都到了才办得下来。",
+      "detail": "18 个月内人脉×55% + 声望×45% 达 100。",
+      "reward": { "social": 6, "health": 3 }
+    },
+    {
+      "id": "sidebiz",
+      "name": "副业备案",
+      "en": "SIDE BIZ",
+      "tint": "var(--neon-gold)",
+      "deadline": 24,
+      "goalMonthsOfIncome": 15,
+      "goalMin": 10000,
+      "goalMax": 120000,
+      "pitch": "给副业一个能开发票的壳，基金账户要养到线。",
+      "detail": "24 个月内副业基金越过备案线。",
+      "reward": { "money": 2, "rep": 4 }
+    }
+  ],
+  "assetCatalog": [
+    { "id": "ebike", "name": "二手电动车", "type": "vehicle", "cost": 2, "minLayer": 1 },
+    { "id": "usedcar", "name": "代步二手车", "type": "vehicle", "cost": 6, "minLayer": 2, "rep": 2 },
+    { "id": "side_room", "name": "小产权单间", "type": "property", "cost": 10, "minLayer": 2, "sideFund": 5000 }
+  ],
+  "ambientEvents": [
+    {
+      "layerId": "L1",
+      "presentation": "inline",
+      "id": "U001",
+      "category": "居住",
+      "text": "合租房热水器坏了，房东说「凑活用」。你洗了一周冷水。",
+      "d": {
+        "health": -4,
+        "money": -1
+      },
+      "weight": 7,
+      "title": "冷水一周"
+    },
+    {
+      "layerId": "L2",
+      "id": "U002",
+      "category": "居住",
+      "text": "物业通知电梯检修三天。你爬了十七层，到公司时衬衫湿透。",
+      "d": {
+        "health": -3,
+        "rep": -1
+      },
+      "npcEffects": [{ "id": "laozhou", "balance": -1, "note": "爬楼迟到被记了一次" }],
+      "weight": 6,
+      "title": "居住 · L2"
+    },
+    {
+      "layerId": "L2",
+      "presentation": "inline",
+      "id": "U003",
+      "category": "金钱",
+      "text": "工资到账短信和花呗还款提醒几乎同时弹出。",
+      "d": {
+        "money": -1,
+        "health": -2
+      },
+      "weight": 8,
+      "title": "两条短信"
+    },
+    {
+      "layerId": "L2",
+      "presentation": "inline",
+      "id": "U004",
+      "category": "健康",
+      "text": "体检报告建议「复查」。预约电话打了三次才接通。",
+      "d": {
+        "health": -3,
+        "money": -1
+      },
+      "weight": 7,
+      "title": "建议复查"
+    },
+    {
+      "layerId": "L2",
+      "presentation": "inline",
+      "id": "U005",
+      "category": "职场",
+      "text": "周会延长四十分钟，主题只有一个：「降本增效」。",
+      "d": {
+        "rep": -1,
+        "health": -3
+      },
+      "weight": 8,
+      "title": "降本增效"
+    },
+    {
+      "layerId": "L2",
+      "id": "U006",
+      "category": "人情",
+      "text": "同事结婚，礼金标准在群里「通气」过。你按中间档转过去。",
+      "d": {
+        "money": -2,
+        "social": 3
+      },
+      "weight": 7,
+      "title": "人情 · L2"
+    },
+    {
+      "layerId": "L3",
+      "id": "U007",
+      "category": "教育",
+      "text": "夜校招生简章写「周末两天，改变一生」。学费等于你半月伙食。",
+      "d": {
+        "money": -1,
+        "edu": 4
+      },
+      "weight": 6,
+      "title": "教育 · L3"
+    },
+    {
+      "layerId": "L3",
+      "id": "U008",
+      "category": "机会",
+      "text": "前同事创业，朋友圈发招聘：「不看学历，看扛压。」",
+      "d": {
+        "rep": 2,
+        "social": 2
+      },
+      "weight": 5,
+      "title": "机会 · L3"
+    },
+    {
+      "layerId": "L5",
+      "id": "U009",
+      "category": "风险",
+      "text": "短信：「您的账户异常，请点击链接。」你删了，类似的一月还有七条。",
+      "d": {
+        "health": -1
+      },
+      "weight": 4,
+      "title": "风险 · L5"
+    },
+    {
+      "layerId": "L1",
+      "id": "U010",
+      "category": "健康",
+      "text": "外卖迟到四十分钟，骑手电话说「电梯坏了」。你给了差评又撤了。",
+      "d": {
+        "health": -2,
+        "social": -1
+      },
+      "weight": 6,
+      "title": "健康 · L1"
+    },
+    {
+      "layerId": "L3",
+      "id": "U011",
+      "category": "职场",
+      "text": "绩效面谈，主管用「潜力」这个词。你知道下一句通常是「但」。",
+      "d": {
+        "rep": -2,
+        "health": -2
+      },
+      "weight": 7,
+      "title": "职场 · L3"
+    },
+    {
+      "layerId": "L3",
+      "id": "U012",
+      "category": "金钱",
+      "text": "基金绿了一周。App 推送：「长期主义。」",
+      "d": {
+        "money": -1,
+        "health": -2
+      },
+      "weight": 6,
+      "title": "金钱 · L3"
+    },
+    {
+      "layerId": "L3",
+      "presentation": "inline",
+      "id": "U013",
+      "category": "居住",
+      "text": "邻居装修，电钻从八点响到六点。物业说「已备案」。",
+      "d": {
+        "health": -4
+      },
+      "weight": 7,
+      "title": "已备案的电钻"
+    },
+    {
+      "layerId": "L3",
+      "id": "U014",
+      "category": "人情",
+      "text": "老家亲戚问「能不能帮孩子安排实习」。你解释了半小时城市规则。",
+      "d": {
+        "social": -2,
+        "rep": 1
+      },
+      "weight": 6,
+      "title": "人情 · L3"
+    },
+    {
+      "layerId": "L4",
+      "id": "U015",
+      "category": "机会",
+      "text": "行业峰会邀请函，门票四位数。公司报销名额只有一个。",
+      "d": {
+        "rep": 3,
+        "social": 2
+      },
+      "weight": 5,
+      "title": "机会 · L4"
+    },
+    {
+      "layerId": "L4",
+      "id": "U016",
+      "category": "职场",
+      "text": "董事会旁听席。你第一次听见「现金流」被说得像天气。",
+      "d": {
+        "rep": 4,
+        "edu": 2
+      },
+      "weight": 4,
+      "title": "职场 · L4"
+    },
+    {
+      "layerId": "L4",
+      "id": "U017",
+      "category": "金钱",
+      "text": "私人银行经理约茶，推荐一款「稳健型」产品。条款厚得像字典。",
+      "d": {
+        "money": -2,
+        "rep": 2
+      },
+      "weight": 4,
+      "title": "金钱 · L4"
+    },
+    {
+      "layerId": "L4",
+      "id": "U018",
+      "category": "健康",
+      "text": "私家体检中心，护士说「您这年龄该加项了」。加项比基础贵三倍。",
+      "d": {
+        "money": -2,
+        "health": 4
+      },
+      "weight": 5,
+      "title": "健康 · L4"
+    },
+    {
+      "layerId": "L4",
+      "id": "U019",
+      "category": "居住",
+      "text": "物业费上调通知，理由写「提升服务品质」。",
+      "d": {
+        "money": -1,
+        "rep": 1
+      },
+      "weight": 5,
+      "title": "居住 · L4"
+    },
+    {
+      "layerId": "L2",
+      "id": "U020",
+      "category": "教育",
+      "text": "孩子学校家委会征集「自愿」赞助。你看见别的家长已经接龙。",
+      "d": {
+        "money": -1,
+        "social": 2
+      },
+      "weight": 6,
+      "minAge": 30,
+      "title": "教育 · L2"
+    },
+    {
+      "layerId": "L2",
+      "id": "U021",
+      "category": "职场",
+      "text": "工位换成开放式。降噪耳机成为办公室硬通货。",
+      "d": {
+        "health": -3,
+        "rep": 1
+      },
+      "weight": 7,
+      "title": "职场 · L2"
+    },
+    {
+      "layerId": "L1",
+      "presentation": "inline",
+      "id": "U022",
+      "category": "金钱",
+      "text": "菜市场涨价，摊主说「进货也贵」。你数了数零钱，够买三天。",
+      "d": {
+        "money": -1,
+        "health": -1
+      },
+      "weight": 8,
+      "title": "够买三天"
+    },
+    {
+      "layerId": "L1",
+      "id": "U023",
+      "category": "人情",
+      "text": "老乡群有人发拼多多砍一刀。你帮了，没人帮你的。",
+      "d": {
+        "social": -1
+      },
+      "weight": 5,
+      "title": "人情 · L1"
+    },
+    {
+      "layerId": "L2",
+      "id": "U024",
+      "category": "机会",
+      "text": "内部竞聘，岗位比申请人少一半。HR 说「流程公开透明」。",
+      "d": {
+        "rep": 2,
+        "health": -3
+      },
+      "weight": 6,
+      "title": "机会 · L2"
+    },
+    {
+      "layerId": "L3",
+      "id": "U025",
+      "category": "风险",
+      "text": "兼职刷单广告：「日结三百。」你举报了，类似弹窗还在。",
+      "d": {
+        "rep": 1
+      },
+      "weight": 4,
+      "title": "风险 · L3"
+    },
+    {
+      "layerId": "L3",
+      "id": "U026",
+      "category": "健康",
+      "text": "颈椎理疗，医保不报销。技师说「你这行普遍这样」。",
+      "d": {
+        "money": -1,
+        "health": 5
+      },
+      "weight": 6,
+      "title": "健康 · L3"
+    },
+    {
+      "layerId": "L2",
+      "presentation": "inline",
+      "id": "U027",
+      "category": "职场",
+      "text": "考勤改为人脸识别。你迟到那天的照片被自动发给了主管。",
+      "d": {
+        "rep": -3
+      },
+      "weight": 7,
+      "title": "人脸识别"
+    },
+    {
+      "layerId": "L2",
+      "id": "U028",
+      "category": "金钱",
+      "text": "信用卡积分兑换，换到的东西不如直接买便宜。",
+      "d": {
+        "money": -1
+      },
+      "weight": 5,
+      "title": "金钱 · L2"
+    },
+    {
+      "layerId": "L2",
+      "presentation": "inline",
+      "id": "U029",
+      "category": "居住",
+      "text": "租约到期，房东涨租「市场价」。你算了算搬家成本，签了。",
+      "d": {
+        "money": -2,
+        "health": -2
+      },
+      "weight": 8,
+      "title": "市场价"
+    },
+    {
+      "layerId": "L3",
+      "id": "U030",
+      "category": "教育",
+      "text": "职称评审材料装订费、照片费、复印费——加起来像一门小课。",
+      "d": {
+        "money": -1,
+        "rep": 3
+      },
+      "weight": 6,
+      "minAge": 26,
+      "title": "教育 · L3"
+    },
+    {
+      "layerId": "L2",
+      "id": "U031",
+      "category": "职场",
+      "text": "公司换打卡系统，人脸录入三次失败。IT 说「光线问题」。",
+      "d": {
+        "rep": -1,
+        "health": -2
+      },
+      "weight": 6,
+      "title": "职场 · L2"
+    },
+    {
+      "layerId": "L2",
+      "id": "U032",
+      "category": "金钱",
+      "text": "水电燃气「一户一表」改造，分摊费争议在群里吵了一周。",
+      "d": {
+        "money": -1,
+        "health": -2
+      },
+      "weight": 6,
+      "title": "金钱 · L2"
+    },
+    {
+      "layerId": "L2",
+      "presentation": "inline",
+      "id": "U033",
+      "category": "健康",
+      "text": "通勤单程九十分钟。你在地铁上睡着，坐过站两次。",
+      "d": {
+        "health": -3,
+        "rep": -1
+      },
+      "weight": 7,
+      "title": "坐过站"
+    },
+    {
+      "layerId": "L2",
+      "once": true,
+      "id": "M012",
+      "category": "职场",
+      "text": "第一份工作满一年。没人庆祝，你给自己加了蛋。",
+      "minMonths": 12,
+      "d": {
+        "rep": 3,
+        "health": 2
+      },
+      "weight": 20,
+      "title": "职场 · L2"
+    },
+    {
+      "layerId": "L2",
+      "once": true,
+      "id": "M024",
+      "category": "金钱",
+      "text": "存款第一次突破五位数千元。你截图，没发朋友圈。",
+      "minMonths": 24,
+      "d": {
+        "rep": 2,
+        "money": 1
+      },
+      "weight": 20,
+      "title": "金钱 · L2"
+    },
+    {
+      "layerId": "L2",
+      "once": true,
+      "id": "M036",
+      "category": "居住",
+      "text": "搬家第三次，纸箱还是那些。你贴标签：「书·勿丢」。",
+      "minMonths": 36,
+      "d": {
+        "health": -2,
+        "rep": 2
+      },
+      "weight": 20,
+      "title": "居住 · L2"
+    },
+    {
+      "layerId": "L2",
+      "once": true,
+      "id": "M048",
+      "category": "职场",
+      "text": "职场第十个年头。体检报告比简历厚。",
+      "minMonths": 48,
+      "d": {
+        "rep": 3,
+        "health": -3
+      },
+      "weight": 20,
+      "minAge": 30,
+      "title": "职场 · L2"
+    },
+    {
+      "layerId": "L2",
+      "once": true,
+      "id": "M060",
+      "category": "人情",
+      "text": "老同学聚会，半数不聊工作，聊孩子和血压。",
+      "minMonths": 60,
+      "d": {
+        "social": 3,
+        "health": -2
+      },
+      "weight": 20,
+      "minAge": 35,
+      "title": "人情 · L2"
+    },
+    {
+      "layerId": "L2",
+      "once": true,
+      "id": "M072",
+      "category": "金钱",
+      "text": "房贷还剩一半。你算日期，像算退休。",
+      "minMonths": 72,
+      "d": {
+        "money": -1,
+        "rep": 4
+      },
+      "weight": 20,
+      "minAge": 38,
+      "title": "金钱 · L2"
+    },
+    {
+      "layerId": "L2",
+      "once": true,
+      "id": "M096",
+      "category": "健康",
+      "text": "父母电话变频繁。话题从「钱够吗」到「常回来」。",
+      "minMonths": 96,
+      "d": {
+        "social": 4,
+        "health": -2
+      },
+      "weight": 20,
+      "minAge": 40,
+      "title": "健康 · L2"
+    },
+    {
+      "layerId": "L3",
+      "once": true,
+      "id": "M120",
+      "category": "机会",
+      "text": "二十年城市生活。你仍能说出第一次来时的出站口。",
+      "minMonths": 120,
+      "d": {
+        "rep": 5,
+        "social": 3
+      },
+      "weight": 20,
+      "minAge": 42,
+      "title": "机会 · L3"
+    },
+    {
+      "layerId": "L2",
+      "era": "E1",
+      "id": "E1_01",
+      "category": "职场",
+      "text": "单位发了一袋米、一桶油。你拎上公交车，全车都闻得到。",
+      "d": {
+        "social": 3,
+        "money": 1
+      },
+      "weight": 8,
+      "title": "职场 · L2"
+    },
+    {
+      "layerId": "L2",
+      "era": "E1",
+      "id": "E1_02",
+      "category": "职场",
+      "text": "分房名单贴在大院公告栏。没有你，有同事。你们互相没看眼睛。",
+      "d": {
+        "rep": -3,
+        "social": -2
+      },
+      "weight": 7,
+      "title": "职场 · L2"
+    },
+    {
+      "layerId": "L3",
+      "era": "E1",
+      "id": "E1_03",
+      "category": "机会",
+      "text": "街道有人私下问：「有没有门路换全国粮票？」你摇头。",
+      "d": {
+        "rep": 1
+      },
+      "weight": 5,
+      "title": "机会 · L3"
+    },
+    {
+      "layerId": "L2",
+      "era": "E1",
+      "id": "E1_04",
+      "category": "金钱",
+      "text": "工资四十三块五，精确到分。你把它存进铁皮饼干盒。",
+      "d": {
+        "money": 1,
+        "health": 1
+      },
+      "weight": 8,
+      "title": "金钱 · L2"
+    },
+    {
+      "layerId": "L2",
+      "era": "E1",
+      "id": "E1_05",
+      "category": "人情",
+      "text": "师傅退休，徒弟凑钱买了块表。你出两块，工资里的一顿。",
+      "d": {
+        "money": -1,
+        "social": 4
+      },
+      "weight": 7,
+      "title": "人情 · L2"
+    },
+    {
+      "layerId": "L3",
+      "era": "E1",
+      "id": "E1_06",
+      "category": "教育",
+      "text": "夜大招生，单位名额两个。车间里五个人「争取」。",
+      "d": {
+        "rep": 2,
+        "social": -1
+      },
+      "weight": 6,
+      "title": "教育 · L3"
+    },
+    {
+      "layerId": "L2",
+      "era": "E1",
+      "id": "E1_07",
+      "category": "居住",
+      "text": "筒子楼公用水龙头结冰。你端盆排队，聊的是谁家孩子考上大学。",
+      "d": {
+        "social": 2,
+        "health": -2
+      },
+      "weight": 7,
+      "title": "居住 · L2"
+    },
+    {
+      "layerId": "L2",
+      "era": "E1",
+      "id": "E1_08",
+      "category": "职场",
+      "text": "「下海」这个词开始在广播里出现。老同志说：「看看就行。」",
+      "d": {
+        "edu": 2,
+        "rep": -1
+      },
+      "weight": 6,
+      "title": "职场 · L2"
+    },
+    {
+      "layerId": "L2",
+      "era": "E1",
+      "id": "E1_09",
+      "category": "健康",
+      "text": "厂医院体检，医生说「血压偏高，少操心」。",
+      "d": {
+        "health": -2
+      },
+      "weight": 6,
+      "title": "健康 · L2"
+    },
+    {
+      "layerId": "L3",
+      "era": "E1",
+      "id": "E1_10",
+      "category": "机会",
+      "text": "深圳来的亲戚穿的确良，说那边「能挣钱」。你记住了，没动。",
+      "d": {
+        "edu": 3
+      },
+      "weight": 5,
+      "title": "机会 · L3"
+    },
+    {
+      "layerId": "L2",
+      "era": "E1",
+      "id": "E1_11",
+      "category": "金钱",
+      "text": "孩子学费单位报销。你第一次觉得「单位」像另一个家。",
+      "d": {
+        "money": 1,
+        "social": 2
+      },
+      "weight": 6,
+      "minAge": 28,
+      "title": "金钱 · L2"
+    },
+    {
+      "layerId": "L2",
+      "era": "E1",
+      "id": "E1_12",
+      "category": "职场",
+      "text": "班组评先进，名额一个。大家投票，你投给了真正干活的人。",
+      "d": {
+        "rep": 2,
+        "social": 1
+      },
+      "weight": 6,
+      "title": "职场 · L2"
+    },
+    {
+      "layerId": "L2",
+      "era": "E1",
+      "id": "E1_13",
+      "category": "人情",
+      "text": "同事孩子满月，送二十块红包。回礼是一包糖。",
+      "d": {
+        "money": -1,
+        "social": 2
+      },
+      "weight": 5,
+      "title": "人情 · L2"
+    },
+    {
+      "layerId": "L5",
+      "era": "E1",
+      "id": "E1_14",
+      "category": "风险",
+      "text": "有人倒腾电子表赚差价，被保卫科谈话。你旁听，没发言。",
+      "d": {
+        "rep": 1,
+        "health": -1
+      },
+      "weight": 4,
+      "title": "风险 · L5"
+    },
+    {
+      "layerId": "L2",
+      "era": "E1",
+      "id": "E1_15",
+      "category": "居住",
+      "text": "煤炉冒烟，邻居敲门说呛。你换了个风向，继续煮。",
+      "d": {
+        "health": -2,
+        "social": -1
+      },
+      "weight": 5,
+      "title": "居住 · L2"
+    },
+    {
+      "layerId": "L3",
+      "era": "E1",
+      "id": "E1_16",
+      "category": "教育",
+      "text": "成人高考复习班，课本是影印本。灯灭了就着蜡烛看。",
+      "d": {
+        "edu": 5,
+        "health": -3
+      },
+      "weight": 6,
+      "title": "教育 · L3"
+    },
+    {
+      "layerId": "L2",
+      "era": "E1",
+      "id": "E1_17",
+      "category": "职场",
+      "text": "厂长作报告三小时，关键词：「稳定」「大局」。",
+      "d": {
+        "health": -2,
+        "rep": 1
+      },
+      "weight": 7,
+      "title": "职场 · L2"
+    },
+    {
+      "layerId": "L2",
+      "era": "E1",
+      "id": "E1_18",
+      "category": "金钱",
+      "text": "国库券发行，同事排队买。你钱不够，借了点。",
+      "d": {
+        "money": 2,
+        "rep": -1
+      },
+      "weight": 5,
+      "title": "金钱 · L2"
+    },
+    {
+      "layerId": "L3",
+      "era": "E1",
+      "id": "E1_19",
+      "category": "机会",
+      "text": "单位办三产，招「有关系」的管仓库。你没去试。",
+      "d": {
+        "social": -1,
+        "rep": 1
+      },
+      "weight": 4,
+      "title": "机会 · L3"
+    },
+    {
+      "layerId": "L2",
+      "era": "E1",
+      "id": "E1_20",
+      "category": "健康",
+      "text": "食堂菜里偶尔有虫。你挑出来，继续吃——别的桌也这样。",
+      "d": {
+        "health": -1
+      },
+      "weight": 5,
+      "title": "健康 · L2"
+    },
+    {
+      "layerId": "L3",
+      "era": "E2",
+      "id": "E2_01",
+      "category": "机会",
+      "text": "辞职信模板在复印店公开卖。五块钱一份，含「个人原因」。",
+      "d": {
+        "rep": 2,
+        "edu": 2
+      },
+      "weight": 8,
+      "title": "机会 · L3"
+    },
+    {
+      "layerId": "L2",
+      "era": "E2",
+      "id": "E2_02",
+      "category": "金钱",
+      "text": "摆地摊卖磁带，一晚挣的比工资多。你心动，没敢辞。",
+      "d": {
+        "money": 1,
+        "health": -2
+      },
+      "weight": 7,
+      "title": "金钱 · L2"
+    },
+    {
+      "layerId": "L2",
+      "era": "E2",
+      "id": "E2_03",
+      "category": "职场",
+      "text": "单位「停薪留职」政策出台。走廊里悄悄算谁先去海南。",
+      "d": {
+        "social": 2,
+        "rep": -1
+      },
+      "weight": 7,
+      "title": "职场 · L2"
+    },
+    {
+      "layerId": "L5",
+      "era": "E2",
+      "id": "E2_04",
+      "category": "风险",
+      "text": "「原始股」传单塞进信箱。邻居买了，你看见他在楼道哭。",
+      "d": {
+        "rep": 2,
+        "health": -1
+      },
+      "weight": 5,
+      "title": "风险 · L5"
+    },
+    {
+      "layerId": "L3",
+      "era": "E2",
+      "id": "E2_05",
+      "category": "机会",
+      "text": "百货公司柜台转租，月租三千。你算了算，要卖多少条皮带。",
+      "d": {
+        "edu": 3,
+        "money": -1
+      },
+      "weight": 6,
+      "title": "机会 · L3"
+    },
+    {
+      "layerId": "L2",
+      "era": "E2",
+      "id": "E2_06",
+      "category": "人情",
+      "text": "跑业务的表哥回来，请吃饭。桌上讲「回扣」像讲天气。",
+      "d": {
+        "social": 3,
+        "rep": -2
+      },
+      "weight": 6,
+      "title": "人情 · L2"
+    },
+    {
+      "layerId": "L2",
+      "era": "E2",
+      "id": "E2_07",
+      "category": "金钱",
+      "text": "万元户上了报纸。你数了数存折，四位数，差一位。",
+      "d": {
+        "rep": 1,
+        "health": -1
+      },
+      "weight": 7,
+      "title": "金钱 · L2"
+    },
+    {
+      "layerId": "L2",
+      "era": "E2",
+      "id": "E2_08",
+      "category": "职场",
+      "text": "外资厂来招人，英语要「能读说明书」。你报了夜校。",
+      "d": {
+        "edu": 4,
+        "money": -1
+      },
+      "weight": 6,
+      "title": "职场 · L2"
+    },
+    {
+      "layerId": "L2",
+      "era": "E2",
+      "id": "E2_09",
+      "category": "居住",
+      "text": "城乡结合部自建房出租，没合同。押一付三，口头约定。",
+      "d": {
+        "money": -2,
+        "health": -1
+      },
+      "weight": 7,
+      "title": "居住 · L2"
+    },
+    {
+      "layerId": "L3",
+      "era": "E2",
+      "id": "E2_10",
+      "category": "教育",
+      "text": "会计证培训班广告：「三个月上岗」。教室在居民楼里。",
+      "d": {
+        "edu": 5,
+        "money": -1
+      },
+      "weight": 6,
+      "title": "教育 · L3"
+    },
+    {
+      "layerId": "L3",
+      "era": "E2",
+      "id": "E2_11",
+      "category": "机会",
+      "text": "股票认购证排队，有人雇你代排，给五十块。",
+      "d": {
+        "money": 2,
+        "health": -3
+      },
+      "weight": 5,
+      "title": "机会 · L3"
+    },
+    {
+      "layerId": "L5",
+      "era": "E2",
+      "id": "E2_12",
+      "category": "风险",
+      "text": "传销亲戚来电：「过来玩，包吃住。」你挂了，家里吵了一架。",
+      "d": {
+        "social": -4,
+        "health": -2
+      },
+      "weight": 4,
+      "title": "风险 · L5"
+    },
+    {
+      "layerId": "L2",
+      "era": "E2",
+      "id": "E2_13",
+      "category": "职场",
+      "text": "国企合并，科室撤销。名单上有你，调岗工资降半档。",
+      "d": {
+        "rep": -2,
+        "money": -1
+      },
+      "weight": 7,
+      "title": "职场 · L2"
+    },
+    {
+      "layerId": "L2",
+      "era": "E2",
+      "id": "E2_14",
+      "category": "金钱",
+      "text": "民间借贷写「月息两分」。你当担保人签了个字。",
+      "d": {
+        "money": 1,
+        "rep": -4
+      },
+      "weight": 4,
+      "title": "金钱 · L2"
+    },
+    {
+      "layerId": "L2",
+      "era": "E2",
+      "id": "E2_15",
+      "category": "人情",
+      "text": "生意伙伴请客，茅台瓶口有针眼。你知道，仍碰了杯。",
+      "d": {
+        "social": 2,
+        "health": -2
+      },
+      "weight": 5,
+      "title": "人情 · L2"
+    },
+    {
+      "layerId": "L3",
+      "era": "E2",
+      "id": "E2_16",
+      "category": "机会",
+      "text": "货运站招跟车，管饭不管命。你干了两个月，攒下第一笔胆。",
+      "d": {
+        "money": 2,
+        "health": -4
+      },
+      "weight": 6,
+      "title": "机会 · L3"
+    },
+    {
+      "layerId": "L2",
+      "era": "E2",
+      "id": "E2_17",
+      "category": "居住",
+      "text": "城中村握手楼，电线像蜘蛛网。房东说：「住惯就好。」",
+      "d": {
+        "health": -3,
+        "money": -1
+      },
+      "weight": 7,
+      "title": "居住 · L2"
+    },
+    {
+      "layerId": "L3",
+      "era": "E2",
+      "id": "E2_18",
+      "category": "教育",
+      "text": "自考文凭到手，人才市场仍问「全日制吗」。",
+      "d": {
+        "edu": 4,
+        "rep": -1
+      },
+      "weight": 6,
+      "title": "教育 · L3"
+    },
+    {
+      "layerId": "L2",
+      "era": "E2",
+      "id": "E2_19",
+      "category": "职场",
+      "text": "个体执照办下来，公章刻了，账还是糊涂的。",
+      "d": {
+        "rep": 2,
+        "money": -1
+      },
+      "weight": 6,
+      "title": "职场 · L2"
+    },
+    {
+      "layerId": "L2",
+      "era": "E2",
+      "id": "E2_20",
+      "category": "健康",
+      "text": "路边诊所打点滴，没处方。好得快，你不知药名。",
+      "d": {
+        "money": -1,
+        "health": 4
+      },
+      "weight": 5,
+      "title": "健康 · L2"
+    },
+    {
+      "layerId": "L2",
+      "era": "E3",
+      "id": "E3_01",
+      "category": "金钱",
+      "text": "房改算工龄，每差一年多交几千。你恨自己毕业晚。",
+      "d": {
+        "money": -2,
+        "rep": -1
+      },
+      "weight": 8,
+      "title": "金钱 · L2"
+    },
+    {
+      "layerId": "L3",
+      "era": "E3",
+      "id": "E3_02",
+      "category": "机会",
+      "text": "拆迁测量队进小区，红漆写「拆」。邻居开始比面积。",
+      "d": {
+        "money": 3,
+        "social": -2
+      },
+      "weight": 6,
+      "title": "机会 · L3"
+    },
+    {
+      "layerId": "L2",
+      "era": "E3",
+      "id": "E3_03",
+      "category": "居住",
+      "text": "按揭合同签字按手印，按完手还在抖。三十年，利息够再买半套。",
+      "d": {
+        "money": -2,
+        "rep": 3
+      },
+      "weight": 8,
+      "minAge": 25,
+      "title": "居住 · L2"
+    },
+    {
+      "layerId": "L2",
+      "era": "E3",
+      "id": "E3_04",
+      "category": "职场",
+      "text": "公司搬进了写字楼，门禁刷卡。保安比厂长凶。",
+      "d": {
+        "rep": 1,
+        "social": -1
+      },
+      "weight": 6,
+      "title": "职场 · L2"
+    },
+    {
+      "layerId": "L2",
+      "era": "E3",
+      "id": "E3_05",
+      "category": "金钱",
+      "text": "房价周报贴中介玻璃上。你每周路过，像看体育比分。",
+      "d": {
+        "edu": 2,
+        "health": -2
+      },
+      "weight": 7,
+      "title": "金钱 · L2"
+    },
+    {
+      "layerId": "L3",
+      "era": "E3",
+      "id": "E3_06",
+      "category": "机会",
+      "text": "「零首付」广告，小字写「风险自担」。你算了算，没签。",
+      "d": {
+        "rep": 2
+      },
+      "weight": 5,
+      "title": "机会 · L3"
+    },
+    {
+      "layerId": "L2",
+      "era": "E3",
+      "id": "E3_07",
+      "category": "人情",
+      "text": "买房托了熟人，说能便宜两个点。最后发现大家都「托了」。",
+      "d": {
+        "social": -2,
+        "money": -1
+      },
+      "weight": 6,
+      "title": "人情 · L2"
+    },
+    {
+      "layerId": "L3",
+      "era": "E3",
+      "id": "E3_08",
+      "category": "教育",
+      "text": "学区房政策一出，亲戚问你能不能「挂名」。",
+      "d": {
+        "social": -1,
+        "rep": 2
+      },
+      "weight": 5,
+      "minAge": 28,
+      "title": "教育 · L3"
+    },
+    {
+      "layerId": "L5",
+      "era": "E3",
+      "id": "E3_09",
+      "category": "风险",
+      "text": "非法集资暴雷，单位有人跳楼。食堂安静了一周。",
+      "d": {
+        "health": -4,
+        "rep": 1
+      },
+      "weight": 4,
+      "title": "风险 · L5"
+    },
+    {
+      "layerId": "L2",
+      "era": "E3",
+      "id": "E3_10",
+      "category": "职场",
+      "text": "地产公司招聘，底薪低提成高。「年薪百万不是梦」。",
+      "d": {
+        "rep": 2,
+        "money": -1
+      },
+      "weight": 6,
+      "title": "职场 · L2"
+    },
+    {
+      "layerId": "L2",
+      "era": "E3",
+      "id": "E3_11",
+      "category": "居住",
+      "text": "装修队拖工期，你说一句，工头说「材料没到」。",
+      "d": {
+        "money": -2,
+        "health": -3
+      },
+      "weight": 7,
+      "title": "居住 · L2"
+    },
+    {
+      "layerId": "L2",
+      "era": "E3",
+      "id": "E3_12",
+      "category": "金钱",
+      "text": "第二套房限购，你拿结婚证和纳税证明跑三次窗口。",
+      "d": {
+        "rep": 1,
+        "health": -2
+      },
+      "weight": 5,
+      "minAge": 32,
+      "title": "金钱 · L2"
+    },
+    {
+      "layerId": "L3",
+      "era": "E3",
+      "id": "E3_13",
+      "category": "机会",
+      "text": "小城市土地拍卖，朋友问要不要凑份子。你怕，没进。",
+      "d": {
+        "social": -1,
+        "rep": 1
+      },
+      "weight": 5,
+      "title": "机会 · L3"
+    },
+    {
+      "layerId": "L2",
+      "era": "E3",
+      "id": "E3_14",
+      "category": "健康",
+      "text": "搬新家甲醛味，孩子咳嗽。你买绿萝，一屋二十盆。",
+      "d": {
+        "money": -1,
+        "health": -3
+      },
+      "weight": 6,
+      "minAge": 28,
+      "title": "健康 · L2"
+    },
+    {
+      "layerId": "L2",
+      "era": "E3",
+      "id": "E3_15",
+      "category": "职场",
+      "text": "公司配车取消，改发交通补贴。补贴不够付停车费。",
+      "d": {
+        "money": -1,
+        "rep": -1
+      },
+      "weight": 6,
+      "title": "职场 · L2"
+    },
+    {
+      "layerId": "L2",
+      "era": "E3",
+      "id": "E3_16",
+      "category": "人情",
+      "text": "乔迁酒摆十桌，礼金记在本上。人情债开始按平米算。",
+      "d": {
+        "money": -2,
+        "social": 4
+      },
+      "weight": 6,
+      "title": "人情 · L2"
+    },
+    {
+      "layerId": "L3",
+      "era": "E3",
+      "id": "E3_17",
+      "category": "教育",
+      "text": "MBA 招生，学费够付小城市首付。同学名单里有你的客户。",
+      "d": {
+        "edu": 5,
+        "money": -3
+      },
+      "weight": 4,
+      "minAge": 30,
+      "title": "教育 · L3"
+    },
+    {
+      "layerId": "L2",
+      "era": "E3",
+      "id": "E3_18",
+      "category": "金钱",
+      "text": "物业维修基金公示，数字看不懂，签字栏要签。",
+      "d": {
+        "rep": -1
+      },
+      "weight": 5,
+      "title": "金钱 · L2"
+    },
+    {
+      "layerId": "L3",
+      "era": "E3",
+      "id": "E3_19",
+      "category": "机会",
+      "text": "商铺返租广告：「十年回本」。律师朋友说「看合同第八页」。",
+      "d": {
+        "edu": 3,
+        "money": -1
+      },
+      "weight": 5,
+      "title": "机会 · L3"
+    },
+    {
+      "layerId": "L5",
+      "era": "E3",
+      "id": "E3_20",
+      "category": "风险",
+      "text": "首付一部分来自信用卡套现。你还了，利息记了三年。",
+      "d": {
+        "money": -2,
+        "health": -3
+      },
+      "weight": 4,
+      "title": "风险 · L5"
+    },
+    {
+      "layerId": "L2",
+      "era": "E4",
+      "id": "E4_01",
+      "category": "职场",
+      "text": "公司发电脑，预装正版 Windows。IT 说「别装乱七八糟的」。",
+      "d": {
+        "rep": 2,
+        "edu": 2
+      },
+      "weight": 7,
+      "title": "职场 · L2"
+    },
+    {
+      "layerId": "L3",
+      "era": "E4",
+      "id": "E4_02",
+      "category": "机会",
+      "text": "博客时代，你写技术帖，收到第一封猎头邮件。",
+      "d": {
+        "rep": 4,
+        "social": 2
+      },
+      "weight": 7,
+      "title": "机会 · L3"
+    },
+    {
+      "layerId": "L2",
+      "era": "E4",
+      "id": "E4_03",
+      "category": "金钱",
+      "text": "网吧包夜五块，你写方案写到天亮。老板送了一瓶可乐。",
+      "d": {
+        "money": -1,
+        "health": -4,
+        "rep": 2
+      },
+      "weight": 6,
+      "title": "金钱 · L2"
+    },
+    {
+      "layerId": "L3",
+      "era": "E4",
+      "id": "E4_04",
+      "category": "教育",
+      "text": "远程 MBA 广告：「不出国门拿学位」。你分辨不了真假。",
+      "d": {
+        "edu": 2,
+        "money": -1
+      },
+      "weight": 5,
+      "title": "教育 · L3"
+    },
+    {
+      "layerId": "L2",
+      "era": "E4",
+      "id": "E4_05",
+      "category": "职场",
+      "text": "996 写在招聘页底部，小字。「弹性工作制」。",
+      "d": {
+        "health": -4,
+        "money": 1
+      },
+      "weight": 8,
+      "title": "职场 · L2"
+    },
+    {
+      "layerId": "L3",
+      "era": "E4",
+      "id": "E4_06",
+      "category": "机会",
+      "text": "同事辞职去「互联网大厂」，工牌照片发论坛，点击量破万。",
+      "d": {
+        "rep": 2,
+        "social": 1
+      },
+      "weight": 6,
+      "title": "机会 · L3"
+    },
+    {
+      "layerId": "L2",
+      "era": "E4",
+      "id": "E4_07",
+      "category": "金钱",
+      "text": "支付宝红包，第一次线上付款，你紧张得像丢现金。",
+      "d": {
+        "edu": 2
+      },
+      "weight": 6,
+      "title": "金钱 · L2"
+    },
+    {
+      "layerId": "L5",
+      "era": "E4",
+      "id": "E4_08",
+      "category": "风险",
+      "text": "P2P 理财，年化 12%。同事说「有担保」。",
+      "d": {
+        "money": 2,
+        "rep": -3
+      },
+      "weight": 5,
+      "title": "风险 · L5"
+    },
+    {
+      "layerId": "L2",
+      "era": "E4",
+      "id": "E4_09",
+      "category": "人情",
+      "text": "QQ 群结婚通知，红包五十块。你不知对方是谁，还是发了。",
+      "d": {
+        "money": -1,
+        "social": 1
+      },
+      "weight": 5,
+      "title": "人情 · L2"
+    },
+    {
+      "layerId": "L2",
+      "era": "E4",
+      "id": "E4_10",
+      "category": "居住",
+      "text": "青年公寓，四人间，网速按人头分。你半夜改 bug，室友骂。",
+      "d": {
+        "health": -3,
+        "social": -2
+      },
+      "weight": 7,
+      "title": "居住 · L2"
+    },
+    {
+      "layerId": "L2",
+      "era": "E4",
+      "id": "E4_11",
+      "category": "职场",
+      "text": "期权协议，行权价像天书。HR 说「上市就自由」。",
+      "d": {
+        "edu": 3,
+        "rep": 1
+      },
+      "weight": 6,
+      "title": "职场 · L2"
+    },
+    {
+      "layerId": "L2",
+      "era": "E4",
+      "id": "E4_12",
+      "category": "健康",
+      "text": "久坐腰椎，买了人体工学椅。公司不让换，你自费。",
+      "d": {
+        "money": -1,
+        "health": 4
+      },
+      "weight": 6,
+      "title": "健康 · L2"
+    },
+    {
+      "layerId": "L3",
+      "era": "E4",
+      "id": "E4_13",
+      "category": "机会",
+      "text": "创业孵化器，免费咖啡和无限梦想。隔壁团队已换第三波人。",
+      "d": {
+        "rep": 2,
+        "social": 2
+      },
+      "weight": 6,
+      "title": "机会 · L3"
+    },
+    {
+      "layerId": "L3",
+      "era": "E4",
+      "id": "E4_14",
+      "category": "教育",
+      "text": "培训班承诺「包就业」，合同写「推荐就业」。一字之差。",
+      "d": {
+        "edu": 3,
+        "money": -2
+      },
+      "weight": 5,
+      "title": "教育 · L3"
+    },
+    {
+      "layerId": "L2",
+      "era": "E4",
+      "id": "E4_15",
+      "category": "金钱",
+      "text": "股票账户开户，大厅大妈比你还懂 K 线。",
+      "d": {
+        "money": 1,
+        "edu": 2
+      },
+      "weight": 6,
+      "title": "金钱 · L2"
+    },
+    {
+      "layerId": "L2",
+      "era": "E4",
+      "id": "E4_16",
+      "category": "职场",
+      "text": "外企裁员，N+1 计算器在论坛流传。你默默存了链接。",
+      "d": {
+        "rep": -1,
+        "edu": 3
+      },
+      "weight": 6,
+      "title": "职场 · L2"
+    },
+    {
+      "layerId": "L3",
+      "era": "E4",
+      "id": "E4_17",
+      "category": "机会",
+      "text": "团购网站挖人，工资翻倍。你去了，发现补贴战已开始。",
+      "d": {
+        "money": 2,
+        "health": -4
+      },
+      "weight": 5,
+      "title": "机会 · L3"
+    },
+    {
+      "layerId": "L5",
+      "era": "E4",
+      "id": "E4_18",
+      "category": "风险",
+      "text": "游戏装备被盗，报警回执有了，装备没有。",
+      "d": {
+        "money": -1,
+        "health": -2
+      },
+      "weight": 4,
+      "title": "风险 · L5"
+    },
+    {
+      "layerId": "L2",
+      "era": "E4",
+      "id": "E4_19",
+      "category": "人情",
+      "text": "前同事借 LinkedIn 内推，你改了七版简历。",
+      "d": {
+        "rep": 3,
+        "social": 2
+      },
+      "weight": 6,
+      "title": "人情 · L2"
+    },
+    {
+      "layerId": "L2",
+      "era": "E4",
+      "id": "E4_20",
+      "category": "健康",
+      "text": "外卖吃多了，体检甘油三酯箭头向上。医生推了 Diet 单。",
+      "d": {
+        "health": -3,
+        "money": -1
+      },
+      "weight": 7,
+      "title": "健康 · L2"
+    },
+    {
+      "layerId": "L2",
+      "era": "E5",
+      "id": "E5_01",
+      "category": "职场",
+      "text": "打车软件报销，财务要求「行程单与会议一致」。",
+      "d": {
+        "rep": -1,
+        "health": -2
+      },
+      "weight": 7,
+      "title": "职场 · L2"
+    },
+    {
+      "layerId": "L3",
+      "era": "E5",
+      "id": "E5_02",
+      "category": "机会",
+      "text": "O2O 补贴大战，一块钱吃满汉全席。你知道这不会久。",
+      "d": {
+        "money": 1,
+        "edu": 2
+      },
+      "weight": 7,
+      "title": "机会 · L3"
+    },
+    {
+      "layerId": "L2",
+      "era": "E5",
+      "id": "E5_03",
+      "category": "金钱",
+      "text": "余额宝收益每天几毛，你仍每天打开看。",
+      "d": {
+        "money": 1
+      },
+      "weight": 6,
+      "title": "金钱 · L2"
+    },
+    {
+      "layerId": "L2",
+      "era": "E5",
+      "id": "E5_04",
+      "category": "居住",
+      "text": "长租公寓，年付优惠。六个月后运营商跑路。",
+      "d": {
+        "money": -3,
+        "health": -3
+      },
+      "weight": 6,
+      "title": "居住 · L2"
+    },
+    {
+      "layerId": "L2",
+      "era": "E5",
+      "id": "E5_05",
+      "category": "职场",
+      "text": "钉钉打卡，外勤要拍照。你在客户厕所补自拍。",
+      "d": {
+        "rep": 1,
+        "health": -2
+      },
+      "weight": 7,
+      "title": "职场 · L2"
+    },
+    {
+      "layerId": "L3",
+      "era": "E5",
+      "id": "E5_06",
+      "category": "机会",
+      "text": "自媒体账号十万粉，广告报价单像工资条。",
+      "d": {
+        "money": 2,
+        "rep": 3
+      },
+      "weight": 5,
+      "title": "机会 · L3"
+    },
+    {
+      "layerId": "L5",
+      "era": "E5",
+      "id": "E5_07",
+      "category": "风险",
+      "text": "校园贷广告贴到写字楼厕所。同事笑，你删了截图。",
+      "d": {
+        "rep": 1
+      },
+      "weight": 4,
+      "title": "风险 · L5"
+    },
+    {
+      "layerId": "L3",
+      "era": "E5",
+      "id": "E5_08",
+      "category": "教育",
+      "text": "在线课程「知识付费」，买完发现是百度能搜到的。",
+      "d": {
+        "money": -1,
+        "edu": 1
+      },
+      "weight": 6,
+      "title": "教育 · L3"
+    },
+    {
+      "layerId": "L2",
+      "era": "E5",
+      "id": "E5_09",
+      "category": "人情",
+      "text": "朋友圈集赞换礼品，你麻烦二十个人。礼品是 USB 线。",
+      "d": {
+        "social": -1
+      },
+      "weight": 5,
+      "title": "人情 · L2"
+    },
+    {
+      "layerId": "L2",
+      "era": "E5",
+      "id": "E5_10",
+      "category": "健康",
+      "text": "共享单车堆成山，你扛车过马路，像健身。",
+      "d": {
+        "health": -2
+      },
+      "weight": 5,
+      "title": "健康 · L2"
+    },
+    {
+      "layerId": "L2",
+      "era": "E5",
+      "id": "E5_11",
+      "category": "金钱",
+      "text": "信用卡分期买手机，月供等于以前一整月话费。",
+      "d": {
+        "money": -1,
+        "rep": 1
+      },
+      "weight": 7,
+      "title": "金钱 · L2"
+    },
+    {
+      "layerId": "L2",
+      "era": "E5",
+      "id": "E5_12",
+      "category": "职场",
+      "text": "公司发期权，上市前你签保密。朋友问，你只能「还行」。",
+      "d": {
+        "rep": 2,
+        "social": -1
+      },
+      "weight": 6,
+      "title": "职场 · L2"
+    },
+    {
+      "layerId": "L3",
+      "era": "E5",
+      "id": "E5_13",
+      "category": "机会",
+      "text": "直播带货试水，一晚卖出三件。其中一件是你妈买的。",
+      "d": {
+        "money": 1,
+        "social": 2
+      },
+      "weight": 5,
+      "title": "机会 · L3"
+    },
+    {
+      "layerId": "L5",
+      "era": "E5",
+      "id": "E5_14",
+      "category": "风险",
+      "text": "虚拟货币朋友群，有人 overnight 财务自由。你围观，没进。",
+      "d": {
+        "rep": 1,
+        "edu": 2
+      },
+      "weight": 4,
+      "title": "风险 · L5"
+    },
+    {
+      "layerId": "L2",
+      "era": "E5",
+      "id": "E5_15",
+      "category": "居住",
+      "text": "合租室友是网约车司机，凌晨四点引擎声叫醒你。",
+      "d": {
+        "health": -4,
+        "social": -1
+      },
+      "weight": 7,
+      "title": "居住 · L2"
+    },
+    {
+      "layerId": "L2",
+      "era": "E5",
+      "id": "E5_16",
+      "category": "职场",
+      "text": "裁员赔偿计算器小程序流传。你打开又关掉。",
+      "d": {
+        "health": -2,
+        "edu": 2
+      },
+      "weight": 7,
+      "title": "职场 · L2"
+    },
+    {
+      "layerId": "L3",
+      "era": "E5",
+      "id": "E5_17",
+      "category": "教育",
+      "text": "少儿编程班，学费一万二。孩子喜欢，你刷卡。",
+      "d": {
+        "money": -2,
+        "social": 2
+      },
+      "weight": 5,
+      "minAge": 30,
+      "title": "教育 · L3"
+    },
+    {
+      "layerId": "L2",
+      "era": "E5",
+      "id": "E5_18",
+      "category": "金钱",
+      "text": "花呗还最低，利息像第二份房租。",
+      "d": {
+        "money": -1,
+        "health": -2
+      },
+      "weight": 8,
+      "title": "金钱 · L2"
+    },
+    {
+      "layerId": "L3",
+      "era": "E5",
+      "id": "E5_19",
+      "category": "机会",
+      "text": "加入「斜杠青年」社群，名片上头衔比简历长。",
+      "d": {
+        "rep": 2,
+        "social": 3
+      },
+      "weight": 5,
+      "title": "机会 · L3"
+    },
+    {
+      "layerId": "L2",
+      "era": "E5",
+      "id": "E5_20",
+      "category": "健康",
+      "text": "外卖骑手撞了护栏，新闻一闪而过。你取消订单，自己煮面。",
+      "d": {
+        "health": 2,
+        "money": -1
+      },
+      "weight": 6,
+      "title": "健康 · L2"
+    },
+    {
+      "layerId": "L2",
+      "era": "E6",
+      "id": "E6_01",
+      "category": "职场",
+      "text": "「毕业」优化，赔偿方案三档。你选了中间，签字手稳。",
+      "d": {
+        "money": 2,
+        "rep": -2,
+        "health": -3
+      },
+      "weight": 8,
+      "title": "职场 · L2"
+    },
+    {
+      "layerId": "L3",
+      "era": "E6",
+      "id": "E6_02",
+      "category": "机会",
+      "text": "考公报名人数破纪录。你报名，竞争比三百比一。",
+      "d": {
+        "edu": 4,
+        "health": -3
+      },
+      "weight": 7,
+      "title": "机会 · L3"
+    },
+    {
+      "layerId": "L2",
+      "era": "E6",
+      "id": "E6_03",
+      "category": "金钱",
+      "text": "理财爆雷，维权群五百人。律师费众筹，进度缓慢。",
+      "d": {
+        "money": -2,
+        "health": -3
+      },
+      "weight": 6,
+      "title": "金钱 · L2"
+    },
+    {
+      "layerId": "L2",
+      "era": "E6",
+      "id": "E6_04",
+      "category": "居住",
+      "text": "二手房挂牌半年，中介建议「再降五十万」。",
+      "d": {
+        "money": -2,
+        "rep": -1
+      },
+      "weight": 7,
+      "minAge": 30,
+      "title": "居住 · L2"
+    },
+    {
+      "layerId": "L2",
+      "era": "E6",
+      "id": "E6_05",
+      "category": "职场",
+      "text": "远程办公常态化，开会从床到床。边界消失。",
+      "d": {
+        "health": -3,
+        "rep": 1
+      },
+      "weight": 7,
+      "title": "职场 · L2"
+    },
+    {
+      "layerId": "L3",
+      "era": "E6",
+      "id": "E6_06",
+      "category": "教育",
+      "text": "考研二战，自习室月卡比 gym 贵。你成了常驻。",
+      "d": {
+        "edu": 5,
+        "money": -1,
+        "health": -3
+      },
+      "weight": 6,
+      "minAge": 22,
+      "maxAge": 28,
+      "title": "教育 · L3"
+    },
+    {
+      "layerId": "L3",
+      "era": "E6",
+      "id": "E6_07",
+      "category": "机会",
+      "text": "社区团购团长，邻居喊你「团长」。利润薄，面子厚。",
+      "d": {
+        "social": 3,
+        "money": 1
+      },
+      "weight": 5,
+      "title": "机会 · L3"
+    },
+    {
+      "layerId": "L5",
+      "era": "E6",
+      "id": "E6_08",
+      "category": "风险",
+      "text": "电信诈骗，对方报出你身份证号。你挂电话，手抖。",
+      "d": {
+        "health": -4
+      },
+      "weight": 5,
+      "title": "风险 · L5"
+    },
+    {
+      "layerId": "L2",
+      "era": "E6",
+      "id": "E6_09",
+      "category": "人情",
+      "text": "随礼标准又涨了。你翻旧账本，发现十年涨五倍。",
+      "d": {
+        "money": -2,
+        "social": 1
+      },
+      "weight": 7,
+      "title": "人情 · L2"
+    },
+    {
+      "layerId": "L2",
+      "era": "E6",
+      "id": "E6_10",
+      "category": "健康",
+      "text": "核酸排队两小时，太阳晒。你想起以前不用这样。",
+      "d": {
+        "health": -2
+      },
+      "weight": 6,
+      "title": "健康 · L2"
+    },
+    {
+      "layerId": "L2",
+      "era": "E6",
+      "id": "E6_11",
+      "category": "金钱",
+      "text": "消费降级，购物车清空，只留必需品。你并不快乐。",
+      "d": {
+        "money": 1,
+        "health": -2
+      },
+      "weight": 7,
+      "title": "金钱 · L2"
+    },
+    {
+      "layerId": "L2",
+      "era": "E6",
+      "id": "E6_12",
+      "category": "职场",
+      "text": "35 岁门槛写在招聘页「优先」。你 34，倒计时。",
+      "d": {
+        "rep": -3,
+        "health": -4
+      },
+      "weight": 8,
+      "minAge": 32,
+      "maxAge": 38,
+      "title": "职场 · L2"
+    },
+    {
+      "layerId": "L3",
+      "era": "E6",
+      "id": "E6_13",
+      "category": "机会",
+      "text": "副业摆摊卖柠檬茶，城管来前邻居喊「来了」。",
+      "d": {
+        "money": 1,
+        "health": -2
+      },
+      "weight": 6,
+      "title": "机会 · L3"
+    },
+    {
+      "layerId": "L3",
+      "era": "E6",
+      "id": "E6_14",
+      "category": "教育",
+      "text": "职业技能补贴，申请表格比考试难。",
+      "d": {
+        "edu": 3,
+        "health": -2
+      },
+      "weight": 5,
+      "title": "教育 · L3"
+    },
+    {
+      "layerId": "L2",
+      "era": "E6",
+      "id": "E6_15",
+      "category": "居住",
+      "text": "房贷转 LPR，跑银行两次。省下的钱够两顿外卖。",
+      "d": {
+        "money": 1,
+        "health": -1
+      },
+      "weight": 6,
+      "minAge": 28,
+      "title": "居住 · L2"
+    },
+    {
+      "layerId": "L2",
+      "era": "E6",
+      "id": "E6_16",
+      "category": "职场",
+      "text": "公司团建强制，周末爬山。你腿抖，照片仍要笑。",
+      "d": {
+        "health": -3,
+        "social": 1
+      },
+      "weight": 6,
+      "title": "职场 · L2"
+    },
+    {
+      "layerId": "L2",
+      "era": "E6",
+      "id": "E6_17",
+      "category": "金钱",
+      "text": "信用卡降额，通知短信一行。你查了流水，没问题。",
+      "d": {
+        "rep": -1,
+        "health": -2
+      },
+      "weight": 6,
+      "title": "金钱 · L2"
+    },
+    {
+      "layerId": "L3",
+      "era": "E6",
+      "id": "E6_18",
+      "category": "机会",
+      "text": "旧同事做跨境电商，朋友圈晒仓库。你问教程，要九千八。",
+      "d": {
+        "edu": 2,
+        "money": -1
+      },
+      "weight": 5,
+      "title": "机会 · L3"
+    },
+    {
+      "layerId": "L2",
+      "era": "E6",
+      "id": "E6_19",
+      "category": "健康",
+      "text": "心理咨询纳入讨论，你预约，排队三周。",
+      "d": {
+        "money": -1,
+        "health": 5
+      },
+      "weight": 6,
+      "title": "健康 · L2"
+    },
+    {
+      "layerId": "L5",
+      "era": "E6",
+      "id": "E6_20",
+      "category": "风险",
+      "text": "担保签字帮朋友，朋友失联。律师信到了。",
+      "d": {
+        "money": -3,
+        "rep": -4
+      },
+      "weight": 4,
+      "title": "风险 · L5"
+    },
+    {
+      "layerId": "L2",
+      "era": "E7",
+      "id": "E7_01",
+      "category": "职场",
+      "text": "AI 写周报工具内测，主管说「人人都要会用」。",
+      "d": {
+        "edu": 4,
+        "rep": 1
+      },
+      "weight": 8,
+      "title": "职场 · L2"
+    },
+    {
+      "layerId": "L3",
+      "era": "E7",
+      "id": "E7_02",
+      "category": "机会",
+      "text": "灵活用工平台，接单「按件计酬」。时薪算下来不如以前。",
+      "d": {
+        "money": 1,
+        "health": -3
+      },
+      "weight": 7,
+      "title": "机会 · L3"
+    },
+    {
+      "layerId": "L2",
+      "era": "E7",
+      "id": "E7_03",
+      "category": "金钱",
+      "text": "存款利率一降再降，老人排队买国债。你排在后面。",
+      "d": {
+        "money": -1,
+        "edu": 2
+      },
+      "weight": 7,
+      "title": "金钱 · L2"
+    },
+    {
+      "layerId": "L2",
+      "era": "E7",
+      "id": "E7_04",
+      "category": "居住",
+      "text": "保交楼新闻里出现你买的那家开发商。你查进度，更新很慢。",
+      "d": {
+        "health": -4,
+        "money": -2
+      },
+      "weight": 6,
+      "minAge": 28,
+      "title": "居住 · L2"
+    },
+    {
+      "layerId": "L2",
+      "era": "E7",
+      "id": "E7_05",
+      "category": "职场",
+      "text": "办公室讨论「降本增效」第三波。咖啡机取消了。",
+      "d": {
+        "rep": -1,
+        "health": -2
+      },
+      "weight": 8,
+      "title": "职场 · L2"
+    },
+    {
+      "layerId": "L3",
+      "era": "E7",
+      "id": "E7_06",
+      "category": "机会",
+      "text": "短视频账号尝试，第三条爆了，第四条没人看。",
+      "d": {
+        "rep": 2,
+        "social": 2
+      },
+      "weight": 6,
+      "title": "机会 · L3"
+    },
+    {
+      "layerId": "L5",
+      "era": "E7",
+      "id": "E7_07",
+      "category": "风险",
+      "text": "虚拟号码诈骗，对方知道你的订单号。你拉黑，仍后怕。",
+      "d": {
+        "health": -3
+      },
+      "weight": 5,
+      "title": "风险 · L5"
+    },
+    {
+      "layerId": "L3",
+      "era": "E7",
+      "id": "E7_08",
+      "category": "教育",
+      "text": "AI 课卖九块九，内容是让 AI 写「如何赚钱」。",
+      "d": {
+        "money": -1,
+        "edu": 1
+      },
+      "weight": 5,
+      "title": "教育 · L3"
+    },
+    {
+      "layerId": "L2",
+      "era": "E7",
+      "id": "E7_09",
+      "category": "人情",
+      "text": "同学群晒娃录取，你点赞，关掉屏幕发呆。",
+      "d": {
+        "social": -2,
+        "health": -2
+      },
+      "weight": 6,
+      "minAge": 32,
+      "title": "人情 · L2"
+    },
+    {
+      "layerId": "L2",
+      "era": "E7",
+      "id": "E7_10",
+      "category": "健康",
+      "text": "体检加项「结节」，复查排期两月。等待像第二种工作。",
+      "d": {
+        "health": -4,
+        "money": -1
+      },
+      "weight": 7,
+      "title": "健康 · L2"
+    },
+    {
+      "layerId": "L2",
+      "era": "E7",
+      "id": "E7_11",
+      "category": "金钱",
+      "text": "消费贷利率上调，你算了一遍，决定先还信用卡。",
+      "d": {
+        "money": -1,
+        "rep": 1
+      },
+      "weight": 7,
+      "title": "金钱 · L2"
+    },
+    {
+      "layerId": "L2",
+      "era": "E7",
+      "id": "E7_12",
+      "category": "职场",
+      "text": "Hybrid 办公，周三必须到岗。你通勤两小时，工位空一半。",
+      "d": {
+        "health": -3,
+        "rep": 1
+      },
+      "weight": 7,
+      "title": "职场 · L2"
+    },
+    {
+      "layerId": "L3",
+      "era": "E7",
+      "id": "E7_13",
+      "category": "机会",
+      "text": "出海业务招人，英语要「能开会」。你报了夜课。",
+      "d": {
+        "edu": 4,
+        "money": -1
+      },
+      "weight": 6,
+      "title": "机会 · L3"
+    },
+    {
+      "layerId": "L2",
+      "era": "E7",
+      "id": "E7_14",
+      "category": "居住",
+      "text": "老旧小区加装电梯，低层反对，高层盼。你是中层。",
+      "d": {
+        "social": -1,
+        "health": -1
+      },
+      "weight": 5,
+      "minAge": 35,
+      "title": "居住 · L2"
+    },
+    {
+      "layerId": "L5",
+      "era": "E7",
+      "id": "E7_15",
+      "category": "风险",
+      "text": "「稳赚」社群，入群费 299。你观察一周，退了。",
+      "d": {
+        "rep": 2,
+        "money": -1
+      },
+      "weight": 4,
+      "title": "风险 · L5"
+    },
+    {
+      "layerId": "L2",
+      "era": "E7",
+      "id": "E7_16",
+      "category": "职场",
+      "text": "绩效改为季度，浮动加大。你学会存「应急月数」。",
+      "d": {
+        "rep": 1,
+        "edu": 2
+      },
+      "weight": 7,
+      "title": "职场 · L2"
+    },
+    {
+      "layerId": "L3",
+      "era": "E7",
+      "id": "E7_17",
+      "category": "机会",
+      "text": "政府消费券，抢到了。满减规则比高数难。",
+      "d": {
+        "money": 1
+      },
+      "weight": 5,
+      "title": "机会 · L3"
+    },
+    {
+      "layerId": "L3",
+      "era": "E7",
+      "id": "E7_18",
+      "category": "教育",
+      "text": "孩子兴趣班退费难，合同里「概不退款」加粗。",
+      "d": {
+        "money": -2,
+        "social": -2
+      },
+      "weight": 6,
+      "minAge": 30,
+      "title": "教育 · L3"
+    },
+    {
+      "layerId": "L2",
+      "era": "E7",
+      "id": "E7_19",
+      "category": "健康",
+      "text": "健身房跑路，会员群维权。你的年卡剩九个月。",
+      "d": {
+        "money": -2,
+        "health": -2
+      },
+      "weight": 6,
+      "title": "健康 · L2"
+    },
+    {
+      "layerId": "L2",
+      "era": "E7",
+      "id": "E7_20",
+      "category": "金钱",
+      "text": "数字人民币试点，老人问你怎么用。你教了，像教另一种方言。",
+      "d": {
+        "social": 2,
+        "edu": 2
+      },
+      "weight": 5,
+      "title": "金钱 · L2"
+    },
+    {
+      "layerId": "L1",
+      "id": "L1_01",
+      "category": "居住",
+      "text": "握手楼之间晾衣杆碰头，你低头穿过，像走隧道。",
+      "d": {
+        "health": -1
+      },
+      "weight": 8,
+      "title": "居住 · L1"
+    },
+    {
+      "layerId": "L1",
+      "id": "L1_02",
+      "category": "金钱",
+      "text": "城中村里通水通电，电费一块二一度。你记表比记工资认真。",
+      "d": {
+        "money": -1
+      },
+      "weight": 8,
+      "title": "金钱 · L1"
+    },
+    {
+      "layerId": "L1",
+      "id": "L1_03",
+      "category": "职场",
+      "text": "日结工头招工，五十一天。你去了，发现要自带手套。",
+      "d": {
+        "money": 1,
+        "health": -4
+      },
+      "weight": 7,
+      "title": "职场 · L1"
+    },
+    {
+      "layerId": "L1",
+      "id": "L1_04",
+      "category": "健康",
+      "text": "大排档吃到异物，老板退钱，说「下次请你」。",
+      "d": {
+        "money": 1,
+        "health": -3
+      },
+      "weight": 6,
+      "title": "健康 · L1"
+    },
+    {
+      "layerId": "L1",
+      "id": "L1_05",
+      "category": "机会",
+      "text": "快递站点招人，「能吃苦」。你干了半月，学会分拣码。",
+      "d": {
+        "rep": 2,
+        "health": -5
+      },
+      "weight": 6,
+      "title": "机会 · L1"
+    },
+    {
+      "layerId": "L1",
+      "id": "L1_06",
+      "category": "人情",
+      "text": "老乡会凑钱办事，红白喜事都摊。你那份不能少。",
+      "d": {
+        "money": -1,
+        "social": 3
+      },
+      "weight": 7,
+      "title": "人情 · L1"
+    },
+    {
+      "layerId": "L1",
+      "id": "L1_07",
+      "category": "风险",
+      "text": "黑中介收「介绍费」，工作三天就辞退。你维权，耗不起。",
+      "d": {
+        "money": -2,
+        "rep": -2
+      },
+      "weight": 5,
+      "title": "风险 · L1"
+    },
+    {
+      "layerId": "L1",
+      "presentation": "inline",
+      "id": "L1_08",
+      "category": "居住",
+      "text": "隔断间隔音差，隔壁打电话你像旁听。",
+      "d": {
+        "health": -3
+      },
+      "weight": 8,
+      "title": "隔壁的电话"
+    },
+    {
+      "layerId": "L1",
+      "id": "L1_09",
+      "category": "金钱",
+      "text": "二手市场淘风扇，讲价五块。夏天它救你一命。",
+      "d": {
+        "money": -1,
+        "health": 2
+      },
+      "weight": 6,
+      "title": "金钱 · L1"
+    },
+    {
+      "layerId": "L1",
+      "id": "L1_10",
+      "category": "职场",
+      "text": "劳务市场蹲活，太阳晒。工头挑人看身板。",
+      "d": {
+        "health": -4,
+        "rep": 1
+      },
+      "weight": 7,
+      "title": "职场 · L1"
+    },
+    {
+      "layerId": "L1",
+      "id": "L1_11",
+      "category": "教育",
+      "text": "成人自考广告贴电线杆，「国家承认」。你撕了一张。",
+      "d": {
+        "edu": 3
+      },
+      "weight": 5,
+      "title": "教育 · L1"
+    },
+    {
+      "layerId": "L1",
+      "id": "L1_12",
+      "category": "健康",
+      "text": "诊所挂水，没病历。护士手稳，你不知药名。",
+      "d": {
+        "money": -1,
+        "health": 4
+      },
+      "weight": 6,
+      "title": "健康 · L1"
+    },
+    {
+      "layerId": "L1",
+      "id": "L1_13",
+      "category": "机会",
+      "text": "夜市摆摊卖袜子，一晚卖三双。你算油费，亏的。",
+      "d": {
+        "money": -1,
+        "edu": 2
+      },
+      "weight": 5,
+      "title": "机会 · L1"
+    },
+    {
+      "layerId": "L1",
+      "id": "L1_14",
+      "category": "人情",
+      "text": "合租室友跑路，房东扣你押金。你冤，合同写连带。",
+      "d": {
+        "money": -2,
+        "social": -2
+      },
+      "weight": 6,
+      "title": "人情 · L1"
+    },
+    {
+      "layerId": "L1",
+      "id": "L1_15",
+      "category": "居住",
+      "text": "台风天漏水，盆排成一排。你加班回家，床湿一半。",
+      "d": {
+        "health": -3,
+        "money": -1
+      },
+      "weight": 6,
+      "title": "居住 · L1"
+    },
+    {
+      "layerId": "L1",
+      "id": "L1_16",
+      "category": "金钱",
+      "text": "收废品大爷说纸箱涨价。你攒了一周，够一顿。",
+      "d": {
+        "money": 1
+      },
+      "weight": 5,
+      "title": "金钱 · L1"
+    },
+    {
+      "layerId": "L1",
+      "presentation": "inline",
+      "id": "L1_17",
+      "category": "职场",
+      "text": "外卖超时罚款，平台扣款比顾客还快。",
+      "d": {
+        "money": -1,
+        "health": -3
+      },
+      "weight": 7,
+      "title": "超时扣款"
+    },
+    {
+      "layerId": "L1",
+      "id": "L1_18",
+      "category": "风险",
+      "text": "「无抵押」小广告，电话打过去要「手续费」。",
+      "d": {
+        "rep": 1
+      },
+      "weight": 4,
+      "title": "风险 · L1"
+    },
+    {
+      "layerId": "L1",
+      "id": "L1_19",
+      "category": "健康",
+      "text": "公共浴室便宜，搓背大爷说你「劳碌相」。",
+      "d": {
+        "health": 2,
+        "money": -1
+      },
+      "weight": 5,
+      "title": "健康 · L1"
+    },
+    {
+      "layerId": "L1",
+      "id": "L1_20",
+      "category": "机会",
+      "text": "跟师傅学修车，三个月不给钱。你学会了补胎。",
+      "d": {
+        "edu": 4,
+        "health": -2
+      },
+      "weight": 5,
+      "title": "机会 · L1"
+    },
+    {
+      "layerId": "L1",
+      "id": "L1_21",
+      "category": "居住",
+      "text": "房东涨租，理由「地铁要通」。地铁图还虚线。",
+      "d": {
+        "money": -2
+      },
+      "weight": 7,
+      "title": "居住 · L1"
+    },
+    {
+      "layerId": "L1",
+      "id": "L1_22",
+      "category": "人情",
+      "text": "同乡借住三天，变成三周。你不好意思开口。",
+      "d": {
+        "social": -2,
+        "health": -2
+      },
+      "weight": 6,
+      "title": "人情 · L1"
+    },
+    {
+      "layerId": "L1",
+      "id": "L1_23",
+      "category": "职场",
+      "text": "工厂两班倒，夜班补贴十块。你拿命换。",
+      "d": {
+        "money": 1,
+        "health": -5
+      },
+      "weight": 7,
+      "title": "职场 · L1"
+    },
+    {
+      "layerId": "L1",
+      "id": "L1_24",
+      "category": "金钱",
+      "text": "工资发现金，信封厚厚度不准。你数了三遍。",
+      "d": {
+        "rep": 1
+      },
+      "weight": 6,
+      "title": "金钱 · L1"
+    },
+    {
+      "layerId": "L1",
+      "id": "L1_25",
+      "category": "教育",
+      "text": "免费技能培训，结业证像奖状。你贴墙，激励自己。",
+      "d": {
+        "edu": 3,
+        "rep": 1
+      },
+      "weight": 5,
+      "title": "教育 · L1"
+    },
+    {
+      "layerId": "L2",
+      "presentation": "inline",
+      "id": "L2_01",
+      "category": "职场",
+      "text": "地铁早高峰，鞋被踩掉。你单脚跳，仍打卡成功。",
+      "d": {
+        "health": -2,
+        "rep": 1
+      },
+      "weight": 8,
+      "title": "单脚打卡"
+    },
+    {
+      "layerId": "L2",
+      "id": "L2_02",
+      "category": "金钱",
+      "text": "公积金提取，跑窗口两次。钱到账像年终奖。",
+      "d": {
+        "money": 2,
+        "health": -1
+      },
+      "weight": 6,
+      "title": "金钱 · L2"
+    },
+    {
+      "layerId": "L2",
+      "id": "L2_03",
+      "category": "居住",
+      "text": "合租公约贴 fridge：「谁不洗碗谁洗一个月」。",
+      "d": {
+        "social": -1,
+        "health": -1
+      },
+      "weight": 7,
+      "title": "居住 · L2"
+    },
+    {
+      "layerId": "L2",
+      "id": "L2_04",
+      "category": "职场",
+      "text": "部门团建自费，AA 制。你去了，照片比饭重要。",
+      "d": {
+        "money": -1,
+        "social": 2
+      },
+      "weight": 6,
+      "title": "职场 · L2"
+    },
+    {
+      "layerId": "L2",
+      "id": "L2_05",
+      "category": "健康",
+      "text": "带薪病假一天，HR 要医院证明。你硬撑到周末。",
+      "d": {
+        "health": -3
+      },
+      "weight": 7,
+      "title": "健康 · L2"
+    },
+    {
+      "layerId": "L2",
+      "id": "L2_06",
+      "category": "机会",
+      "text": "内部转岗机会，要主管签字。你准备了一页纸理由。",
+      "d": {
+        "rep": 3
+      },
+      "weight": 6,
+      "title": "机会 · L2"
+    },
+    {
+      "layerId": "L2",
+      "presentation": "inline",
+      "id": "L2_07",
+      "category": "人情",
+      "text": "同事借五百，说下周还。三个月了，你们还说话。",
+      "d": {
+        "money": -1,
+        "social": 1
+      },
+      "weight": 7,
+      "title": "那五百块"
+    },
+    {
+      "layerId": "L2",
+      "id": "L2_08",
+      "category": "金钱",
+      "text": "双十一购物车，清空又满。你只买刚需，仍超支。",
+      "d": {
+        "money": -2
+      },
+      "weight": 7,
+      "title": "金钱 · L2"
+    },
+    {
+      "layerId": "L2",
+      "id": "L2_09",
+      "category": "教育",
+      "text": "公司报销培训，名额一个。你写了申请，没中。",
+      "d": {
+        "edu": 1,
+        "rep": -1
+      },
+      "weight": 6,
+      "title": "教育 · L2"
+    },
+    {
+      "layerId": "L2",
+      "id": "L2_10",
+      "category": "职场",
+      "text": "工位换楼层，搬箱子的活自己干。腰响了一声。",
+      "d": {
+        "health": -3,
+        "rep": 1
+      },
+      "weight": 6,
+      "title": "职场 · L2"
+    },
+    {
+      "layerId": "L2",
+      "id": "L2_11",
+      "category": "居住",
+      "text": "小区门禁换人脸，旧照片不认。你站在门口等保安。",
+      "d": {
+        "health": -1
+      },
+      "weight": 5,
+      "title": "居住 · L2"
+    },
+    {
+      "layerId": "L2",
+      "id": "L2_12",
+      "category": "风险",
+      "text": "同事拉你「投资」，年化 15%。你查公司，刚注册。",
+      "d": {
+        "rep": 2
+      },
+      "weight": 5,
+      "title": "风险 · L2"
+    },
+    {
+      "layerId": "L2",
+      "id": "L2_13",
+      "category": "机会",
+      "text": "副业接单平台，第一单五星。客户要微信私聊。",
+      "d": {
+        "money": 1,
+        "rep": 2
+      },
+      "weight": 6,
+      "title": "机会 · L2"
+    },
+    {
+      "layerId": "L2",
+      "id": "L2_14",
+      "category": "健康",
+      "text": "公司体检，你排在最后。空腹到下午两点。",
+      "d": {
+        "health": -2,
+        "rep": 1
+      },
+      "weight": 6,
+      "title": "健康 · L2"
+    },
+    {
+      "layerId": "L2",
+      "id": "L2_15",
+      "category": "人情",
+      "text": "领导孩子升学宴，礼金标准口头「随意」。你懂。",
+      "d": {
+        "money": -2,
+        "social": 3
+      },
+      "weight": 6,
+      "title": "人情 · L2"
+    },
+    {
+      "layerId": "L2",
+      "id": "L2_16",
+      "category": "金钱",
+      "text": "物业费纠纷，业主群吵两百条。你关通知。",
+      "d": {
+        "health": -2
+      },
+      "weight": 6,
+      "title": "金钱 · L2"
+    },
+    {
+      "layerId": "L2",
+      "id": "L2_17",
+      "category": "职场",
+      "text": "OKR 季度复盘，你写了「对齐」。其实只对齐了格式。",
+      "d": {
+        "rep": 1,
+        "health": -2
+      },
+      "weight": 7,
+      "title": "职场 · L2"
+    },
+    {
+      "layerId": "L2",
+      "id": "L2_18",
+      "category": "教育",
+      "text": "考证报名，机构说「包过」。你选了自学。",
+      "d": {
+        "edu": 4,
+        "money": -1
+      },
+      "weight": 5,
+      "title": "教育 · L2"
+    },
+    {
+      "layerId": "L2",
+      "id": "L2_19",
+      "category": "居住",
+      "text": "邻居装修违规，物业说「已劝阻」。电钻继续。",
+      "d": {
+        "health": -4
+      },
+      "weight": 7,
+      "title": "居住 · L2"
+    },
+    {
+      "layerId": "L2",
+      "id": "L2_20",
+      "category": "机会",
+      "text": "猎头电话，职位比现在高半级。你约了聊，没跳。",
+      "d": {
+        "rep": 2,
+        "social": 1
+      },
+      "weight": 5,
+      "title": "机会 · L2"
+    },
+    {
+      "layerId": "L2",
+      "id": "L2_21",
+      "category": "职场",
+      "text": "考勤异常解释，你填「地铁故障」。系统要截图。",
+      "d": {
+        "rep": -1,
+        "health": -1
+      },
+      "weight": 6,
+      "title": "职场 · L2"
+    },
+    {
+      "layerId": "L2",
+      "id": "L2_22",
+      "category": "金钱",
+      "text": "自动续费扣款，忘了关。客服退一半。",
+      "d": {
+        "money": -1
+      },
+      "weight": 6,
+      "title": "金钱 · L2"
+    },
+    {
+      "layerId": "L2",
+      "id": "L2_23",
+      "category": "健康",
+      "text": "办公室流感，一半人戴口罩。你坚持到岗。",
+      "d": {
+        "health": -4,
+        "rep": 2
+      },
+      "weight": 6,
+      "title": "健康 · L2"
+    },
+    {
+      "layerId": "L2",
+      "id": "L2_24",
+      "category": "人情",
+      "text": "老乡来出差，你请一顿饭。他回赠家乡腊味。",
+      "d": {
+        "social": 3,
+        "money": -1
+      },
+      "weight": 5,
+      "title": "人情 · L2"
+    },
+    {
+      "layerId": "L2",
+      "id": "L2_25",
+      "category": "机会",
+      "text": "公司内推奖金，你推荐了朋友。朋友入职，奖金分他一半。",
+      "d": {
+        "social": 2,
+        "rep": 2
+      },
+      "weight": 5,
+      "title": "机会 · L2"
+    },
+    {
+      "layerId": "L3",
+      "presentation": "inline",
+      "id": "L3_01",
+      "category": "职场",
+      "text": "带两个新人，绩效算你头上。一个聪明，一个请假。",
+      "d": {
+        "rep": 2,
+        "health": -3
+      },
+      "weight": 7,
+      "title": "两个新人"
+    },
+    {
+      "layerId": "L3",
+      "id": "L3_02",
+      "category": "机会",
+      "text": "行业证书考过，挂靠咨询发来。你拒了，怕风险。",
+      "d": {
+        "rep": 3,
+        "edu": 2
+      },
+      "weight": 6,
+      "title": "机会 · L3"
+    },
+    {
+      "layerId": "L3",
+      "presentation": "inline",
+      "id": "L3_03",
+      "category": "金钱",
+      "text": "年终奖谈话，「公司困难」。数字仍比上年少一截。",
+      "d": {
+        "money": -1,
+        "rep": -1
+      },
+      "weight": 7,
+      "title": "公司困难"
+    },
+    {
+      "layerId": "L3",
+      "id": "L3_04",
+      "category": "教育",
+      "text": "在职研究生，周末上课。同学是各公司中层。",
+      "d": {
+        "edu": 5,
+        "money": -2,
+        "social": 3
+      },
+      "weight": 6,
+      "minAge": 26,
+      "title": "教育 · L3"
+    },
+    {
+      "layerId": "L3",
+      "id": "L3_05",
+      "category": "人情",
+      "text": "客户请吃饭，你控酒。合同仍拖，酒白喝。",
+      "d": {
+        "social": 2,
+        "health": -2
+      },
+      "weight": 6,
+      "title": "人情 · L3"
+    },
+    {
+      "layerId": "L3",
+      "id": "L3_06",
+      "category": "居住",
+      "text": "换租到次新房，押金两个月。旧房退租扯皮两周。",
+      "d": {
+        "money": -2,
+        "health": -2
+      },
+      "weight": 7,
+      "title": "居住 · L3"
+    },
+    {
+      "layerId": "L3",
+      "id": "L3_07",
+      "category": "健康",
+      "text": "应酬脂肪肝，医生开运动单。你办健身卡，去三次。",
+      "d": {
+        "money": -2,
+        "health": 3
+      },
+      "weight": 6,
+      "title": "健康 · L3"
+    },
+    {
+      "layerId": "L3",
+      "id": "L3_08",
+      "category": "职场",
+      "text": "跨部门项目，功劳文档里平分。你知道谁熬夜。",
+      "d": {
+        "rep": 1,
+        "social": -1
+      },
+      "weight": 7,
+      "title": "职场 · L3"
+    },
+    {
+      "layerId": "L3",
+      "id": "L3_09",
+      "category": "机会",
+      "text": "猎头推 headcount，涨幅 25%。现公司 counter offer。",
+      "d": {
+        "rep": 3,
+        "social": -2
+      },
+      "weight": 5,
+      "title": "机会 · L3"
+    },
+    {
+      "layerId": "L3",
+      "id": "L3_10",
+      "category": "金钱",
+      "text": "基金定投三年，收益不如余额宝。你仍坚持。",
+      "d": {
+        "money": 1,
+        "edu": 2
+      },
+      "weight": 6,
+      "title": "金钱 · L3"
+    },
+    {
+      "layerId": "L3",
+      "id": "L3_11",
+      "category": "风险",
+      "text": "帮客户「走账」，财务提醒合规。你断了联系。",
+      "d": {
+        "rep": 2,
+        "social": -3
+      },
+      "weight": 4,
+      "title": "风险 · L3"
+    },
+    {
+      "layerId": "L3",
+      "id": "L3_12",
+      "category": "教育",
+      "text": "孩子择校，积分不够。你研究政策像研究 KPI。",
+      "d": {
+        "edu": 3,
+        "health": -3
+      },
+      "weight": 6,
+      "minAge": 30,
+      "title": "教育 · L3"
+    },
+    {
+      "layerId": "L3",
+      "id": "L3_13",
+      "category": "职场",
+      "text": "晋升答辩，PPT 改七版。Questions 你背了，仍紧张。",
+      "d": {
+        "rep": 4,
+        "health": -3
+      },
+      "weight": 6,
+      "title": "职场 · L3"
+    },
+    {
+      "layerId": "L3",
+      "id": "L3_14",
+      "category": "人情",
+      "text": "借车给同事，刮蹭。保险走他的，你耗时间。",
+      "d": {
+        "social": -1,
+        "health": -2
+      },
+      "weight": 5,
+      "title": "人情 · L3"
+    },
+    {
+      "layerId": "L3",
+      "id": "L3_15",
+      "category": "居住",
+      "text": "买房摇号，第六次没中。你继续交社保。",
+      "d": {
+        "health": -3,
+        "rep": 1
+      },
+      "weight": 6,
+      "minAge": 28,
+      "title": "居住 · L3"
+    },
+    {
+      "layerId": "L3",
+      "id": "L3_16",
+      "category": "机会",
+      "text": "副业咨询第一单，客户要发票。你研究个体户。",
+      "d": {
+        "money": 2,
+        "edu": 3
+      },
+      "weight": 5,
+      "title": "机会 · L3"
+    },
+    {
+      "layerId": "L3",
+      "id": "L3_17",
+      "category": "金钱",
+      "text": "装修超预算，「加点钱效果更好」。你加了三次。",
+      "d": {
+        "money": -3
+      },
+      "weight": 6,
+      "minAge": 28,
+      "title": "金钱 · L3"
+    },
+    {
+      "layerId": "L3",
+      "id": "L3_18",
+      "category": "健康",
+      "text": "睡眠监测 App 说你「深睡不足」。你删 App，睡稍好。",
+      "d": {
+        "health": 2
+      },
+      "weight": 5,
+      "title": "健康 · L3"
+    },
+    {
+      "layerId": "L3",
+      "id": "L3_19",
+      "category": "职场",
+      "text": "360 评估，匿名评语尖。你知道是谁，不说。",
+      "d": {
+        "rep": -2,
+        "health": -2
+      },
+      "weight": 6,
+      "title": "职场 · L3"
+    },
+    {
+      "layerId": "L3",
+      "id": "L3_20",
+      "category": "机会",
+      "text": "校友内推，面试官是同级。聊得不错，等 HC。",
+      "d": {
+        "social": 3,
+        "rep": 2
+      },
+      "weight": 5,
+      "title": "机会 · L3"
+    },
+    {
+      "layerId": "L3",
+      "id": "L3_21",
+      "category": "人情",
+      "text": "随礼 2000，你咬牙。对方回礼时你已升职。",
+      "d": {
+        "money": -2,
+        "social": 2
+      },
+      "weight": 6,
+      "title": "人情 · L3"
+    },
+    {
+      "layerId": "L3",
+      "id": "L3_22",
+      "category": "教育",
+      "text": "英语面试，口语卡壳。你报外教，钱包瘦。",
+      "d": {
+        "edu": 4,
+        "money": -2
+      },
+      "weight": 5,
+      "title": "教育 · L3"
+    },
+    {
+      "layerId": "L3",
+      "id": "L3_23",
+      "category": "职场",
+      "text": "出差补贴砍半，「行业下行」。你仍飞。",
+      "d": {
+        "money": -1,
+        "health": -3
+      },
+      "weight": 7,
+      "title": "职场 · L3"
+    },
+    {
+      "layerId": "L3",
+      "id": "L3_24",
+      "category": "金钱",
+      "text": "信用卡积分换里程，算不清。最后换锅。",
+      "d": {
+        "money": 1
+      },
+      "weight": 4,
+      "title": "金钱 · L3"
+    },
+    {
+      "layerId": "L3",
+      "id": "L3_25",
+      "category": "健康",
+      "text": "甲状腺结节随访，医生说「观察」。你观察自己。",
+      "d": {
+        "health": -2,
+        "edu": 2
+      },
+      "weight": 6,
+      "title": "健康 · L3"
+    },
+    {
+      "layerId": "L4",
+      "id": "L4_01",
+      "category": "金钱",
+      "text": "私人银行理财，门槛五十万。你刚好够，心跳快。",
+      "d": {
+        "money": -2,
+        "rep": 3
+      },
+      "weight": 6,
+      "title": "金钱 · L4"
+    },
+    {
+      "layerId": "L4",
+      "id": "L4_02",
+      "category": "职场",
+      "text": "董事会材料，你熬夜核对。错一个小数，被点名。",
+      "d": {
+        "rep": -2,
+        "health": -4
+      },
+      "weight": 6,
+      "title": "职场 · L4"
+    },
+    {
+      "layerId": "L4",
+      "id": "L4_03",
+      "category": "机会",
+      "text": "LP 晚宴，听不懂一半笑话。你笑，像练习。",
+      "d": {
+        "social": 2,
+        "edu": 2
+      },
+      "weight": 5,
+      "title": "机会 · L4"
+    },
+    {
+      "layerId": "L4",
+      "id": "L4_04",
+      "category": "人情",
+      "text": "孩子国际学校开放日，家长比孩子紧张。",
+      "d": {
+        "money": -2,
+        "social": 3
+      },
+      "weight": 5,
+      "minAge": 32,
+      "title": "人情 · L4"
+    },
+    {
+      "layerId": "L4",
+      "id": "L4_05",
+      "category": "居住",
+      "text": "江景房视野，雾霾天看不见江。你仍付景观溢价。",
+      "d": {
+        "money": -1
+      },
+      "weight": 5,
+      "minAge": 35,
+      "title": "居住 · L4"
+    },
+    {
+      "layerId": "L4",
+      "id": "L4_06",
+      "category": "风险",
+      "text": "担保签字，律师朋友说别签。你签了，信关系。",
+      "d": {
+        "rep": -4,
+        "money": -2
+      },
+      "weight": 4,
+      "title": "风险 · L4"
+    },
+    {
+      "layerId": "L4",
+      "id": "L4_07",
+      "category": "教育",
+      "text": "EMBA 同学名片，title 比公司官网长。",
+      "d": {
+        "social": 4,
+        "money": -2
+      },
+      "weight": 5,
+      "minAge": 32,
+      "title": "教育 · L4"
+    },
+    {
+      "layerId": "L4",
+      "id": "L4_08",
+      "category": "职场",
+      "text": "期权解禁，税比想象高。你卖一半，留一半。",
+      "d": {
+        "money": 3,
+        "edu": 2
+      },
+      "weight": 5,
+      "title": "职场 · L4"
+    },
+    {
+      "layerId": "L4",
+      "id": "L4_09",
+      "category": "健康",
+      "text": "私家医生加微信，随时问。你不敢多发。",
+      "d": {
+        "money": -1,
+        "health": 4
+      },
+      "weight": 5,
+      "title": "健康 · L4"
+    },
+    {
+      "layerId": "L4",
+      "id": "L4_10",
+      "category": "机会",
+      "text": "天使投资朋友项目，占股 2%。条款书厚得像字典。",
+      "d": {
+        "money": -2,
+        "rep": 3
+      },
+      "weight": 4,
+      "title": "机会 · L4"
+    },
+    {
+      "layerId": "L4",
+      "id": "L4_11",
+      "category": "金钱",
+      "text": "家族信托宣传册，门槛八位数。你收起来。",
+      "d": {
+        "edu": 3
+      },
+      "weight": 4,
+      "minAge": 38,
+      "title": "金钱 · L4"
+    },
+    {
+      "layerId": "L4",
+      "id": "L4_12",
+      "category": "人情",
+      "text": "饭局座位有主位，你学会等指示。",
+      "d": {
+        "social": 3,
+        "rep": 1
+      },
+      "weight": 6,
+      "title": "人情 · L4"
+    },
+    {
+      "layerId": "L4",
+      "id": "L4_13",
+      "category": "职场",
+      "text": "媒体采访，稿经 PR 改三遍。你像念稿。",
+      "d": {
+        "rep": 4,
+        "health": -2
+      },
+      "weight": 5,
+      "title": "职场 · L4"
+    },
+    {
+      "layerId": "L4",
+      "id": "L4_14",
+      "category": "居住",
+      "text": "第二套房空置，交着物业费。租售比算不过。",
+      "d": {
+        "money": -2
+      },
+      "weight": 5,
+      "minAge": 35,
+      "title": "居住 · L4"
+    },
+    {
+      "layerId": "L4",
+      "id": "L4_15",
+      "category": "风险",
+      "text": "内幕消息电话，你挂断。仍被调查问话。",
+      "d": {
+        "rep": -3,
+        "health": -4
+      },
+      "weight": 3,
+      "title": "风险 · L4"
+    },
+    {
+      "layerId": "L4",
+      "id": "L4_16",
+      "category": "机会",
+      "text": "拍卖会上举了一次牌，价格飞。你放下，看戏。",
+      "d": {
+        "social": 2,
+        "edu": 2
+      },
+      "weight": 4,
+      "title": "机会 · L4"
+    },
+    {
+      "layerId": "L4",
+      "id": "L4_17",
+      "category": "教育",
+      "text": "孩子留学顾问，套餐三十万。你比较了五家。",
+      "d": {
+        "money": -3,
+        "edu": 2
+      },
+      "weight": 4,
+      "minAge": 35,
+      "title": "教育 · L4"
+    },
+    {
+      "layerId": "L4",
+      "id": "L4_18",
+      "category": "健康",
+      "text": "高尔夫应酬，杆数不重要。谈成了，腰闪了。",
+      "d": {
+        "social": 3,
+        "health": -3
+      },
+      "weight": 5,
+      "title": "健康 · L4"
+    },
+    {
+      "layerId": "L4",
+      "id": "L4_19",
+      "category": "职场",
+      "text": "行业峰会演讲，台下拍照。你讲「长期主义」。",
+      "d": {
+        "rep": 5,
+        "health": -2
+      },
+      "weight": 5,
+      "title": "职场 · L4"
+    },
+    {
+      "layerId": "L4",
+      "id": "L4_20",
+      "category": "金钱",
+      "text": "境外账户合规申报，表格像迷宫。",
+      "d": {
+        "edu": 3,
+        "health": -2
+      },
+      "weight": 4,
+      "title": "金钱 · L4"
+    },
+    {
+      "layerId": "L4",
+      "id": "L4_21",
+      "category": "人情",
+      "text": "慈善晚宴，露名捐资。你计算 PR 值。",
+      "d": {
+        "money": -2,
+        "rep": 4
+      },
+      "weight": 5,
+      "title": "人情 · L4"
+    },
+    {
+      "layerId": "L4",
+      "id": "L4_22",
+      "category": "机会",
+      "text": "被邀独立董事，津贴诱人。你查公司法。",
+      "d": {
+        "rep": 4,
+        "edu": 3
+      },
+      "weight": 4,
+      "minAge": 40,
+      "title": "机会 · L4"
+    },
+    {
+      "layerId": "L4",
+      "id": "L4_23",
+      "category": "居住",
+      "text": "老房翻新，设计师说「要品味」。账单也要。",
+      "d": {
+        "money": -3,
+        "rep": 2
+      },
+      "weight": 5,
+      "title": "居住 · L4"
+    },
+    {
+      "layerId": "L4",
+      "id": "L4_24",
+      "category": "职场",
+      "text": "接班讨论，没有你。你微笑，记笔记。",
+      "d": {
+        "rep": -2,
+        "edu": 3
+      },
+      "weight": 5,
+      "minAge": 38,
+      "title": "职场 · L4"
+    },
+    {
+      "layerId": "L4",
+      "id": "L4_25",
+      "category": "健康",
+      "text": "体检发现斑块，私立医院复查。心稳些，钱包薄些。",
+      "d": {
+        "money": -2,
+        "health": 3
+      },
+      "weight": 5,
+      "minAge": 40,
+      "title": "健康 · L4"
+    },
+    {
+      "layerId": "L5",
+      "id": "L5_01",
+      "category": "风险",
+      "text": "地下钱庄利息按天，借条手写。你看见，没借。",
+      "d": {
+        "rep": -2,
+        "health": -2
+      },
+      "weight": 5,
+      "title": "风险 · L5"
+    },
+    {
+      "layerId": "L5",
+      "id": "L5_02",
+      "category": "风险",
+      "text": "刷单返现，先垫钱。朋友被骗五万，你借钱给他。",
+      "d": {
+        "money": -2,
+        "social": 2
+      },
+      "weight": 4,
+      "title": "风险 · L5"
+    },
+    {
+      "layerId": "L5",
+      "id": "L5_03",
+      "category": "机会",
+      "text": "灰色渠道办证件，快但贵。你选正规，慢。",
+      "d": {
+        "rep": 2,
+        "money": -1
+      },
+      "weight": 4,
+      "title": "机会 · L5"
+    },
+    {
+      "layerId": "L5",
+      "id": "L5_04",
+      "category": "金钱",
+      "text": "高利贷催收电话，打给紧急联系人。你换号。",
+      "d": {
+        "health": -4,
+        "rep": -3
+      },
+      "weight": 4,
+      "title": "金钱 · L5"
+    },
+    {
+      "layerId": "L5",
+      "id": "L5_05",
+      "category": "人情",
+      "text": "夜场熟人介绍「资源」，你明白意思，告辞。",
+      "d": {
+        "social": -2,
+        "rep": 1
+      },
+      "weight": 5,
+      "title": "人情 · L5"
+    },
+    {
+      "layerId": "L5",
+      "id": "L5_06",
+      "category": "职场",
+      "text": "黑工无合同，工伤自负。你劝人走，人不听。",
+      "d": {
+        "social": -1,
+        "health": -2
+      },
+      "weight": 5,
+      "title": "职场 · L5"
+    },
+    {
+      "layerId": "L5",
+      "id": "L5_07",
+      "category": "风险",
+      "text": "赌球群，有人晒单。你退群，仍有人私聊。",
+      "d": {
+        "health": -2
+      },
+      "weight": 4,
+      "title": "风险 · L5"
+    },
+    {
+      "layerId": "L5",
+      "id": "L5_08",
+      "category": "机会",
+      "text": "废品站旁边「收号」，你知道是诈骗链条一环。",
+      "d": {
+        "rep": 1
+      },
+      "weight": 3,
+      "title": "机会 · L5"
+    },
+    {
+      "layerId": "L5",
+      "id": "L5_09",
+      "category": "健康",
+      "text": "廉价诊所输液，针头复用传闻。你换正规医院。",
+      "d": {
+        "money": -1,
+        "health": 3
+      },
+      "weight": 5,
+      "title": "健康 · L5"
+    },
+    {
+      "layerId": "L5",
+      "id": "L5_10",
+      "category": "金钱",
+      "text": "「套现」广告，POS 机。你想起信用卡条款。",
+      "d": {
+        "rep": -1
+      },
+      "weight": 4,
+      "title": "金钱 · L5"
+    },
+    {
+      "layerId": "L5",
+      "id": "L5_11",
+      "category": "风险",
+      "text": "帮运「货」，报酬高。你在路口转身走了。",
+      "d": {
+        "rep": 2,
+        "health": 1
+      },
+      "weight": 4,
+      "title": "风险 · L5"
+    },
+    {
+      "layerId": "L5",
+      "id": "L5_12",
+      "category": "人情",
+      "text": "黑中介要「喝茶费」，你报警，事小化了。",
+      "d": {
+        "social": -1,
+        "rep": 2
+      },
+      "weight": 4,
+      "title": "人情 · L5"
+    },
+    {
+      "layerId": "L5",
+      "id": "L5_13",
+      "category": "职场",
+      "text": "无照经营被查，摊主跑你帮忙看摊。你看了十分钟。",
+      "d": {
+        "social": 1,
+        "rep": -1
+      },
+      "weight": 4,
+      "title": "职场 · L5"
+    },
+    {
+      "layerId": "L5",
+      "id": "L5_14",
+      "category": "机会",
+      "text": "「内部渠道」办贷款，先交保证金。你没交。",
+      "d": {
+        "rep": 2
+      },
+      "weight": 4,
+      "title": "机会 · L5"
+    },
+    {
+      "layerId": "L5",
+      "id": "L5_15",
+      "category": "健康",
+      "text": "熬夜后巷吃野摊，第二天肠胃抗议。便宜有价。",
+      "d": {
+        "health": -4,
+        "money": 1
+      },
+      "weight": 5,
+      "title": "健康 · L5"
+    },
+    {
+      "layerId": "L5",
+      "id": "L5_16",
+      "category": "金钱",
+      "text": "当铺估价，旧表不如想象。你赎回，当纪念。",
+      "d": {
+        "money": -1
+      },
+      "weight": 4,
+      "title": "金钱 · L5"
+    },
+    {
+      "layerId": "L5",
+      "id": "L5_17",
+      "category": "风险",
+      "text": "线上博彩链接，弹窗关不掉。你重装系统。",
+      "d": {
+        "health": -2,
+        "edu": 1
+      },
+      "weight": 3,
+      "title": "风险 · L5"
+    },
+    {
+      "layerId": "L5",
+      "id": "L5_18",
+      "category": "人情",
+      "text": "熟人求「洗流水」，你删好友。旧情在风险前薄。",
+      "d": {
+        "social": -3,
+        "rep": 2
+      },
+      "weight": 4,
+      "title": "人情 · L5"
+    },
+    {
+      "layerId": "L5",
+      "id": "L5_19",
+      "category": "职场",
+      "text": "日结黑工地，安全帽没绳。你系了，别人笑。",
+      "d": {
+        "health": -3,
+        "rep": 1
+      },
+      "weight": 5,
+      "title": "职场 · L5"
+    },
+    {
+      "layerId": "L5",
+      "id": "L5_20",
+      "category": "机会",
+      "text": "废旧厂房「低租创业」，合同一月一签。你拍了照，没租。",
+      "d": {
+        "edu": 2
+      },
+      "weight": 4,
+      "title": "机会 · L5"
+    }
+  ],
+  "zoneEvents": {
+    "village": [
+      {
+        "layerId": "L1",
+        "id": "Z_village_1",
+        "title": "城中村 · 晨间",
+        "text": "握手楼缝隙里，早餐摊蒸汽升起。油条两块，豆浆一块五。你吃完，一天才算开始。",
+        "category": "居住",
+        "d": {
+          "money": -1,
+          "health": 2
+        },
+        "weight": 6
+      },
+      {
+        "layerId": "L1",
+        "id": "Z_village_2",
+        "title": "城中村 · 房东",
+        "text": "房东上门收租，顺手检查电表。他说「本月跳得快」，你解释是夏天。",
+        "category": "金钱",
+        "d": {
+          "money": -1,
+          "social": -1
+        },
+        "weight": 6
+      },
+      {
+        "layerId": "L1",
+        "id": "Z_village_3",
+        "title": "城中村 · 招工",
+        "text": "墙贴「急招」浆糊还湿。你记了电话，没打——上次是传销。",
+        "category": "机会",
+        "d": {
+          "edu": 2
+        },
+        "weight": 6
+      },
+      {
+        "layerId": "L1",
+        "id": "Z_village_4",
+        "title": "城中村 · 夜归",
+        "text": "十一点巷口仍亮。外卖箱堆在消防栓旁，你侧身过。",
+        "category": "健康",
+        "d": {
+          "health": -2,
+          "rep": 1
+        },
+        "weight": 6
+      },
+      {
+        "layerId": "L1",
+        "id": "Z_village_5",
+        "title": "城中村 · 搬迁",
+        "text": "墙上红字「拆」。邻居开始比补偿，你数窗户，像数筹码。",
+        "category": "机会",
+        "d": {
+          "money": 2,
+          "social": -2
+        },
+        "weight": 6
+      }
+    ],
+    "market": [
+      {
+        "layerId": "L1",
+        "id": "Z_market_1",
+        "title": "早市 · 讲价",
+        "text": "菜贩说「都是实价」。你转一圈，回来贵了两毛。",
+        "category": "金钱",
+        "d": {
+          "money": -1
+        },
+        "weight": 6
+      },
+      {
+        "layerId": "L1",
+        "id": "Z_market_2",
+        "title": "早市 · 见闻",
+        "text": "老人带孙子买鱼，摊主多送葱。你想起远方父母。",
+        "category": "人情",
+        "d": {
+          "social": 2,
+          "health": -1
+        },
+        "weight": 6
+      },
+      {
+        "layerId": "L1",
+        "id": "Z_market_3",
+        "title": "早市 · 兼职",
+        "text": "搬运工缺人，日结一百二。你干半天，腰告诉你不值。",
+        "category": "职场",
+        "d": {
+          "money": 1,
+          "health": -4
+        },
+        "weight": 6
+      },
+      {
+        "layerId": "L1",
+        "id": "Z_market_4",
+        "title": "早市 · 假货",
+        "text": "土鸡蛋比超市便宜一半。回去煮，黄像颜料。",
+        "category": "风险",
+        "d": {
+          "money": -1,
+          "health": -2
+        },
+        "weight": 6
+      },
+      {
+        "layerId": "L1",
+        "id": "Z_market_5",
+        "title": "早市 · 熟脸",
+        "text": "摊主认出你，多给一把青菜。城市少数记得你名字的地方。",
+        "category": "人情",
+        "d": {
+          "social": 3,
+          "health": 1
+        },
+        "weight": 6
+      }
+    ],
+    "delivery": [
+      {
+        "layerId": "L1",
+        "id": "Z_delivery_1",
+        "title": "外卖站 · 早会",
+        "text": "站长强调「超时一秒扣两块」。大家点头，没人问保险。",
+        "category": "职场",
+        "d": {
+          "rep": 1,
+          "health": -2
+        },
+        "weight": 6
+      },
+      {
+        "layerId": "L1",
+        "id": "Z_delivery_2",
+        "title": "外卖站 · 爆单",
+        "text": "雨天单量翻倍，电梯又坏。你爬楼，顾客说「怎么晚了」。",
+        "category": "健康",
+        "d": {
+          "health": -4,
+          "money": 1
+        },
+        "weight": 6
+      },
+      {
+        "layerId": "L1",
+        "id": "Z_delivery_3",
+        "title": "外卖站 · 事故",
+        "text": "路口擦碰，对方要私了。你赶时间，赔了三百。",
+        "category": "金钱",
+        "d": {
+          "money": -2,
+          "health": -2
+        },
+        "weight": 6
+      },
+      {
+        "layerId": "L1",
+        "id": "Z_delivery_4",
+        "title": "外卖站 · 好评",
+        "text": "顾客备注「放门口别敲门」。你照做，收到五星和小费。",
+        "category": "机会",
+        "d": {
+          "money": 1,
+          "rep": 2
+        },
+        "weight": 6
+      },
+      {
+        "layerId": "L1",
+        "id": "Z_delivery_5",
+        "title": "外卖站 · 排行",
+        "text": "站点排行榜贴墙。你在中段，名字小，仍被看见。",
+        "category": "职场",
+        "d": {
+          "rep": 2,
+          "health": -3
+        },
+        "weight": 6
+      }
+    ],
+    "nightfood": [
+      {
+        "layerId": "L1",
+        "id": "Z_nightfood_1",
+        "title": "大排档 · 加班",
+        "text": "同事请客，烤串和啤酒。你聊到凌晨，明天仍要打卡。",
+        "category": "人情",
+        "d": {
+          "social": 3,
+          "health": -4
+        },
+        "weight": 6
+      },
+      {
+        "layerId": "L1",
+        "id": "Z_nightfood_2",
+        "title": "大排档 · 冲突",
+        "text": "邻桌划拳声大，你戴耳机。城市夜晚很少真正安静。",
+        "category": "健康",
+        "d": {
+          "health": -2
+        },
+        "weight": 6
+      },
+      {
+        "layerId": "L1",
+        "id": "Z_nightfood_3",
+        "title": "大排档 · 情报",
+        "text": "听老板聊商铺转让，租金降了。你记在心里。",
+        "category": "机会",
+        "d": {
+          "edu": 2,
+          "money": -1
+        },
+        "weight": 6
+      },
+      {
+        "layerId": "L1",
+        "id": "Z_nightfood_4",
+        "title": "大排档 · 肠胃",
+        "text": "便宜海鲜，第二天你请病假。老板不信，要证明。",
+        "category": "健康",
+        "d": {
+          "health": -5,
+          "rep": -1
+        },
+        "weight": 6
+      },
+      {
+        "layerId": "L1",
+        "id": "Z_nightfood_5",
+        "title": "大排档 · 独行",
+        "text": "一个人吃面，老板多给半份。你谢了，没多说。",
+        "category": "人情",
+        "d": {
+          "social": 1,
+          "health": 1
+        },
+        "weight": 6
+      }
+    ],
+    "labor": [
+      {
+        "layerId": "L1",
+        "id": "Z_labor_1",
+        "title": "劳务市场 · 蹲活",
+        "text": "太阳晒，工头挑人看指甲。你剪短了，仍没被选。",
+        "category": "职场",
+        "d": {
+          "health": -3,
+          "rep": -1
+        },
+        "weight": 6
+      },
+      {
+        "layerId": "L1",
+        "id": "Z_labor_2",
+        "title": "劳务市场 · 日结",
+        "text": "搬货一天，手破皮。钱现结，没有合同。",
+        "category": "金钱",
+        "d": {
+          "money": 1,
+          "health": -4
+        },
+        "weight": 6
+      },
+      {
+        "layerId": "L1",
+        "id": "Z_labor_3",
+        "title": "劳务市场 · 骗局",
+        "text": "「先交押金跟车」。你看见有人交钱，选择走开。",
+        "category": "风险",
+        "d": {
+          "rep": 2
+        },
+        "weight": 6
+      },
+      {
+        "layerId": "L1",
+        "id": "Z_labor_4",
+        "title": "劳务市场 · 老乡",
+        "text": "同乡介绍去工厂，包吃住。你去了，发现是流水线。",
+        "category": "机会",
+        "d": {
+          "rep": 1,
+          "health": -3
+        },
+        "weight": 6
+      },
+      {
+        "layerId": "L1",
+        "id": "Z_labor_5",
+        "title": "劳务市场 · 技能",
+        "text": "电工证培训班发传单。你问价，决定再攒俩月。",
+        "category": "教育",
+        "d": {
+          "edu": 3
+        },
+        "weight": 6
+      }
+    ],
+    "office": [
+      {
+        "layerId": "L2",
+        "id": "Z_office_1",
+        "title": "写字楼 · 门禁",
+        "text": "早高峰闸机排队，你卡迟到边缘。打卡成功，汗已出。",
+        "category": "职场",
+        "d": {
+          "rep": 1,
+          "health": -2
+        },
+        "weight": 6
+      },
+      {
+        "layerId": "L2",
+        "id": "Z_office_2",
+        "title": "写字楼 · 咖啡",
+        "text": "楼下咖啡三十一杯。你自带速溶，在工位冲。",
+        "category": "金钱",
+        "d": {
+          "money": 1,
+          "health": -1
+        },
+        "weight": 6
+      },
+      {
+        "layerId": "L2",
+        "id": "Z_office_3",
+        "title": "写字楼 · 消防",
+        "text": "消防演练，整楼疏散。你在楼梯间遇见 CEO，点头。",
+        "category": "机会",
+        "d": {
+          "rep": 2,
+          "social": 1
+        },
+        "weight": 6
+      },
+      {
+        "layerId": "L2",
+        "id": "Z_office_4",
+        "title": "写字楼 · 加班",
+        "text": "深夜办公室仍亮三分之一。保洁阿姨问你「还不走」。",
+        "category": "职场",
+        "d": {
+          "health": -4,
+          "rep": 2
+        },
+        "weight": 6
+      },
+      {
+        "layerId": "L2",
+        "id": "Z_office_5",
+        "title": "写字楼 · 裁员",
+        "text": "隔壁公司搬空，纸箱堆走廊。你加快脚步。",
+        "category": "健康",
+        "d": {
+          "health": -3,
+          "edu": 2
+        },
+        "weight": 6
+      }
+    ],
+    "rent": [
+      {
+        "layerId": "L2",
+        "id": "Z_rent_1",
+        "title": "合租房 · 公约",
+        "text": "室友不洗碗，群里 @ 三次。你最后洗了，生闷气。",
+        "category": "居住",
+        "d": {
+          "health": -2,
+          "social": -1
+        },
+        "weight": 6
+      },
+      {
+        "layerId": "L2",
+        "id": "Z_rent_2",
+        "title": "合租房 · 涨租",
+        "text": "房东通知涨两百，「周边都这价」。你比价，属实。",
+        "category": "金钱",
+        "d": {
+          "money": -2
+        },
+        "weight": 6
+      },
+      {
+        "layerId": "L2",
+        "id": "Z_rent_3",
+        "title": "合租房 · 介绍",
+        "text": "同事求租，你介绍空房。室友变同事，边界模糊。",
+        "category": "人情",
+        "d": {
+          "social": 2,
+          "rep": 1
+        },
+        "weight": 6
+      },
+      {
+        "layerId": "L2",
+        "id": "Z_rent_4",
+        "title": "合租房 · 维修",
+        "text": "洗衣机坏，房东拖两周。你手洗，像回到大学。",
+        "category": "健康",
+        "d": {
+          "health": -3,
+          "money": -1
+        },
+        "weight": 6
+      },
+      {
+        "layerId": "L2",
+        "id": "Z_rent_5",
+        "title": "合租房 · 搬离",
+        "text": "室友搬走，押金扯皮。你作证，少一个朋友。",
+        "category": "人情",
+        "d": {
+          "social": -2,
+          "rep": 1
+        },
+        "weight": 6
+      }
+    ],
+    "metro": [
+      {
+        "layerId": "L2",
+        "id": "Z_metro_1",
+        "title": "地铁 · 限流",
+        "text": "早高峰限流，排队绕站。你算时间，仍迟到。",
+        "category": "职场",
+        "d": {
+          "rep": -2,
+          "health": -2
+        },
+        "npcEffects": [{ "id": "wangzong", "balance": -1, "note": "错过晨会" }],
+        "weight": 6
+      },
+      {
+        "layerId": "L2",
+        "id": "Z_metro_2",
+        "title": "地铁 · 阅读",
+        "text": "车厢里有人背考研单词。你装睡，其实听。",
+        "category": "教育",
+        "d": {
+          "edu": 2
+        },
+        "weight": 6
+      },
+      {
+        "layerId": "L2",
+        "id": "Z_metro_3",
+        "title": "地铁 · 拾物",
+        "text": "捡到钱包交站务，失主谢你。没有奖金，有片刻干净。",
+        "category": "人情",
+        "d": {
+          "rep": 3,
+          "social": 1
+        },
+        "weight": 6
+      },
+      {
+        "layerId": "L2",
+        "id": "Z_metro_4",
+        "title": "地铁 · 延误",
+        "text": "信号故障，广播道歉。全车人同步叹气。",
+        "category": "健康",
+        "d": {
+          "health": -2
+        },
+        "weight": 6
+      },
+      {
+        "layerId": "L2",
+        "id": "Z_metro_5",
+        "title": "地铁 · 推销",
+        "text": "扫码送纸巾，你扫了。关注号推送广告。",
+        "category": "金钱",
+        "d": {
+          "money": -1
+        },
+        "weight": 6
+      }
+    ],
+    "mall": [
+      {
+        "layerId": "L2",
+        "id": "Z_mall_1",
+        "title": "商圈 · 橱窗",
+        "text": "橱窗里的包，标签等于你两月结余。你拍张照，走了。",
+        "category": "金钱",
+        "d": {
+          "health": -1,
+          "edu": 1
+        },
+        "weight": 6
+      },
+      {
+        "layerId": "L2",
+        "id": "Z_mall_2",
+        "title": "商圈 · 兼职",
+        "text": "促销员日结，站八小时。脚肿，挣两百。",
+        "category": "职场",
+        "d": {
+          "money": 1,
+          "health": -4
+        },
+        "weight": 6
+      },
+      {
+        "layerId": "L2",
+        "id": "Z_mall_3",
+        "title": "商圈 · 偶遇",
+        "text": "遇见前同事，他升职了。你们聊五分钟，各自忙。",
+        "category": "人情",
+        "d": {
+          "social": 1,
+          "rep": -1
+        },
+        "weight": 6
+      },
+      {
+        "layerId": "L2",
+        "id": "Z_mall_4",
+        "title": "商圈 · 样本",
+        "text": "化妆品试用装，填问卷。你填真实收入，被筛掉。",
+        "category": "机会",
+        "d": {
+          "rep": -1
+        },
+        "weight": 6
+      },
+      {
+        "layerId": "L2",
+        "id": "Z_mall_5",
+        "title": "商圈 · 空调",
+        "text": "夏天来蹭空调，保安巡视。你买杯最便宜的坐。",
+        "category": "金钱",
+        "d": {
+          "money": -1,
+          "health": 2
+        },
+        "weight": 6
+      }
+    ],
+    "bank": [
+      {
+        "layerId": "L2",
+        "id": "Z_bank_1",
+        "title": "银行 · 排队",
+        "text": "窗口只开两个，老人业务慢。你取号，等四十分钟。",
+        "category": "健康",
+        "d": {
+          "health": -2,
+          "edu": 1
+        },
+        "weight": 6
+      },
+      {
+        "layerId": "L2",
+        "id": "Z_bank_2",
+        "title": "银行 · 理财",
+        "text": "经理推荐「稳健型」，实际是浮动。你看小字，没签。",
+        "category": "风险",
+        "d": {
+          "rep": 2,
+          "edu": 2
+        },
+        "weight": 6
+      },
+      {
+        "layerId": "L2",
+        "id": "Z_bank_3",
+        "title": "银行 · 贷款",
+        "text": "征信查询，多一条。利率比广告高，仍要贷。",
+        "category": "金钱",
+        "d": {
+          "money": 2,
+          "rep": -1
+        },
+        "weight": 6
+      },
+      {
+        "layerId": "L2",
+        "id": "Z_bank_4",
+        "title": "银行 · 挂失",
+        "text": "卡丢，挂失补卡二十。你恨自己粗心。",
+        "category": "金钱",
+        "d": {
+          "money": -1,
+          "health": -2
+        },
+        "weight": 6
+      },
+      {
+        "layerId": "L2",
+        "id": "Z_bank_5",
+        "title": "银行 · 数字",
+        "text": "教父母用手机银行，他们怕按错。你写步骤，像教小孩。",
+        "category": "人情",
+        "d": {
+          "social": 3,
+          "health": -1
+        },
+        "weight": 6
+      }
+    ],
+    "school": [
+      {
+        "layerId": "L3",
+        "id": "Z_school_1",
+        "title": "重点中学 · 门口",
+        "text": "家长排队接送，车堵三条街。你路过，想起自己没这资源。",
+        "category": "教育",
+        "d": {
+          "edu": 2,
+          "health": -1
+        },
+        "minAge": 28,
+        "weight": 6
+      },
+      {
+        "layerId": "L3",
+        "id": "Z_school_2",
+        "title": "重点中学 · 开放日",
+        "text": "参观校园，宣传册厚。你问升学率，老师微笑。",
+        "category": "教育",
+        "d": {
+          "money": -1,
+          "edu": 3
+        },
+        "weight": 6
+      },
+      {
+        "layerId": "L3",
+        "id": "Z_school_3",
+        "title": "重点中学 · 赞助",
+        "text": "家委会倡议「自愿」捐空调。你接龙，心里算数。",
+        "category": "金钱",
+        "d": {
+          "money": -2,
+          "social": 2
+        },
+        "weight": 6
+      },
+      {
+        "layerId": "L3",
+        "id": "Z_school_4",
+        "title": "重点中学 · 回忆",
+        "text": "校门口小吃摊还在，味道变贵。你买一串，像买时间。",
+        "category": "人情",
+        "d": {
+          "social": 1,
+          "money": -1
+        },
+        "weight": 6
+      },
+      {
+        "layerId": "L3",
+        "id": "Z_school_5",
+        "title": "重点中学 · 讲座",
+        "text": "升学讲座，机构发袋。你拿资料，不拿焦虑——难。",
+        "category": "健康",
+        "d": {
+          "health": -2,
+          "edu": 2
+        },
+        "weight": 6
+      }
+    ],
+    "exam": [
+      {
+        "layerId": "L3",
+        "id": "Z_exam_1",
+        "title": "考场 · 氛围",
+        "text": "家长比考生多。你想起自己的考试，仍会做噩梦。",
+        "category": "健康",
+        "d": {
+          "health": -2,
+          "edu": 1
+        },
+        "weight": 6
+      },
+      {
+        "layerId": "L3",
+        "id": "Z_exam_2",
+        "title": "考场 · 复读",
+        "text": "复读班广告：「再战一年」。你计算年龄，放弃。",
+        "category": "教育",
+        "d": {
+          "edu": 2,
+          "rep": -1
+        },
+        "weight": 6
+      },
+      {
+        "layerId": "L3",
+        "id": "Z_exam_3",
+        "title": "考场 · 证件",
+        "text": "忘带身份证，跑回家。迟到十五分钟，允许进。",
+        "category": "职场",
+        "d": {
+          "health": -4,
+          "rep": 1
+        },
+        "weight": 6
+      },
+      {
+        "layerId": "L3",
+        "id": "Z_exam_4",
+        "title": "考场 · 证书",
+        "text": "考过一门，证书邮寄。你贴墙，提醒自己还可以。",
+        "category": "机会",
+        "d": {
+          "rep": 3,
+          "edu": 2
+        },
+        "weight": 6
+      },
+      {
+        "layerId": "L3",
+        "id": "Z_exam_5",
+        "title": "考场 · 失败",
+        "text": "差两分过线。你复读评论，关掉。",
+        "category": "健康",
+        "d": {
+          "health": -3,
+          "edu": 1
+        },
+        "weight": 6
+      }
+    ],
+    "jobfair": [
+      {
+        "layerId": "L3",
+        "id": "Z_jobfair_1",
+        "title": "校招 · 排队",
+        "text": "热门公司排百人。你递简历，收表人说「网上投」。",
+        "category": "职场",
+        "d": {
+          "rep": -1,
+          "health": -3
+        },
+        "weight": 6
+      },
+      {
+        "layerId": "L3",
+        "id": "Z_jobfair_2",
+        "title": "校招 · 面试",
+        "text": "群面，七人抢话。你说了三句，不知是否被听见。",
+        "category": "机会",
+        "d": {
+          "rep": 2,
+          "health": -2
+        },
+        "weight": 6
+      },
+      {
+        "layerId": "L3",
+        "id": "Z_jobfair_3",
+        "title": "校招 · offer",
+        "text": "拿到 offer，薪资比预期低。你签，先活着。",
+        "category": "职场",
+        "d": {
+          "rep": 3,
+          "money": 1
+        },
+        "weight": 6
+      },
+      {
+        "layerId": "L3",
+        "id": "Z_jobfair_4",
+        "title": "校招 · 对比",
+        "text": "同学拿大包，你祝贺。回宿舍算 rent。",
+        "category": "人情",
+        "d": {
+          "social": -1,
+          "edu": 2
+        },
+        "weight": 6
+      },
+      {
+        "layerId": "L3",
+        "id": "Z_jobfair_5",
+        "title": "校招 · 宣讲",
+        "text": "HR 画饼，Q&A 环节问「加班吗」。全场笑，无答。",
+        "category": "教育",
+        "d": {
+          "edu": 2
+        },
+        "weight": 6
+      }
+    ],
+    "nightclass": [
+      {
+        "layerId": "L3",
+        "id": "Z_nightclass_1",
+        "title": "夜校 · 迟到",
+        "text": "下班赶课，迟到十分钟。老师点名，你答到。",
+        "category": "教育",
+        "d": {
+          "edu": 3,
+          "health": -3
+        },
+        "weight": 6
+      },
+      {
+        "layerId": "L3",
+        "id": "Z_nightclass_2",
+        "title": "夜校 · 同学",
+        "text": "同学是各行各业，讨论比课本有趣。",
+        "category": "人情",
+        "d": {
+          "social": 3,
+          "edu": 2
+        },
+        "weight": 6
+      },
+      {
+        "layerId": "L3",
+        "id": "Z_nightclass_3",
+        "title": "夜校 · 考试",
+        "text": "结业考开卷，仍难。你过线，证书到手。",
+        "category": "机会",
+        "d": {
+          "rep": 2,
+          "edu": 4
+        },
+        "weight": 6
+      },
+      {
+        "layerId": "L3",
+        "id": "Z_nightclass_4",
+        "title": "夜校 · 放弃",
+        "text": "加班冲突，缺课三次。你退费一半，心疼。",
+        "category": "金钱",
+        "d": {
+          "money": -1,
+          "health": -2
+        },
+        "weight": 6
+      },
+      {
+        "layerId": "L3",
+        "id": "Z_nightclass_5",
+        "title": "夜校 · 路灯",
+        "text": "下课走夜路，路灯坏一段。你开手电，像学生时代。",
+        "category": "健康",
+        "d": {
+          "health": -1,
+          "edu": 1
+        },
+        "weight": 6
+      }
+    ],
+    "incubator": [
+      {
+        "layerId": "L3",
+        "id": "Z_incubator_1",
+        "title": "孵化器 · 路演",
+        "text": "五分钟 pitch，评委玩 phone。你讲完，掌声礼貌。",
+        "category": "机会",
+        "d": {
+          "rep": 2,
+          "health": -2
+        },
+        "weight": 6
+      },
+      {
+        "layerId": "L3",
+        "id": "Z_incubator_2",
+        "title": "孵化器 · 工位",
+        "text": "免费工位，咖啡收费。隔壁团队换名重开。",
+        "category": "职场",
+        "d": {
+          "edu": 3,
+          "money": -1
+        },
+        "weight": 6
+      },
+      {
+        "layerId": "L3",
+        "id": "Z_incubator_3",
+        "title": "孵化器 · 投资",
+        "text": "天使要看数据，你没有。他说「下次有 traction 再来」。",
+        "category": "机会",
+        "d": {
+          "rep": 1,
+          "edu": 2
+        },
+        "weight": 6
+      },
+      {
+        "layerId": "L3",
+        "id": "Z_incubator_4",
+        "title": "孵化器 · 加班",
+        "text": "创业团队睡沙发，你借插座充电。聊至凌晨，像热血片。",
+        "category": "人情",
+        "d": {
+          "social": 2,
+          "health": -4
+        },
+        "weight": 6
+      },
+      {
+        "layerId": "L3",
+        "id": "Z_incubator_5",
+        "title": "孵化器 · 关闭",
+        "text": "熟悉的 logo 摘了。你收名片，没扔。",
+        "category": "健康",
+        "d": {
+          "health": -2,
+          "edu": 2
+        },
+        "weight": 6
+      }
+    ],
+    "club": [
+      {
+        "layerId": "L4",
+        "id": "Z_club_1",
+        "title": "CBD会所 · 门禁",
+        "text": "着装不符，门卫拦。你回去换衬衫。",
+        "category": "职场",
+        "d": {
+          "rep": -1,
+          "money": -1
+        },
+        "weight": 6
+      },
+      {
+        "layerId": "L4",
+        "id": "Z_club_2",
+        "title": "CBD会所 · 球局",
+        "text": "高尔夫谈合作，杆数不重要。你陪笑，谈成了。",
+        "category": "机会",
+        "d": {
+          "rep": 3,
+          "social": 2,
+          "health": -2
+        },
+        "weight": 6
+      },
+      {
+        "layerId": "L4",
+        "id": "Z_club_3",
+        "title": "CBD会所 · 账单",
+        "text": "一杯水五十，服务费另算。你签字，公司报销。",
+        "category": "金钱",
+        "d": {
+          "money": 1,
+          "rep": 1
+        },
+        "weight": 6
+      },
+      {
+        "layerId": "L4",
+        "id": "Z_club_4",
+        "title": "CBD会所 · 隐私",
+        "text": "听见竞品八卦，你装没听。信息有价，耳朵也有。",
+        "category": "风险",
+        "d": {
+          "edu": 2,
+          "rep": 1
+        },
+        "weight": 6
+      },
+      {
+        "layerId": "L4",
+        "id": "Z_club_5",
+        "title": "CBD会所 · 孤独",
+        "text": "会员制健身房，人很少。你跑步，像给健康交会员费。",
+        "category": "健康",
+        "d": {
+          "money": -2,
+          "health": 4
+        },
+        "weight": 6
+      }
+    ],
+    "mansion": [
+      {
+        "layerId": "L4",
+        "id": "Z_mansion_1",
+        "title": "江景豪宅 · 看房",
+        "text": "销售说「一线江景」。雾霾天，江是灰的。",
+        "category": "金钱",
+        "d": {
+          "money": -1,
+          "edu": 2
+        },
+        "weight": 6
+      },
+      {
+        "layerId": "L4",
+        "id": "Z_mansion_2",
+        "title": "江景豪宅 · 样本",
+        "text": "精装样板，照片比实际亮。你问交付标准，答「以合同为准」。",
+        "category": "机会",
+        "d": {
+          "rep": 1,
+          "edu": 2
+        },
+        "weight": 6
+      },
+      {
+        "layerId": "L4",
+        "id": "Z_mansion_3",
+        "title": "江景豪宅 · 门槛",
+        "text": "验资五百万。你账户够，心不够。",
+        "category": "健康",
+        "d": {
+          "health": -2,
+          "rep": 2
+        },
+        "weight": 6
+      },
+      {
+        "layerId": "L4",
+        "id": "Z_mansion_4",
+        "title": "江景豪宅 · 邻居",
+        "text": "邻居开的车，你查价格。查完，安静吃饭。",
+        "category": "人情",
+        "d": {
+          "social": -1,
+          "edu": 1
+        },
+        "weight": 6
+      },
+      {
+        "layerId": "L4",
+        "id": "Z_mansion_5",
+        "title": "江景豪宅 · 夜",
+        "text": "夜景灯带，像城市项链。你站十分钟，回去还房贷。",
+        "category": "居住",
+        "d": {
+          "health": -1,
+          "rep": 2
+        },
+        "weight": 6
+      }
+    ],
+    "fund": [
+      {
+        "layerId": "L4",
+        "id": "Z_fund_1",
+        "title": "私募 · 门槛",
+        "text": "合格投资者认证，资产一百万。你够线，风险教育签字。",
+        "category": "金钱",
+        "d": {
+          "money": -2,
+          "edu": 3
+        },
+        "weight": 6
+      },
+      {
+        "layerId": "L4",
+        "id": "Z_fund_2",
+        "title": "私募 · 路演",
+        "text": "PPT 讲 TAM，你问回撤。经理说「长期」。",
+        "category": "机会",
+        "d": {
+          "edu": 3,
+          "rep": 1
+        },
+        "weight": 6
+      },
+      {
+        "layerId": "L4",
+        "id": "Z_fund_3",
+        "title": "私募 · 净值",
+        "text": "净值更新，绿了一周。你加仓还是止损？睡不着的题。",
+        "category": "健康",
+        "d": {
+          "health": -3,
+          "money": -1
+        },
+        "weight": 6
+      },
+      {
+        "layerId": "L4",
+        "id": "Z_fund_4",
+        "title": "私募 · 赎回",
+        "text": "赎回 T+7，你急用钱。先刷信用卡顶着。",
+        "category": "金钱",
+        "d": {
+          "money": -2,
+          "health": -2
+        },
+        "weight": 6
+      },
+      {
+        "layerId": "L4",
+        "id": "Z_fund_5",
+        "title": "私募 · 暴雷",
+        "text": "同策略产品暴雷新闻。你查持仓，不是同一家，仍怕。",
+        "category": "风险",
+        "d": {
+          "health": -4,
+          "edu": 2
+        },
+        "weight": 6
+      }
+    ],
+    "auction": [
+      {
+        "layerId": "L4",
+        "id": "Z_auction_1",
+        "title": "拍卖行 · 预展",
+        "text": "拍品标价，你换算成工资月数。艺术贵，人便宜。",
+        "category": "教育",
+        "d": {
+          "edu": 2,
+          "health": -1
+        },
+        "weight": 6
+      },
+      {
+        "layerId": "L4",
+        "id": "Z_auction_2",
+        "title": "拍卖行 · 举牌",
+        "text": "举了一次牌，价格飞。你放下，看戏。",
+        "category": "机会",
+        "d": {
+          "social": 2,
+          "rep": 1
+        },
+        "weight": 6
+      },
+      {
+        "layerId": "L4",
+        "id": "Z_auction_3",
+        "title": "拍卖行 · 社交",
+        "text": " champagne 交流，名片交换。你回家搜人，补背景。",
+        "category": "人情",
+        "d": {
+          "social": 3,
+          "money": -1
+        },
+        "weight": 6
+      },
+      {
+        "layerId": "L4",
+        "id": "Z_auction_4",
+        "title": "拍卖行 · 法拍",
+        "text": "法拍房信息，价格低风险高。你研究条款，先不动。",
+        "category": "风险",
+        "d": {
+          "edu": 3,
+          "rep": 1
+        },
+        "weight": 6
+      },
+      {
+        "layerId": "L4",
+        "id": "Z_auction_5",
+        "title": "拍卖行 · 离场",
+        "text": "落槌声轻，像关一扇门。你走出，夜风真实。",
+        "category": "健康",
+        "d": {
+          "health": 2
+        },
+        "weight": 6
+      }
+    ],
+    "loan": [
+      {
+        "layerId": "L5",
+        "id": "Z_loan_1",
+        "title": "地下钱庄 · 诱惑",
+        "text": "「当天放款，不看征信」。你把传单揉了。",
+        "category": "风险",
+        "d": {
+          "rep": 2,
+          "health": -1
+        },
+        "weight": 6
+      },
+      {
+        "layerId": "L5",
+        "id": "Z_loan_2",
+        "title": "地下钱庄 · 见闻",
+        "text": "听见有人被催收，电话打给通讯录。你加快脚步。",
+        "category": "健康",
+        "d": {
+          "health": -3
+        },
+        "weight": 6
+      },
+      {
+        "layerId": "L5",
+        "id": "Z_loan_3",
+        "title": "地下钱庄 · 熟人",
+        "text": "朋友借高利贷，求你担保。你拒，友谊减一。",
+        "category": "人情",
+        "d": {
+          "social": -3,
+          "rep": 2
+        },
+        "weight": 6
+      },
+      {
+        "layerId": "L5",
+        "id": "Z_loan_4",
+        "title": "地下钱庄 · 对比",
+        "text": "正规银行利率，你算复利。数字仍让人清醒。",
+        "category": "教育",
+        "d": {
+          "edu": 3,
+          "money": -1
+        },
+        "weight": 6
+      },
+      {
+        "layerId": "L5",
+        "id": "Z_loan_5",
+        "title": "地下钱庄 · 红线",
+        "text": "「过桥」七个字，背后是一条链。你当没看见。",
+        "category": "风险",
+        "d": {
+          "rep": 1
+        },
+        "weight": 6
+      }
+    ],
+    "broker": [
+      {
+        "layerId": "L5",
+        "id": "Z_broker_1",
+        "title": "灰色中介 · 报价",
+        "text": "「加钱能插队办」。你选排队，慢但稳。",
+        "category": "机会",
+        "d": {
+          "rep": 1,
+          "health": -2
+        },
+        "weight": 6
+      },
+      {
+        "layerId": "L5",
+        "id": "Z_broker_2",
+        "title": "灰色中介 · 合同",
+        "text": "合同漏洞，律师朋友提醒。你重签，多付两千。",
+        "category": "金钱",
+        "d": {
+          "money": -1,
+          "rep": 2
+        },
+        "weight": 6
+      },
+      {
+        "layerId": "L5",
+        "id": "Z_broker_3",
+        "title": "灰色中介 · 跑路",
+        "text": "中介关门，定金难追。你立案，排队维权。",
+        "category": "风险",
+        "d": {
+          "money": -2,
+          "health": -3
+        },
+        "weight": 6
+      },
+      {
+        "layerId": "L5",
+        "id": "Z_broker_4",
+        "title": "灰色中介 · 信息",
+        "text": "听到「内部指标」，你核实，假的。信息也是商品。",
+        "category": "教育",
+        "d": {
+          "edu": 2,
+          "rep": 1
+        },
+        "weight": 6
+      },
+      {
+        "layerId": "L5",
+        "id": "Z_broker_5",
+        "title": "灰色中介 · 拒绝",
+        "text": "「包过」留学，你先交五万。你查资质，撤了。",
+        "category": "风险",
+        "d": {
+          "rep": 3,
+          "money": -1
+        },
+        "weight": 6
+      }
+    ],
+    "alley": [
+      {
+        "layerId": "L5",
+        "id": "Z_alley_1",
+        "title": "夜场后巷 · 噪音",
+        "text": "音乐震耳，垃圾堆满。你绕路，仍闻到啤酒。",
+        "category": "健康",
+        "d": {
+          "health": -2
+        },
+        "weight": 6
+      },
+      {
+        "layerId": "L5",
+        "id": "Z_alley_2",
+        "title": "夜场后巷 · 冲突",
+        "text": "两人争吵，你远离。城市背面，规则不同。",
+        "category": "风险",
+        "d": {
+          "health": -3,
+          "rep": 1
+        },
+        "weight": 6
+      },
+      {
+        "layerId": "L5",
+        "id": "Z_alley_3",
+        "title": "夜场后巷 · 工作",
+        "text": "代驾司机等单，抽烟。你打车，他聊行业苦。",
+        "category": "人情",
+        "d": {
+          "social": 1,
+          "edu": 2
+        },
+        "weight": 6
+      },
+      {
+        "layerId": "L5",
+        "id": "Z_alley_4",
+        "title": "夜场后巷 · 诱惑",
+        "text": "「轻松兼职」传单，你知套路。撕了。",
+        "category": "风险",
+        "d": {
+          "rep": 2
+        },
+        "weight": 6
+      },
+      {
+        "layerId": "L5",
+        "id": "Z_alley_5",
+        "title": "夜场后巷 · 黎明",
+        "text": "散场人流，天将亮。你看见城市洗脸。",
+        "category": "健康",
+        "d": {
+          "health": 1,
+          "social": 1
+        },
+        "weight": 6
+      }
+    ],
+    "factory": [
+      {
+        "layerId": "L5",
+        "id": "Z_factory_1",
+        "title": "废弃厂区 · 探险",
+        "text": "网红拍照点，墙绘新。你拍一张，想起产业迁移。",
+        "category": "教育",
+        "d": {
+          "edu": 2,
+          "health": -1
+        },
+        "weight": 6
+      },
+      {
+        "layerId": "L5",
+        "id": "Z_factory_2",
+        "title": "废弃厂区 · 租仓",
+        "text": "低价仓库，合同一月。你存旧物，怕跑路。",
+        "category": "金钱",
+        "d": {
+          "money": -1,
+          "rep": -1
+        },
+        "weight": 6
+      },
+      {
+        "layerId": "L5",
+        "id": "Z_factory_3",
+        "title": "废弃厂区 · 电影",
+        "text": "剧组封路拍摄，你绕远。城市也是布景。",
+        "category": "机会",
+        "d": {
+          "social": 1
+        },
+        "weight": 6
+      },
+      {
+        "layerId": "L5",
+        "id": "Z_factory_4",
+        "title": "废弃厂区 · 安全",
+        "text": "铁架生锈，警示牌倒。你未深入，生命贵。",
+        "category": "健康",
+        "d": {
+          "health": 2,
+          "rep": 1
+        },
+        "weight": 6
+      },
+      {
+        "layerId": "L5",
+        "id": "Z_factory_5",
+        "title": "废弃厂区 · 回忆",
+        "text": "老工人回来看，眼湿。你听懂几句方言。",
+        "category": "人情",
+        "d": {
+          "social": 2,
+          "health": -1
+        },
+        "weight": 6
+      }
+    ]
+  },
+  "sagas": [
+    {
+      "id": "SAGA_METRO",
+      "title": "迟到链",
+      "minMonths": 8,
+      "steps": [
+        {
+          "title": "地铁延误",
+          "text": "早高峰停了十一分钟。你打卡时队伍已经很长。",
+          "d": {
+            "rep": -2,
+            "health": -2
+          }
+        },
+        {
+          "title": "主管约谈",
+          "text": "「本月考勤要注意。」办公室空调很冷。",
+          "choices": [
+            {
+              "text": "解释并道歉",
+              "d": {
+                "rep": 1,
+                "social": -1
+              }
+            },
+            {
+              "text": "沉默点头",
+              "d": {
+                "rep": -1,
+                "health": -2
+              }
+            }
+          ]
+        },
+        {
+          "title": "KPI 余波",
+          "text": "季度名单中段有你。再顶一顶，还是换岗？",
+          "choices": [
+            {
+              "text": "加班补进度",
+              "d": {
+                "money": 1,
+                "health": -6,
+                "rep": 3
+              }
+            },
+            {
+              "text": "申请调组",
+              "d": {
+                "social": 2,
+                "rep": -2
+              }
+            }
+          ]
+        },
+        {
+          "title": "尾声",
+          "text": "地铁恢复了。你学会把闹钟提前十五分钟。",
+          "d": {
+            "rep": 2
+          }
+        }
+      ]
+    },
+    {
+      "id": "SAGA_HOME",
+      "title": "首付链",
+      "minMonths": 36,
+      "minAge": 26,
+      "steps": [
+        {
+          "title": "看房",
+          "text": "小两居，首付要掏空所有卡。签字的手很稳，心跳不稳。",
+          "d": {
+            "money": -3
+          }
+        },
+        {
+          "title": "按揭",
+          "text": "银行表格三份，笔拴着链子。利率比你想象的高一点。",
+          "choices": [
+            {
+              "text": "签长期",
+              "d": {
+                "money": -2,
+                "rep": 4
+              }
+            },
+            {
+              "text": "再等等",
+              "d": {
+                "rep": -1,
+                "social": 1
+              }
+            }
+          ]
+        },
+        {
+          "title": "搬家",
+          "text": "空房间有油漆味。窗外是另一片天际线。",
+          "d": {
+            "health": 3,
+            "money": -1
+          }
+        },
+        {
+          "title": "月供第一年",
+          "text": "账单日比生日记得更牢。你成了有地址的人。",
+          "d": {
+            "rep": 5,
+            "health": -2
+          }
+        }
+      ]
+    },
+    {
+      "id": "SAGA_POACH",
+      "title": "跳槽链",
+      "minMonths": 18,
+      "steps": [
+        {
+          "title": "猎头来电",
+          "text": "涨 18%，代价是每周飞一次。你要了三天考虑期。",
+          "d": {
+            "social": 2
+          }
+        },
+        {
+          "title": "现公司挽留",
+          "text": "HR 谈话，提到股权和「感情」。",
+          "choices": [
+            {
+              "text": "留下",
+              "d": {
+                "rep": 3,
+                "money": 1
+              }
+            },
+            {
+              "text": "离开",
+              "d": {
+                "money": 2,
+                "social": -3,
+                "rep": 4
+              }
+            }
+          ]
+        },
+        {
+          "title": "新工位",
+          "text": "名片还没印好，项目已经压下来。",
+          "d": {
+            "health": -4,
+            "rep": 2
+          }
+        },
+        {
+          "title": "复盘",
+          "text": "跳槽没有对错，只有价码。",
+          "d": {
+            "rep": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "SAGA_SIDE",
+      "title": "副业链",
+      "minMonths": 12,
+      "steps": [
+        {
+          "title": "私活邀约",
+          "text": "朋友介绍一份周末外包。报价不高，但够交两月房租。",
+          "d": {
+            "money": 1
+          }
+        },
+        {
+          "title": "时间冲突",
+          "text": "主业项目也要加班。你只能选一边。",
+          "choices": [
+            {
+              "text": "保主业",
+              "d": {
+                "rep": 4,
+                "money": -1
+              }
+            },
+            {
+              "text": "接私活",
+              "d": {
+                "money": 2,
+                "health": -5,
+                "rep": -2
+              }
+            }
+          ]
+        },
+        {
+          "title": "尾款",
+          "text": "甲方拖款三周。你在群里催了两次，对方已读不回。",
+          "d": {
+            "social": -2,
+            "health": -3
+          }
+        },
+        {
+          "title": "收束",
+          "text": "钱到了。你学会把合同写清楚——下次。",
+          "d": {
+            "rep": 2,
+            "money": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "SAGA_FAMILY",
+      "title": "家链",
+      "minMonths": 24,
+      "steps": [
+        {
+          "title": "来电",
+          "text": "家里说需要一笔钱。数额不大，但语气很急。",
+          "d": {
+            "social": -1
+          }
+        },
+        {
+          "title": "抉择",
+          "text": "你看着余额，又看日历上的还款日。",
+          "choices": [
+            {
+              "text": "立刻转",
+              "d": {
+                "money": -2,
+                "social": 6
+              }
+            },
+            {
+              "text": "分期帮",
+              "d": {
+                "money": -1,
+                "social": 3,
+                "rep": 1
+              }
+            },
+            {
+              "text": "这次不行",
+              "d": {
+                "social": -4,
+                "health": -2
+              }
+            }
+          ]
+        },
+        {
+          "title": "回音",
+          "text": "电话那头沉默了几秒。城市噪音填满了空白。",
+          "d": {
+            "health": -2
+          }
+        },
+        {
+          "title": "余波",
+          "text": "亲情没有 KPI，但有利息——情绪的那种。",
+          "d": {
+            "social": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "SAGA_LAYOFF",
+      "title": "裁员链",
+      "minMonths": 24,
+      "steps": [
+        {
+          "title": "风声",
+          "text": "HR 约谈话，邮件标题写「一对一」。办公室开始猜名单。",
+          "d": {
+            "health": -3,
+            "rep": -1
+          }
+        },
+        {
+          "title": "谈话",
+          "text": "补偿 N+1，签字截止周五。你问能不能内部转岗，答「名额很少」。",
+          "choices": [
+            {
+              "text": "接受补偿",
+              "d": {
+                "money": 3,
+                "rep": -2,
+                "gap": 2
+              }
+            },
+            {
+              "text": "争取转岗",
+              "d": {
+                "rep": 2,
+                "health": -4,
+                "social": -1
+              }
+            }
+          ]
+        },
+        {
+          "title": "空窗",
+          "text": "离职证明在手，简历改第三版。招聘软件已读不回。",
+          "d": {
+            "health": -4,
+            "money": -2
+          }
+        },
+        {
+          "title": "面试",
+          "text": "一面通过，二面问「为什么离开上家」。你答「组织优化」。",
+          "d": {
+            "rep": 2,
+            "health": -2
+          }
+        },
+        {
+          "title": "入职",
+          "text": "新工位更小，薪资平移。你学会不再提「以前」。",
+          "d": {
+            "rep": 3,
+            "money": 1
+          }
+        },
+        {
+          "title": "余波",
+          "text": "前同事群静音。城市不大，圈子更小。",
+          "d": {
+            "social": -2,
+            "health": 2
+          }
+        }
+      ]
+    },
+    {
+      "id": "SAGA_PARENT",
+      "title": "父母链",
+      "minMonths": 36,
+      "minAge": 28,
+      "steps": [
+        {
+          "title": "电话",
+          "text": "母亲声音颤：「你爸体检有问题。」你订了最近的高铁。",
+          "d": {
+            "social": -1,
+            "health": -3
+          }
+        },
+        {
+          "title": "返乡",
+          "text": "县城医院走廊，消毒水味。专家说「去省城进一步查」。",
+          "choices": [
+            {
+              "text": "立刻转院",
+              "d": {
+                "money": -3,
+                "social": 4,
+                "health": -2
+              }
+            },
+            {
+              "text": "先观察",
+              "d": {
+                "money": -1,
+                "social": -2,
+                "health": -3
+              }
+            }
+          ]
+        },
+        {
+          "title": "陪护",
+          "text": "请假一周，主管说「项目正紧」。你在医院走廊改方案。",
+          "d": {
+            "rep": -2,
+            "health": -4,
+            "social": 3
+          }
+        },
+        {
+          "title": "费用",
+          "text": "医保报销后，自付仍像一座小山。你刷信用卡，分期。",
+          "d": {
+            "money": -2,
+            "debt": 1
+          }
+        },
+        {
+          "title": "康复",
+          "text": "父亲出院，瘦一圈。他说「没事」，你知有事。",
+          "d": {
+            "social": 4,
+            "health": -1
+          }
+        },
+        {
+          "title": "远程",
+          "text": "你安装摄像头，教他们视频通话。距离仍在，稍软。",
+          "d": {
+            "social": 3,
+            "edu": 2
+          }
+        }
+      ]
+    },
+    {
+      "id": "SAGA_LOVE",
+      "title": "婚恋链",
+      "minMonths": 18,
+      "steps": [
+        {
+          "title": "介绍",
+          "text": "同事说「有个朋友想认识」。你加了微信，头像风景照。",
+          "d": {
+            "social": 2
+          }
+        },
+        {
+          "title": "约会",
+          "text": "吃饭聊房子、聊工作、聊未来。账单 AA，你提议，对方同意。",
+          "choices": [
+            {
+              "text": "继续了解",
+              "d": {
+                "social": 4,
+                "money": -1,
+                "health": -1
+              }
+            },
+            {
+              "text": "慢慢疏远",
+              "d": {
+                "social": -2,
+                "rep": 1
+              }
+            }
+          ]
+        },
+        {
+          "title": "见家长",
+          "text": "对方父母问「有房吗」。你答「在攒」。空气静三秒。",
+          "d": {
+            "rep": -2,
+            "social": 1,
+            "health": -3
+          }
+        },
+        {
+          "title": "礼金",
+          "text": "订婚讨论彩礼，数字在两家之间来回。你像谈判代表。",
+          "d": {
+            "money": -3,
+            "social": 3
+          }
+        },
+        {
+          "title": "婚礼",
+          "text": "婚礼像项目，表格排宾客。你微笑敬酒，腿酸。",
+          "d": {
+            "money": -4,
+            "social": 5,
+            "health": -4
+          }
+        },
+        {
+          "title": "日常",
+          "text": "蜜月结束，外卖和洗碗开始分工。生活回到账单。",
+          "d": {
+            "social": 2,
+            "health": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "SAGA_SCAM",
+      "title": "诈骗链",
+      "minMonths": 12,
+      "steps": [
+        {
+          "title": "来电",
+          "text": "「公检法」来电，报出你身份证号。你手抖，仍问「什么事」。",
+          "d": {
+            "health": -4
+          }
+        },
+        {
+          "title": "转账",
+          "text": "对方要求「验资」，限时两小时。你走到 ATM，停住。",
+          "choices": [
+            {
+              "text": "挂断报警",
+              "d": {
+                "rep": 3,
+                "health": 2
+              }
+            },
+            {
+              "text": "试探转账小额",
+              "d": {
+                "money": -2,
+                "rep": -2,
+                "health": -3
+              }
+            }
+          ]
+        },
+        {
+          "title": "余悸",
+          "text": "警察做反诈宣传，你领传单。同事笑，你笑不出。",
+          "d": {
+            "health": -2,
+            "edu": 3
+          }
+        },
+        {
+          "title": "扩散",
+          "text": "家族群转发反诈 App，长辈仍点链接。你耐心教。",
+          "d": {
+            "social": 2,
+            "health": -1
+          }
+        },
+        {
+          "title": "收尾",
+          "text": "账户无损失。你改密码，像劫后余生。",
+          "d": {
+            "rep": 1,
+            "health": 3
+          }
+        }
+      ]
+    },
+    {
+      "id": "SAGA_STARTUP",
+      "title": "创业链",
+      "minMonths": 30,
+      "steps": [
+        {
+          "title": "想法",
+          "text": "深夜和白纸，商业模式画三遍。你看见自己的兴奋。",
+          "d": {
+            "edu": 3,
+            "health": -2
+          }
+        },
+        {
+          "title": "合伙",
+          "text": "老同学愿意全职，你要留职场的薪。股权怎么分？",
+          "choices": [
+            {
+              "text": "六四开",
+              "d": {
+                "rep": 2,
+                "social": 2,
+                "money": -1
+              }
+            },
+            {
+              "text": "再观望",
+              "d": {
+                "rep": -1,
+                "edu": 2
+              }
+            }
+          ]
+        },
+        {
+          "title": "注册",
+          "text": "公司名查重三次，经营范围改五版。公章刻了，账仍乱。",
+          "d": {
+            "money": -2,
+            "edu": 2
+          }
+        },
+        {
+          "title": "融资",
+          "text": "见三个投资人，两个要数据，一个要控制权。你学 term sheet。",
+          "d": {
+            "edu": 4,
+            "health": -3
+          }
+        },
+        {
+          "title": "产品",
+          "text": "上线第一周，十个用户，五个是亲友。你仍更新版本。",
+          "d": {
+            "rep": 3,
+            "health": -4
+          }
+        },
+        {
+          "title": "抉择",
+          "text": "账上够撑六月。继续还是回职场？你第一次真正「All in」。",
+          "choices": [
+            {
+              "text": "继续",
+              "d": {
+                "money": -2,
+                "rep": 4,
+                "health": -5
+              }
+            },
+            {
+              "text": "收缩",
+              "d": {
+                "rep": 1,
+                "money": 1,
+                "social": -2
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "SAGA_EXAM",
+      "title": "大考链",
+      "minMonths": 6,
+      "maxAge": 35,
+      "steps": [
+        {
+          "title": "报名",
+          "text": "考证报名最后一天，你加班到十点才填表。照片上传失败两次。",
+          "d": {
+            "health": -2,
+            "money": -1
+          }
+        },
+        {
+          "title": "备考",
+          "text": "三个月，地铁上看题。朋友约饭，你推了七次。",
+          "d": {
+            "edu": 6,
+            "social": -3,
+            "health": -4
+          }
+        },
+        {
+          "title": "考场",
+          "text": "空调太冷，选择题涂卡手僵。交卷铃响，空两题。",
+          "d": {
+            "health": -3,
+            "rep": 1
+          }
+        },
+        {
+          "title": "等分",
+          "text": "查分页面转圈。过线一分。你拍桌，又笑。",
+          "d": {
+            "rep": 4,
+            "edu": 4,
+            "health": 3
+          }
+        },
+        {
+          "title": "挂靠？",
+          "text": "中介问要不要挂靠，「一年几万」。你拒，怕毁证。",
+          "d": {
+            "rep": 2,
+            "edu": 2
+          }
+        }
+      ]
+    },
+    {
+      "id": "SAGA_RENT",
+      "title": "租房链",
+      "minMonths": 3,
+      "steps": [
+        {
+          "title": "找房",
+          "text": "中介带看五套，照片比真景亮。你算通勤，算阳光，算价格。",
+          "d": {
+            "health": -3,
+            "money": -1
+          }
+        },
+        {
+          "title": "签约",
+          "text": "押一付三，合同小字「维修自理」。你签字，像签一年租约。",
+          "d": {
+            "money": -2,
+            "rep": 1
+          }
+        },
+        {
+          "title": "入住",
+          "text": "第一晚发现蟑螂。你下单药，等待。",
+          "choices": [
+            {
+              "text": "自己消杀",
+              "d": {
+                "money": -1,
+                "health": -2
+              }
+            },
+            {
+              "text": "要求房东",
+              "d": {
+                "social": -1,
+                "rep": 1,
+                "health": 1
+              }
+            }
+          ]
+        },
+        {
+          "title": "邻居",
+          "text": "邻居装修，电钻周末不停。你投诉，物业和稀泥。",
+          "d": {
+            "health": -4
+          }
+        },
+        {
+          "title": "续租",
+          "text": "到期涨租 8%。你比价，仍续——搬家太累。",
+          "d": {
+            "money": -2,
+            "health": -2
+          }
+        }
+      ]
+    },
+    {
+      "id": "SAGA_RENT_FIGHT",
+      "title": "租房纠纷",
+      "minMonths": 8,
+      "steps": [
+        {
+          "title": "退押金",
+          "text": "合同到期，房东说墙上有钉眼要扣两千。你指着入住时的照片，对方说「不算数」。",
+          "d": {
+            "health": -3,
+            "social": -1
+          }
+        },
+        {
+          "title": "对峙",
+          "text": "中介拉群调解，两边各发十几条语音。你请假半天，坐在楼梯间等回复。",
+          "choices": [
+            {
+              "text": "走调解平台",
+              "d": {
+                "rep": 2,
+                "health": -2,
+                "money": -1
+              }
+            },
+            {
+              "text": "直接起诉",
+              "d": {
+                "rep": 3,
+                "health": -4,
+                "money": -2
+              }
+            }
+          ]
+        },
+        {
+          "title": "拉锯",
+          "text": "平台判部分退还，房东仍拖。你在评论区看到同款遭遇，点赞像抱团取暖。",
+          "d": {
+            "health": -3,
+            "social": 2
+          }
+        },
+        {
+          "title": "收尾",
+          "text": "钱到账那天，你删了租房 App 收藏夹。下一处，合同小字逐行读。",
+          "d": {
+            "rep": 2,
+            "health": 2,
+            "money": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "SAGA_SIDE_CRASH",
+      "title": "副业翻车",
+      "minMonths": 10,
+      "steps": [
+        {
+          "title": "爆单",
+          "text": "闲鱼副业突然爆单，你下班后打包到一点。主业主管问「最近状态」。",
+          "d": {
+            "money": 2,
+            "health": -4,
+            "rep": -1
+          }
+        },
+        {
+          "title": "翻车",
+          "text": "一批货色差被投诉，平台扣保证金。买家群截图挂你 ID。",
+          "choices": [
+            {
+              "text": "全额退款",
+              "d": {
+                "money": -3,
+                "rep": 2,
+                "social": -1
+              }
+            },
+            {
+              "text": "扯皮拖延",
+              "d": {
+                "money": -1,
+                "rep": -3,
+                "health": -3
+              }
+            }
+          ]
+        },
+        {
+          "title": "主业预警",
+          "text": "HR 约谈考勤，副业手机仍震。你学会把通知静音，心却静不了。",
+          "d": {
+            "rep": -2,
+            "health": -3
+          }
+        },
+        {
+          "title": "收摊",
+          "text": "你下架链接，库存捐给同城群。副业没赚多少，教训记牢。",
+          "d": {
+            "rep": 1,
+            "health": 2,
+            "social": 1
+          }
+        }
+      ]
+    }
+  ],
+  "originSagas": [
+    {
+      "kind": "origin",
+      "once": true,
+      "id": "SAGA_O_WORKER",
+      "originId": "ordinary-worker",
+      "title": "稳妥的建议",
+      "steps": [
+        {
+          "title": "一通长途",
+          "text": "母亲在电话里念市属单位的招考公告，念到「五险一金」时特意停顿。你说再想想。",
+          "d": {
+            "social": 2,
+            "health": -1
+          }
+        },
+        {
+          "title": "报还是不报",
+          "text": "报名费三十八块，备考要三个月。截止日就在下周，表格还摊在桌上。",
+          "choices": [
+            {
+              "text": "交表报名",
+              "d": {
+                "edu": 5,
+                "money": -1,
+                "health": -4
+              }
+            },
+            {
+              "text": "留在现在的公司",
+              "d": {
+                "rep": 3,
+                "social": -2
+              }
+            }
+          ]
+        },
+        {
+          "title": "年夜饭",
+          "text": "亲戚隔着转盘问「稳定了没有」。父亲替你答了句「挺好的」，然后夹菜。",
+          "d": {
+            "social": 1,
+            "health": -2
+          }
+        },
+        {
+          "title": "工资卡",
+          "text": "工资卡里的数字不多不少，刚好够把日子过成直线。母亲没有再提招考的事。",
+          "d": {
+            "rep": 2,
+            "health": 2
+          }
+        }
+      ]
+    },
+    {
+      "kind": "origin",
+      "once": true,
+      "id": "SAGA_O_MIDDLE",
+      "originId": "middle-class",
+      "title": "体面的月供",
+      "steps": [
+        {
+          "title": "过户材料",
+          "text": "父母把学区房的过户材料摊在餐桌上，最底下压着一张没结清的还款计划。",
+          "d": {
+            "money": 2,
+            "debt": 1,
+            "health": -2
+          }
+        },
+        {
+          "title": "接不接",
+          "text": "「写你名字，我们帮你还前五年。」母亲说得很轻，像在怕吵醒什么，目光却落在你脸上。",
+          "choices": [
+            {
+              "text": "接下房和月供",
+              "d": {
+                "money": 1,
+                "debt": 1,
+                "rep": 4,
+                "health": -3
+              }
+            },
+            {
+              "text": "婉拒，自己租着住",
+              "d": {
+                "social": -3,
+                "rep": 1,
+                "health": 2
+              }
+            }
+          ]
+        },
+        {
+          "title": "家庭群",
+          "text": "父亲的体检单被转进家庭群，配一句「小问题」。三个人在打字，谁也没发出去。",
+          "d": {
+            "social": 1,
+            "health": -3
+          }
+        },
+        {
+          "title": "记事本",
+          "text": "月供、体检单和家族群的沉默，都在同一张桌上。你把提醒设成每月一号，然后关掉通知。",
+          "d": {
+            "rep": 2,
+            "edu": 2
+          }
+        }
+      ]
+    },
+    {
+      "kind": "origin",
+      "once": true,
+      "id": "SAGA_O_SYSTEM",
+      "originId": "public-system",
+      "title": "一句话的门路",
+      "steps": [
+        {
+          "title": "包间",
+          "text": "父亲的老同事在包间里问你「想不想换个稳当地方」。茶续了三次，话只说了七分。",
+          "d": {
+            "social": 3,
+            "health": -1
+          }
+        },
+        {
+          "title": "分寸",
+          "text": "回家路上你反复想那句话的落点：是客套，还是真有位置。",
+          "choices": [
+            {
+              "text": "自己递简历走流程",
+              "d": {
+                "rep": 3,
+                "social": 1,
+                "health": -2
+              }
+            },
+            {
+              "text": "客气推掉",
+              "d": {
+                "social": -2,
+                "rep": 2
+              }
+            },
+            {
+              "text": "让家里出面打招呼",
+              "d": {
+                "social": 4,
+                "rep": -3
+              }
+            }
+          ]
+        },
+        {
+          "title": "回音",
+          "text": "三周后对方发来一条消息：「今年名额调整了。」句号后面没有解释，你也没问。",
+          "d": {
+            "health": -3,
+            "social": -1
+          }
+        },
+        {
+          "title": "家教",
+          "text": "秩序是家里的日常语言。你终于学会那条家规：留三分给变数。",
+          "d": {
+            "rep": 3,
+            "edu": 2
+          }
+        }
+      ]
+    },
+    {
+      "kind": "origin",
+      "once": true,
+      "id": "SAGA_O_MIGRANT",
+      "originId": "rural-migrant",
+      "title": "第一张汇款单",
+      "steps": [
+        {
+          "title": "押一付三",
+          "text": "城中村单间，房东只收现金，不开收据。你把钱数了两遍，剩下的塞回内袋。",
+          "d": {
+            "money": -2,
+            "health": -2
+          }
+        },
+        {
+          "title": "工地还是车间",
+          "text": "老乡在工地干日结，堂哥说厂里招人管住。两边都要你明天就到。",
+          "choices": [
+            {
+              "text": "跟老乡上工地",
+              "d": {
+                "money": 2,
+                "health": -6,
+                "social": 2
+              }
+            },
+            {
+              "text": "进厂，图个稳定",
+              "d": {
+                "money": 1,
+                "health": -3,
+                "rep": 2
+              }
+            }
+          ]
+        },
+        {
+          "title": "汇款",
+          "text": "ATM 前排了十分钟。你留三百，其余汇回去。到账短信的提示音很轻。",
+          "d": {
+            "money": -1,
+            "social": 4
+          }
+        },
+        {
+          "title": "车票",
+          "text": "春运票秒没。你在家族群里说「今年加班给三倍」，然后把手机扣在桌上。",
+          "d": {
+            "money": 1,
+            "social": -2,
+            "health": -2
+          }
+        }
+      ]
+    },
+    {
+      "kind": "origin",
+      "once": true,
+      "id": "SAGA_O_VILLAGE",
+      "originId": "urban-village",
+      "title": "巷口的风声",
+      "steps": [
+        {
+          "title": "涨租",
+          "text": "巷子里开始传拆迁。房东先把租金加了两百，说是「补个差价」。",
+          "d": {
+            "money": -1,
+            "social": 1
+          }
+        },
+        {
+          "title": "跟不跟",
+          "text": "签一年还是搬去两个地铁站外？街坊的算法各不相同。",
+          "choices": [
+            {
+              "text": "续签，赌一把拆迁",
+              "d": {
+                "money": -2,
+                "rep": 2,
+                "health": -2
+              }
+            },
+            {
+              "text": "搬去更远的地方",
+              "d": {
+                "money": 1,
+                "health": -4,
+                "social": -3
+              }
+            }
+          ]
+        },
+        {
+          "title": "小卖部",
+          "text": "楼下阿姨照旧给你留两瓶冰水，顺口问一句「什么时候搬」。",
+          "d": {
+            "social": 3,
+            "health": 1
+          }
+        },
+        {
+          "title": "灯牌",
+          "text": "公告贴出来又被撕掉，红章只剩半个。灯牌照常亮到凌晨三点。",
+          "d": {
+            "rep": 1,
+            "health": -1
+          }
+        }
+      ]
+    },
+    {
+      "kind": "origin",
+      "once": true,
+      "id": "SAGA_O_MERCHANT",
+      "originId": "wealthy-merchant",
+      "title": "父亲的担保",
+      "steps": [
+        {
+          "title": "一页纸",
+          "text": "父亲的公司要续贷，需要一个共同担保人。纸上你的名字已经打印好，只差签字。",
+          "d": {
+            "health": -3,
+            "social": 1
+          }
+        },
+        {
+          "title": "签不签",
+          "text": "「就一年，走个形式。」他说这句话时没有看你。",
+          "choices": [
+            {
+              "text": "签字",
+              "d": {
+                "money": 3,
+                "debt": 2,
+                "social": 3,
+                "health": -4
+              }
+            },
+            {
+              "text": "拒绝",
+              "d": {
+                "social": -5,
+                "rep": 3,
+                "money": -1
+              }
+            }
+          ]
+        },
+        {
+          "title": "座次",
+          "text": "宴席上有人敬你「小老板」，也有人只和父亲碰杯。座位表比合同更诚实。",
+          "d": {
+            "social": 2,
+            "rep": -1
+          }
+        },
+        {
+          "title": "估值",
+          "text": "你继承的不只是钱，还有他的债主和敌人。两者都比亲戚更准时。",
+          "d": {
+            "rep": 2,
+            "health": -2
+          }
+        }
+      ]
+    },
+    {
+      "kind": "origin",
+      "once": true,
+      "id": "SAGA_O_SCHOLAR",
+      "originId": "humble-scholar",
+      "title": "最后一笔学费",
+      "steps": [
+        {
+          "title": "转账附言",
+          "text": "家里把最后一笔钱转过来，附言四个字：安心读书。你没敢回消息。",
+          "d": {
+            "money": 1,
+            "social": 2,
+            "health": -2
+          }
+        },
+        {
+          "title": "兼职还是刷题",
+          "text": "家教一小时八十，考纲还有六章没看。一天只有二十四小时。",
+          "choices": [
+            {
+              "text": "接家教补生活费",
+              "d": {
+                "money": 2,
+                "edu": -2,
+                "health": -4
+              }
+            },
+            {
+              "text": "闭门备考",
+              "d": {
+                "edu": 7,
+                "money": -2,
+                "health": -3
+              }
+            }
+          ]
+        },
+        {
+          "title": "考场",
+          "text": "冬天的考场没开暖气。你写完最后一题，手指僵得几乎握不住笔。",
+          "d": {
+            "health": -4,
+            "rep": 2
+          }
+        },
+        {
+          "title": "查分",
+          "text": "分数出来那天你先给家里打电话，报完喜，又一个人在楼道坐了很久。",
+          "d": {
+            "rep": 4,
+            "edu": 3,
+            "health": 2
+          }
+        }
+      ]
+    },
+    {
+      "kind": "origin",
+      "once": true,
+      "id": "SAGA_O_ORPHAN",
+      "originId": "orphan",
+      "title": "紧急联系人",
+      "steps": [
+        {
+          "title": "押一付三",
+          "text": "中介要押一付三，你只拿得出押一。对方说「那就月付，每月多两百」。",
+          "d": {
+            "money": -2,
+            "health": -2
+          }
+        },
+        {
+          "title": "担保人一栏",
+          "text": "合同最后一页留着「担保人」空格，笔尖在上面停住。",
+          "choices": [
+            {
+              "text": "开口请同事签字",
+              "d": {
+                "social": 3,
+                "rep": -1,
+                "money": 1
+              }
+            },
+            {
+              "text": "自己咬牙月付",
+              "d": {
+                "money": -2,
+                "rep": 3,
+                "health": -3
+              }
+            }
+          ]
+        },
+        {
+          "title": "夜里三十九度",
+          "text": "挂号页面要求填紧急联系人。你想了几秒，填了自己的号码。",
+          "d": {
+            "health": -5,
+            "money": -1,
+            "social": -2
+          }
+        },
+        {
+          "title": "抽屉",
+          "text": "没有人兜底，所以每一步都算数。你洗净体温计，收回抽屉，第二天照常上班。",
+          "d": {
+            "rep": 3,
+            "health": 3
+          }
+        }
+      ]
+    },
+    {
+      "kind": "origin",
+      "once": true,
+      "id": "SAGA_O_BLENDED",
+      "originId": "blended-family",
+      "title": "客厅里的座位",
+      "steps": [
+        {
+          "title": "全家福",
+          "text": "继父在家庭群发了张全家福。你在照片边缘，只露出半张脸。",
+          "d": {
+            "social": 1,
+            "health": -2
+          }
+        },
+        {
+          "title": "回不回",
+          "text": "群里连着三个红包和一句「都回个话」。你盯着输入框。",
+          "choices": [
+            {
+              "text": "回一句「挺好的」",
+              "d": {
+                "social": 3,
+                "health": -1
+              }
+            },
+            {
+              "text": "装作没看见",
+              "d": {
+                "social": -2,
+                "rep": 1,
+                "health": -2
+              }
+            }
+          ]
+        },
+        {
+          "title": "私聊",
+          "text": "同母异父的弟弟单独发来消息：学费差三千，别跟妈说。",
+          "choices": [
+            {
+              "text": "先转过去",
+              "d": {
+                "money": -1,
+                "social": 3
+              }
+            },
+            {
+              "text": "让他自己开口",
+              "d": {
+                "social": -2,
+                "rep": 2
+              }
+            }
+          ]
+        },
+        {
+          "title": "备用钥匙",
+          "text": "家是安全的，只是要先看客厅里坐着谁。你留着自己那把钥匙。",
+          "d": {
+            "rep": 2,
+            "health": 1
+          }
+        }
+      ]
+    },
+    {
+      "kind": "origin",
+      "once": true,
+      "id": "SAGA_O_TRANSNATIONAL",
+      "originId": "transnational",
+      "title": "两个时钟",
+      "steps": [
+        {
+          "title": "凌晨三点",
+          "text": "父母在另一个时区问你「什么时候回来」。你算了算，那边正是凌晨三点。",
+          "d": {
+            "social": 2,
+            "health": -2
+          }
+        },
+        {
+          "title": "身份栏",
+          "text": "落户材料的「常住地」一栏空着。填哪个地址，都要放弃点什么。",
+          "choices": [
+            {
+              "text": "留下来排队落户",
+              "d": {
+                "rep": 3,
+                "money": -1,
+                "health": -2
+              }
+            },
+            {
+              "text": "两边的门都留着",
+              "d": {
+                "social": 2,
+                "edu": 2,
+                "rep": -2
+              }
+            }
+          ]
+        },
+        {
+          "title": "口音",
+          "text": "会上你换了三次语言。散会后有人真诚地夸你：「中文说得真好。」",
+          "d": {
+            "social": 1,
+            "rep": -1,
+            "edu": 2
+          }
+        },
+        {
+          "title": "时差",
+          "text": "哪边都能落脚，哪边都不算到家。你把两个时钟都留在手机首页。",
+          "d": {
+            "edu": 2,
+            "health": 1
+          }
+        }
+      ]
+    }
+  ],
+  "careerTracks": [
+    {
+      "id": "staff",
+      "name": "职员线",
+      "levels": [
+        "实习生",
+        "专员",
+        "主管",
+        "总监",
+        "副总裁"
+      ]
+    },
+    {
+      "id": "tech",
+      "name": "技术线",
+      "levels": [
+        "码农",
+        "工程师",
+        "架构师",
+        "专家",
+        "首席"
+      ]
+    },
+    {
+      "id": "sales",
+      "name": "业务线",
+      "levels": [
+        "跟单",
+        "销售",
+        "大客户经理",
+        "区域负责人",
+        "合伙人"
+      ]
+    },
+    {
+      "id": "gig",
+      "name": "零工线",
+      "levels": [
+        "日结",
+        "骑手",
+        "个体户",
+        "小老板",
+        "连锁"
+      ]
+    }
+  ],
+  "lifeStages": [
+    {
+      "id": "arrival",
+      "minAge": 22,
+      "maxAge": 27,
+      "label": "入城期",
+      "apBonus": 0
+    },
+    {
+      "id": "climb",
+      "minAge": 28,
+      "maxAge": 35,
+      "label": "爬坡期",
+      "apBonus": 0
+    },
+    {
+      "id": "weight",
+      "minAge": 36,
+      "maxAge": 45,
+      "label": "承重期",
+      "apBonus": -1
+    },
+    {
+      "id": "twilight",
+      "minAge": 46,
+      "maxAge": 59,
+      "label": "黄昏期",
+      "apBonus": 0
+    },
+    {
+      "id": "retire",
+      "minAge": 60,
+      "maxAge": 99,
+      "label": "退潮期",
+      "apBonus": 1
+    }
+  ],
+  "endings": {
+    "bankruptcy": {
+      "title": "氧气耗尽",
+      "summary": "账单比人更准时。城市继续运转，下一个人已经站在你的工位前。"
+    },
+    "health": {
+      "title": "身体先离场",
+      "summary": "工位空出来。体检报告上的箭头，最后比 KPI 更诚实。"
+    },
+    "redline": {
+      "title": "触线",
+      "summary": "有些门打开后就关不上。档案里多一个记号，城市少一个名字。"
+    },
+    "retire": {
+      "title": "退潮",
+      "summary": "你终于有时间看江。潮汐仍然准时，只是你不再赶它。"
+    },
+    "elder": {
+      "title": "长夜",
+      "summary": "霓虹沉默。你在这座城市留下了足迹、账单，和几段没人读完的故事。"
+    }
+  },
+  "originBias": {
+    "ordinary-worker": {
+      "layers": [
+        "L2",
+        "L3"
+      ],
+      "tags": [
+        "职场",
+        "金钱"
+      ]
+    },
+    "middle-class": {
+      "layers": [
+        "L3",
+        "L4"
+      ],
+      "tags": [
+        "教育",
+        "居住"
+      ]
+    },
+    "urban-village": {
+      "layers": [
+        "L1",
+        "L2"
+      ],
+      "tags": [
+        "居住",
+        "人情"
+      ]
+    },
+    "humble-scholar": {
+      "layers": [
+        "L1",
+        "L3"
+      ],
+      "tags": [
+        "教育",
+        "机会"
+      ]
+    },
+    "orphan": {
+      "layers": [
+        "L1",
+        "L5"
+      ],
+      "tags": [
+        "风险",
+        "机会"
+      ]
+    },
+    "wealthy-merchant": {
+      "layers": [
+        "L4",
+        "L5"
+      ],
+      "tags": [
+        "金钱",
+        "人情"
+      ]
+    },
+    "blended-family": {
+      "layers": [
+        "L2",
+        "L3"
+      ],
+      "tags": [
+        "人情",
+        "居住"
+      ]
+    },
+    "transnational": {
+      "layers": [
+        "L3",
+        "L4"
+      ],
+      "tags": [
+        "机会",
+        "教育"
+      ]
+    },
+    "public-system": {
+      "layers": [
+        "L2",
+        "L3"
+      ],
+      "tags": [
+        "职场",
+        "人情"
+      ]
+    },
+    "rural-migrant": {
+      "layers": [
+        "L1",
+        "L2"
+      ],
+      "tags": [
+        "职场",
+        "金钱"
+      ]
+    }
+  },
+  "eraModifiers": {
+    "E1": {
+      "incomeMul": 0.72,
+      "volatility": 0.8,
+      "tags": [
+        "铁饭碗",
+        "分房"
+      ]
+    },
+    "E2": {
+      "incomeMul": 0.95,
+      "volatility": 1.3,
+      "tags": [
+        "下海",
+        "个体"
+      ]
+    },
+    "E3": {
+      "incomeMul": 1.12,
+      "volatility": 1.2,
+      "tags": [
+        "房改",
+        "按揭"
+      ]
+    },
+    "E4": {
+      "incomeMul": 1.04,
+      "volatility": 1.1,
+      "tags": [
+        "互联网",
+        "创业"
+      ]
+    },
+    "E5": {
+      "incomeMul": 1.06,
+      "volatility": 1.15,
+      "tags": [
+        "移动互联",
+        "网贷"
+      ]
+    },
+    "E6": {
+      "incomeMul": 0.96,
+      "volatility": 0.95,
+      "tags": [
+        "存量",
+        "内卷"
+      ]
+    },
+    "E7": {
+      "incomeMul": 1,
+      "volatility": 1.05,
+      "tags": [
+        "灵活用工",
+        "AI"
+      ]
+    }
+  }
+}

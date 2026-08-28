@@ -834,12 +834,62 @@ button {
 }
 
 /* --------------------------------------------------------------------------
-   12. HUD (dashboard)
+   12. HUD (dashboard) — wrapped in the collapsible「生命体征」panel.
+   Collapsed, only 现金/健康 stay on screen (the contract bar sits right
+   below); the toggle reveals 人脉/声望/年龄/负债. Mobile starts collapsed,
+   desktop starts expanded — dashboard-app.js decides via matchMedia.
    -------------------------------------------------------------------------- */
 .fc-hud {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(174px, 1fr));
   gap: 14px;
+}
+
+.fc-vitals__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.fc-vitals__title {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  color: var(--text-dim);
+}
+
+.fc-vitals__title span {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.24em;
+  color: var(--text-faint);
+  font-weight: 500;
+}
+
+.fc-vitals__toggle {
+  flex: none;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  color: var(--text-dim);
+  padding: 4px 12px;
+  border-radius: 99px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.04);
+  transition: color 0.2s var(--ease), border-color 0.2s var(--ease);
+}
+
+.fc-vitals__toggle:hover,
+.fc-vitals__toggle:focus-visible {
+  color: var(--text-hi);
+  border-color: var(--line-hi);
+  outline: none;
+}
+
+.fc-vitals.is-collapsed .fc-hud__more {
+  display: none;
 }
 
 .fc-stat {
@@ -1090,6 +1140,42 @@ button {
 
 .fc-log__delta .up { color: var(--ok); }
 .fc-log__delta .down { color: var(--bad); }
+
+/* Timeline skin — every entry rides a thin rail; what happened decides how
+   loud it is. Ambient noise recedes into a slim grey line, while O1 / saga /
+   NPC / contract entries carry their layer tint on the left edge. */
+.fc-log__item {
+  border-left: 2px solid rgba(140, 165, 214, 0.14);
+  padding-left: 12px;
+}
+
+.fc-log__item--muted {
+  padding-top: 8px;
+  padding-bottom: 8px;
+}
+
+.fc-log__item--muted .fc-log__body p {
+  font-size: 12.5px;
+  color: var(--text-dim);
+}
+
+.fc-log__item--muted .fc-log__tag {
+  opacity: 0.55;
+}
+
+.fc-log__item--major {
+  border-left: 3px solid var(--tint, var(--neon-cyan));
+  padding-left: 11px;
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--tint, var(--neon-cyan)) 7%, transparent),
+    transparent 58%
+  );
+}
+
+.fc-log__item--major .fc-log__body p {
+  color: var(--text-hi);
+}
 
 /* --------------------------------------------------------------------------
    14. City map
@@ -1805,6 +1891,14 @@ button {
 @keyframes fc-wipe-clear-back {
   from { transform: translate3d(0, 0, 0); }
   to { transform: translate3d(-101%, 0, 0); }
+}
+
+.fc-wipe.is-layer-ascend .fc-wipe__sheet {
+  background: linear-gradient(105deg,
+    transparent 0%,
+    rgba(79, 227, 255, 0.12) 45%,
+    rgba(255, 214, 102, 0.18) 55%,
+    transparent 100%);
 }
 
 /* --------------------------------------------------------------------------

@@ -4,6 +4,20 @@
 
 设定来源：`.agent_workspace/fucheng-life/STORY_EXTRACT.md`
 
+## Gameplay+ 状态（ABC 路线图）
+
+在 Round 3 UI MVP 之上，已落地完整玩法循环：
+
+- **A 玩法**：每月 3 行动点（AP）→ 8 种行动（上班/加班/进修/饭局/副业/休息/探区/理财）→ 用尽 AP 后「推进一月」
+- **BitLife 式 Tab**：人生 / 职场 KPI / 关系账本 / 资产面板
+- **人生阶段**：入城期 → 爬坡期 → 承重期 → 黄昏期 → 退潮期（AP 与标签随年龄变化）
+- **终局仪式**：破产/健康/触线/退休/长寿 → 人生总结 → 选天赋印记 → 重新入城
+- **B 内容**：`data/gameplay-pack.json` — **301 条**手写 ambient 事件、**115 条**区域探区事件、**12 条**链式 Saga（跨月推进）
+- **出身/时代偏置**：事件池按出身档案与年代 modifier 加权
+- **C 动效**：3D 倾斜出身卡、圈层跃迁 pulse、地图→仪表盘跨层转场、终局弹窗仪式
+
+演示地址（合入 `main` 后）：<https://9997433-bit.github.io/HL2/games/fucheng-life/>
+
 ## Round 3 状态
 
 Round 3 是收官候选版：Round 1 的四个核心界面和主入口、Round 2 的统一叙事数据/动效/O1
@@ -55,13 +69,14 @@ python3 -m http.server 8000
 2. 等待 FUCHENG OS 启动序列，或点击跳过；移动指针观察天际线视差。打开「设置」可切换画质、雨幕、
    霓虹、环境音和减弱动效。
 3. 点击「入城登记」，从 E1—E7 中选择一个年代，确认机会/门槛/波动及起始层级，再进入下一步。
-4. 从 10 份出身档案中选择起点，观察起始资金、资本/体质/人脉/学业和圈层差异，点击「开始人生」。
-5. 在人生仪表盘确认年代、出身、圈层和六项 HUD；点击「推进一个月」，查看数字变化、现金浮字、
+4. 从 10 份出身档案中选择起点，**分配 8 点自由属性**（体质/人脉/学业各 +4/点），观察起始差异，点击「开始人生」。
+5. 在人生仪表盘确认年代、出身、圈层和六项 HUD；**先消耗本月行动点**（如上班、探区），再点击「推进一个月」。
    新增日志及月度收支结算。结清账单后继续。
 6. 连续推进至第 3 个月以内，处理至少一次城市事件：选择选项、查看后果入账，再「记入日志，继续」。
    「快进半年」会在事件打断时停下。
-7. 打开「城市地图」，检查 L1—L5 五层剖面；点击地点查看门槛、物价、风险和未解锁区域提示。
-8. 返回主入口刷新页面；「继续人生」应读取 `fucheng.save.v1`，显示所选年代/出身并回到仪表盘。
+7. 打开「城市地图」，点击地点 →「设为探区目标」→ 回仪表盘用「探区」消耗 AP；观察跨层转场。
+8. 连续推进至触发生涯终局或链式 Saga 抉择弹窗；终局后选择天赋印记，重新入城验证继承。
+9. 返回主入口刷新页面；「继续人生」应读取 `fucheng.save.v1`，显示所选年代/出身并回到仪表盘。
    仪表盘内「重开人生」可清空本轮运行状态并重新播种日志。
 
 完整人工验收步骤见 [`ACCEPTANCE.md`](./ACCEPTANCE.md)。
@@ -75,7 +90,8 @@ games/fucheng-life/
 ├── ACCEPTANCE.md               # Round 3 的 15 项手工 QA 门禁
 ├── routes.json                 # new-game / continue 跳转表
 ├── data/
-│   └── story.json              # 年代、出身、层级、事件和共享文案唯一数据源
+│   ├── story.json              # 年代、出身、层级、事件和共享文案唯一数据源
+│   └── gameplay-pack.json      # AP 行动、ambient/区域事件、Saga、终局（由 build 脚本生成）
 ├── screens/
 │   ├── index.html              # 核心界面总览
 │   ├── era-select.html         # E1—E7 入城年代
@@ -92,13 +108,17 @@ games/fucheng-life/
 │   ├── app.js                  # 夜景渲染、设置、路由与主入口交互
 │   ├── story-loader.js         # story.json 装载、归一化与 FC.ready
 │   ├── screens.js              # window.FC 数据适配、存档与共享 helper
-│   ├── fc-motion.js            # count-up、stagger、wipe 与动效降级
+│   ├── fc-sim.js               # AP、职场/关系/资产、Saga、终局核心模拟
+│   ├── fc-ending.js            # 人生总结 + 天赋印记继承
+│   ├── dashboard-app.js        # 仪表盘主逻辑（AP、Tab、tick）
+│   ├── fc-motion.js            # count-up、stagger、wipe、3D tilt、layer pulse
 │   ├── fc-ui.js                # 粒子等共享 UI 效果
 │   └── fc-events.js            # FC.overlay、FC.events 与月度账单 API
 ├── tests/                      # Node 驱动的语法、schema、链接与确定性断言
 └── effects/                    # 可复用效果的独立展示页
 
-scripts/run-fucheng-life-tests.sh       # 仓库级测试入口
+scripts/run-fucheng-life-tests.sh       # 仓库级测试入口（6 项，含 180 月模拟）
+scripts/build-gameplay-data.js          # 生成 gameplay-pack.json
 .github/workflows/fucheng-life-tests.yml # 相关路径变更的 CI 门禁
 ```
 
@@ -124,9 +144,17 @@ scripts/run-fucheng-life-tests.sh       # 仓库级测试入口
 
 ### 数据与存档
 
-- `data/story.json` 是年代、出身、城市层级和事件文案的唯一数据源；`story-loader.js` 将其发布到
-  `window.FC.story`，四个核心屏等待 `FC.ready` 后渲染。
+- `data/story.json` 是年代、出身、城市层级和 O1 事件文案的唯一数据源；`story-loader.js` 将其发布到
+  `window.FC.story`，并追加加载 `data/gameplay-pack.json` 到 `FC.gameplay`。
+- `story.json → events[]` 收录 56 条手写弹窗事件，每条自带 `layerId`、`category`、`weight` 与
+  2–3 个 `choices[]{label, d, result}`；风险类另带 `type: "redline"`。`fc-events.js` 只做适配与抽取，
+  不再持有分支文案。
+- 可选的 `presentation` 决定城市用哪种口气说这条事件：`modal`（缺省，现有 O1 卡）、
+  `toast`（顶部 4 秒通知，落地自动结算首选项）、`letter`（信纸全屏，首选项签字、末选项撕掉）、
+  `inline`（不弹窗，返回一张插进日志流的卡）。ambient 事件也读这个字段。四种壳解析出同一形状的
+  结果，选目表在 `scripts/curated/presentation.js`。
 - 游戏存档键是 `fucheng.save.v1`。完成年代或出身选择后，主入口的「继续人生」解锁并显示档案摘要。
+- 出身页 `originAlloc` 保存 8 点属性分配；终局页 `fucheng.inheritedTalent.v1` 保存天赋印记。
 - 主入口设置保存在 `fucheng-life.settings.v1`：画质、雨幕、霓虹、环境音/音量及减弱动效。
 
 ### 主入口 API

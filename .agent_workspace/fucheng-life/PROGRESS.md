@@ -39,7 +39,7 @@
 |-------|--------|
 | Round 1 | complete — 6/6 done |
 | Round 2 | complete — 6/6 done |
-| Round 3 | in_progress — 0/6 dispatched |
+| Round 3 | complete — 6/6 done |
 
 ## Subagent Status (Round 1)
 | Agent | Model | Status |
@@ -73,11 +73,21 @@
 ## Subagent Status (Round 3)
 | Agent | Model | Status |
 |-------|-------|--------|
-| fable-r3-sota-acceptance | fable | dispatched ☁️ |
-| fable-r3-final-report | fable | dispatched ☁️ |
-| opus-r3-p1-polish | opus-fast | dispatched ☁️ |
-| opus-r3-o2-ledger | opus-fast | dispatched |
-| gpt-sol-r3-test-harness | gpt-sol | dispatched |
-| gpt-sol-r3-pages-readme | gpt-sol | dispatched |
+| [fable-r3-sota-acceptance](bc-23d210b1-62d1-5a1a-9888-08e6b51d61aa) | fable | ✅ done → `aaa594b` (15/15 PASS) |
+| [fable-r3-final-report](bc-ff6ed8b6-a646-5b71-8887-d8957efb05c6) | fable | ✅ done → `c330fcc` |
+| [opus-r3-p1-polish](bc-84419518-cfa1-576b-8505-63d9f5716fc4) | opus-fast | ✅ done → `f971827` |
+| opus-r3-o2-ledger | opus-fast | ✅ done → `9e1783e` |
+| gpt-sol-r3-test-harness | gpt-sol | ✅ done → `970cec0` |
+| gpt-sol-r3-pages-readme | gpt-sol | ✅ done → `5aa97bf` |
 
-Round 3 上下文：`.agent_workspace/fucheng-life/round3/ROUND3_CONTEXT.md`
+终审报告：`.agent_workspace/fucheng-life/GLOBAL_FINAL_REPORT.md`
+
+## Round 4 — Gameplay ABC
+| 模块 | Status |
+|------|--------|
+| A 玩法（AP/Tab/阶段/终局） | ✅ done |
+| B 内容（301 事件 / 115 区域 / 12 Saga） | ✅ done |
+| 平衡与模拟测试（180 月无早退） | ✅ done |
+| C 动效（3D 卡 / 跨层转场 / 终局仪式） | ✅ done |
+| 测试链 5/5 | ✅ done |
+| 分支 | `cursor/fucheng-life-gameplay-fa72` |

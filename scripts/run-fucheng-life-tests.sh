@@ -29,8 +29,21 @@ command -v node >/dev/null 2>&1 || {
 
 run_test "JavaScript syntax" "$TEST_DIR/js-syntax.test.js"
 run_test "story.json schema and deterministic counts" "$TEST_DIR/story-schema.test.js"
+run_test "O1 event schema and coverage" "$TEST_DIR/o1-events.test.js"
+run_test "R5 event presentation schema" "$TEST_DIR/presentation.test.js"
+run_test "gameplay-pack.json content" "$TEST_DIR/gameplay-pack.test.js"
+run_test "R5 zone event deduplication" "$TEST_DIR/zone-dedup.test.js"
+run_test "origin mini-saga content and mapping" "$TEST_DIR/origin-sagas.test.js"
+run_test "origin mini-saga 24-month headless probe" "$TEST_DIR/origin-saga-sim.test.js"
+run_test "headless life sim pacing" "$TEST_DIR/life-sim.test.js"
+run_test "NPC relationship ledger and gated events" "$TEST_DIR/npc-ledger.test.js"
+run_test "midgame life contract progression" "$TEST_DIR/contract.test.js"
+run_test "R4 modal and saga pacing" "$TEST_DIR/pacing.test.js"
 run_test "static HTML link integrity" "$TEST_DIR/html-links.test.js"
 run_test "fc-events and fc-motion browser exports" "$TEST_DIR/exports-smoke.test.js"
+run_test "R6 system depth (career/assets/debt/secondary)" "$TEST_DIR/r6-system.test.js"
+run_test "R7 onboarding guide wiring" "$TEST_DIR/guide.test.js"
+run_test "dashboard browser boot regression" "$TEST_DIR/page-boot.test.js"
 
 printf '\n浮城人生 test summary: %d passed, %d failed\n' "$passed" "$failed"
 if ((failed > 0)); then

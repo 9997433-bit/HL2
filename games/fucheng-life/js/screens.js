@@ -120,6 +120,37 @@
   FC.origin = function () {
     return byId(FC.ORIGINS, read().originId) || FC.ORIGINS[0] || null;
   };
+
+  function clampStat(n) {
+    return Math.max(0, Math.min(100, Math.round(n)));
+  }
+
+  FC.effectiveOrigin = function () {
+    var o = FC.origin();
+    if (!o) return null;
+    var alloc = read().originAlloc;
+    if (!alloc) return o;
+    return {
+      id: o.id,
+      storyId: o.storyId,
+      legacyId: o.legacyId,
+      name: o.name,
+      en: o.en,
+      glyph: o.glyph,
+      layer: o.layer,
+      desc: o.desc,
+      line: o.line,
+      tags: o.tags,
+      statModifiers: o.statModifiers,
+      mods: {
+        money: o.mods.money,
+        health: clampStat(o.mods.health + (alloc.health || 0) * 4),
+        social: clampStat(o.mods.social + (alloc.social || 0) * 4),
+        edu: clampStat(o.mods.edu + (alloc.edu || 0) * 4)
+      },
+      start: o.start
+    };
+  };
   FC.esc = function (s) {
     return String(s).replace(/[&<>"]/g, function (c) {
       return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c];
