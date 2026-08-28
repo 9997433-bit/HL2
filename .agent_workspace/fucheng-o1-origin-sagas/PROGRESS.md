@@ -22,7 +22,7 @@ wealthy-merchant, humble-scholar, blended-family, orphan, transnational
 | Round | Status | Notes |
 |-------|--------|-------|
 | R1 | **complete** | 6 子代理交付；AUTO 1–15 全绿（9/9 tests） |
-| R2 | pending | 文案抽检、平衡微调、MANUAL §21–25 |
+| R2 | **in_progress** | 6 子代理已派单（时代事件+引擎+测试+MANUAL+打磨+平衡） |
 | R3 | pending | SOTA 终审、PR 合 main |
 
 ## R1 子代理回执
