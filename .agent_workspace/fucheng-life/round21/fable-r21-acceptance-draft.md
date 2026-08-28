@@ -33,8 +33,9 @@
 - 措辞小疵（不强求）：第 3 行「必须选定才继续」是**转述**，实际 lede 末句为
   「必须选定一张才能往下走。」G1 的断言只要求 lede 含「必须」族关键词，
   两版都过；若 G2 想改成逐字引用可顺手带走，不值得单开一笔。
-- 条目保持 `[ ]`。写稿时 F2 尚未落地、手工走查未做，勾选留到十路全绿 +
-  走查签核后另一笔 commit。
+- 条目保持 `[ ]`。手工走查未做，勾选留到十路全绿 + 走查签核后另一笔
+  commit。（发稿前 F2 已落 `4f2e213`，本稿落地即十路齐；测试全绿，
+  只差走查签核。）
 
 ---
 
@@ -187,8 +188,8 @@ challenge Esc 的 `preventDefault` + `is-esc-pulse` 挂/摘 + 正延迟定时器
 ## 三、与现码的对齐说明（写给 G2 / 合入责任人）
 
 写稿时分支 `cursor/fucheng-r21-focus-trap-fa72` HEAD 为 `a2a199d`，
-十路中 O1–O5、G1、G2、F1 已落，F2 未落；全量测试实测
-**32 passed / 0 failed**：
+十路中 O1–O5、G1、G2、F1 已落；发稿前 F2 也落了（`4f2e213`，playfeel
+风险稿），本稿落地即十路齐。全量测试实测 **32 passed / 0 failed**：
 
 - **O1 已落**（`12d7a13`，`fc-events.js`）：`FC.overlay.trap` 新增
   「activeElement 不在 items 内」分支——`preventDefault` 后 Shift+Tab 聚末项、
