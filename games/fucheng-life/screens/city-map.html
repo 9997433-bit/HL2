@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>城市地图 · 五层剖面 — 浮城人生</title>
+<meta name="description" content="浮城人生 · 城市地图：L1 市井层到 L5 暗流，可交互的五层城市剖面。">
+<meta name="theme-color" content="#05070f">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 44 44'%3E%3Crect width='44' height='44' rx='11' fill='%2305070f'/%3E%3Cg fill='%234fe3ff'%3E%3Crect x='9' y='21' width='4.4' height='12'/%3E%3Crect x='16.2' y='14' width='4' height='19'/%3E%3Crect x='23.4' y='18.5' width='4.2' height='14.5' fill='%23ff3fa4'/%3E%3Crect x='30.6' y='11' width='4.4' height='22'/%3E%3C/g%3E%3Crect x='7' y='35.6' width='30' height='1.6' rx='.8' fill='%23ffc861'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="../css/fc-tokens.css">
+<link rel="stylesheet" href="../css/screens.css">
+<link rel="stylesheet" href="../css/fc-ui.css">
+</head>
+<body>
+<div class="fc-atmos"></div>
+<div class="fc-rain" style="opacity:.14"></div>
+
+<header class="fc-topbar">
+  <a class="fc-brand" href="../index.html">
+    <span class="fc-brand__mark"></span>
+    <span>浮城人生 <span class="fc-brand__en">URBAN LIFE SIM</span></span>
+  </a>
+  <nav class="fc-nav">
+    <a href="era-select.html">入城登记</a>
+    <a href="origin-select.html">出身</a>
+    <a href="dashboard.html">人生仪表盘</a>
+    <a href="city-map.html" aria-current="page">城市地图</a>
+  </nav>
+</header>
+
+<main class="fc-page fc-page--wide">
+  <section class="fc-rise" style="margin-bottom:24px">
+    <p class="fc-eyebrow">CITY SECTION · 五层剖面</p>
+    <h1 class="fc-title">这座城市，<em>竖着</em>分层</h1>
+    <p class="fc-lede">
+      同一片雨落在五个高度上。往上一层要交入场费，往下一层不用——但很难再上来。
+      点击任意地点，查看它的门槛、物价与风险。
+    </p>
+  </section>
+
+  <div class="fc-split fc-split--map">
+    <section class="fc-map" id="map" aria-label="五层城市地图" aria-busy="true">
+      <div class="fc-panel fc-rise">正在读取五层城市剖面……</div>
+    </section>
+
+    <aside class="fc-stack">
+      <div class="fc-panel fc-detail" id="detail">
+        <p class="fc-detail__sub" id="dSub">SELECT A ZONE</p>
+        <h2 class="fc-detail__title" id="dTitle">选择一个地点</h2>
+        <div class="fc-rowgap" style="margin-top:10px" id="dTags"></div>
+        <p class="fc-detail__body" id="dBody">
+          霓虹沉默，潮汐准时。把光标移到任意灯牌上，城市会亮给你看。
+        </p>
+        <dl class="fc-kv" id="dKv"></dl>
+        <div id="dMeters" style="display:grid;gap:9px;margin-top:16px"></div>
+        <hr class="fc-hr">
+        <a class="fc-btn fc-btn--primary" style="width:100%" href="dashboard.html">回到人生仪表盘</a>
+      </div>
+
+      <div class="fc-panel">
+        <h2 class="fc-sectiontitle">图例 <span>LEGEND</span></h2>
+        <div class="fc-elevator" id="legend"></div>
+      </div>
+    </aside>
+  </div>
+
+  <p class="fc-footnote">
+    《浮城人生》· 城市地图 — 原型界面 ·
+    <a href="../index.html">返回游戏入口</a>
+  </p>
+</main>
+
+<script src="../js/story-loader.js"></script>
+<script src="../js/screens.js"></script>
+<script src="../js/fc-motion.js"></script>
+<script>
+(function () {
+  var $ = function (id) { return document.getElementById(id); };
+  var esc = FC.esc;
+
+  function init() {
+  $("map").removeAttribute("aria-busy");
+
+  /* Displayed top-to-bottom: capital above, undercurrent below street level. */
+  var STRATA_LAYOUT = [
+    {
+      id: "L5", elev: "地下 · UNDERCURRENT",
+      zones: [
+        /* The undercurrent's own ceiling. It has a price too, it just isn't
+           quoted in money — architecture §2 S3 asks L5 to read colder. */
+        { n: "地下钱庄", d: "利息按天算，规矩按人算。没有合同，只有名字。",
+          th: 88, cost: 74, risk: 96, tags: ["高回报", "红线"], locked: true,
+          gate: "不收钱 · 收把柄" },
+        { n: "灰色中介", d: "什么都能办，报价随需求浮动。他从不问你为什么。",
+          th: 62, cost: 58, risk: 88, tags: ["捷径", "把柄"], locked: false },
+        { n: "夜场后巷", d: "灯牌背面的世界。这里的人情不记账，记仇。",
+          th: 44, cost: 46, risk: 92, tags: ["消息", "危险"], locked: false },
+        { n: "废弃厂区", d: "改造还没开始，租金几乎为零。有人在这里排练，有人在这里躲。",
+          th: 20, cost: 12, risk: 70, tags: ["低成本", "无监管"], locked: false }
+      ]
+    },
+    {
+      id: "L4", elev: "顶层 · CAPITAL",
+      zones: [
+        { n: "CBD 顶层会所", d: "会员制。名片在这里没用，介绍人才有用。",
+          th: 94, cost: 96, risk: 42, tags: ["资源", "门槛极高"], locked: true,
+          gate: "入场券 ¥5,000,000 · 需引荐" },
+        { n: "江景豪宅", d: "落地窗外是整片江。物业费比很多人的房租高。",
+          th: 90, cost: 98, risk: 18, tags: ["资产", "身份"], locked: true,
+          gate: "入场券 ¥2,000,000" },
+        { n: "私募办公室", d: "安静得能听见空调。这里的一个决定，能改十条街的命运。",
+          th: 86, cost: 72, risk: 56, tags: ["资本", "杠杆"], locked: true,
+          gate: "入场券 ¥1,000,000 · 声望 86" },
+        { n: "拍卖行", d: "落槌声很轻。买下的不是东西，是一次被看见的机会。",
+          th: 78, cost: 88, risk: 34, tags: ["社交", "声望"], locked: false }
+      ]
+    },
+    {
+      id: "L3", elev: "中段 · ASCENT",
+      zones: [
+        { n: "重点中学", d: "灯到十一点才熄。走廊的排名榜每月更新一次。",
+          th: 66, cost: 54, risk: 22, tags: ["学历", "长周期"], locked: false },
+        { n: "考场", d: "两个半小时，决定接下来十年住在哪一层。",
+          th: 58, cost: 8, risk: 30, tags: ["公平", "一次性"], locked: false },
+        { n: "校招现场", d: "队伍从体育馆排到停车场。每个人都带着同一份简历模板。",
+          th: 52, cost: 16, risk: 26, tags: ["机会", "拥挤"], locked: false },
+        { n: "夜校 / 证书班", d: "下班后的第二间教室。学费不贵，时间很贵。",
+          th: 34, cost: 32, risk: 12, tags: ["技能", "熬"], locked: false },
+        { n: "创业孵化器", d: "免费工位，有偿梦想。隔壁团队上个月还在，这个月是新的。",
+          th: 60, cost: 44, risk: 74, tags: ["高波动", "融资"], locked: false }
+      ]
+    },
+    {
+      id: "L2", elev: "地面 · SALARIED",
+      zones: [
+        { n: "写字楼", d: "工位一米二宽，KPI 挂在墙上。空调常年 24 度。",
+          th: 48, cost: 42, risk: 28, tags: ["稳定收入", "消耗"], locked: false },
+        { n: "合租房", d: "三室一厅住五个人，冰箱按格分区。深夜的水声很清楚。",
+          th: 26, cost: 38, risk: 16, tags: ["低成本", "无隐私"], locked: false },
+        { n: "早高峰地铁", d: "十一分钟延误，车厢里没人说话。这是城市的心跳。",
+          th: 12, cost: 6, risk: 10, tags: ["通勤", "时间税"], locked: false },
+        { n: "连锁商圈", d: "所有城市长得一样的那块地方。周末在这里，钱花得最没有记忆。",
+          th: 22, cost: 52, risk: 8, tags: ["消费", "社交"], locked: false },
+        { n: "银行网点", d: "叫号机、按揭表格、一支拴着链子的笔。",
+          th: 40, cost: 20, risk: 24, tags: ["贷款", "征信"], locked: false }
+      ]
+    },
+    {
+      id: "L1", elev: "街面 · STREET",
+      zones: [
+        { n: "城中村", d: "握手楼之间只有一线天。灯牌亮到凌晨三点。",
+          th: 8, cost: 14, risk: 34, tags: ["最低房租", "人多眼杂"], locked: false },
+        { n: "早市", d: "五点开秤，八点收摊。物价在这里最诚实。",
+          th: 6, cost: 8, risk: 6, tags: ["便宜", "现金"], locked: false },
+        { n: "外卖站点", d: "电动车充电排成一排。系统派单，人跟着跑。",
+          th: 10, cost: 12, risk: 44, tags: ["即时收入", "伤身"], locked: false },
+        { n: "夜宵大排档", d: "塑料凳、啤酒箱、说到一半的心事。人情在这里定价最低。",
+          th: 10, cost: 18, risk: 14, tags: ["人脉", "松弛"], locked: false },
+        { n: "劳务市场", d: "墙上贴满招工纸条，日结两个字写得最大。",
+          th: 4, cost: 4, risk: 38, tags: ["日结", "无保障"], locked: false }
+      ]
+    }
+  ];
+
+  var STRATA = STRATA_LAYOUT.map(function (layout) {
+    var layer = FC.byId(FC.LAYERS, layout.id);
+    layout.key = layer.key;
+    layout.name = layer.name;
+    layout.mood = layer.description;
+    return layout;
+  });
+
+  /* The price of admission, printed on the node itself. Zones that never got
+     their own line fall back to the raw threshold rather than going silent —
+     an unexplained lock is just a dead button. */
+  function gateOf(z) {
+    return z.gate || "准入门槛 " + z.th + " / 100";
+  }
+
+  /* --------------------------------------------------------------- build */
+  $("map").innerHTML = STRATA.map(function (s) {
+    return (
+      '<section class="fc-strata tint-' + s.key + '" data-layer="' + s.id + '" ' +
+        'style="--stagger:70ms">' +
+        '<div class="fc-strata__rail">' +
+          '<div class="fc-strata__code">' + s.id + "</div>" +
+          '<div class="fc-strata__name">' + esc(s.name) + "</div>" +
+          '<div class="fc-strata__meta">' + s.elev + "</div>" +
+        "</div>" +
+        '<div class="fc-strata__body">' +
+          '<p class="fc-strata__mood">' + esc(s.mood) + "</p>" +
+          '<div class="fc-zones">' +
+            s.zones.map(function (z, j) {
+              return '<button type="button" class="fc-zone' + (z.locked ? " is-locked" : "") + '" ' +
+                'data-l="' + s.id + '" data-z="' + j + '"' +
+                (z.locked ? ' aria-disabled="true"' : "") + ">" +
+                (z.locked
+                  ? '<span class="fc-zone__lockicon" aria-hidden="true"></span>'
+                  : '<span class="fc-zone__dot"></span>') +
+                '<span class="fc-zone__stack">' +
+                  '<span class="fc-zone__label">' + esc(z.n) + "</span>" +
+                  (z.locked ? '<span class="fc-zone__gate">' + esc(gateOf(z)) + "</span>" : "") +
+                "</span>" +
+                "</button>";
+            }).join("") +
+          "</div>" +
+        "</div>" +
+      "</section>"
+    );
+  }).join("");
+
+  // The section builds downward, capital first, undercurrent last.
+  requestAnimationFrame(function () {
+    FCMotion.stagger(document.querySelectorAll(".fc-strata"));
+  });
+
+  $("legend").innerHTML = FC.LAYERS.map(function (l) {
+    return '<div class="fc-elevator__step" style="--tint:var(--' + l.key + ');color:var(--' + l.key + ')">' +
+      "<b>" + l.id + "</b><span>" + l.name + "</span></div>";
+  }).join("");
+
+  /* -------------------------------------------------------------- detail */
+  function meter(name, v, mod) {
+    return '<div><div class="fc-statline"><span>' + name + '</span><b>' + v + '</b></div>' +
+      '<div class="fc-meter ' + mod + '"><i style="width:' + v + '%"></i></div></div>';
+  }
+
+  var pinned = { l: "L1", z: 0 };
+
+  function show(layerId, idx, pin) {
+    var s = null;
+    for (var i = 0; i < STRATA.length; i++) if (STRATA[i].id === layerId) s = STRATA[i];
+    if (!s) return;
+    var z = s.zones[idx];
+    if (pin) pinned = { l: layerId, z: idx };
+
+    $("detail").style.setProperty("--tint", "var(--" + s.key + ")");
+    $("dSub").textContent = s.id + " · " + s.name + " / ZONE " + String(idx + 1).padStart(2, "0");
+    $("dTitle").textContent = z.n;
+    $("dTitle").style.color = "var(--" + s.key + ")";
+    $("dTags").innerHTML =
+      '<span class="fc-layer ' + s.key + '" data-l="' + s.id + '">' + esc(s.name) + "</span>" +
+      z.tags.map(function (t) { return '<span class="fc-chip">' + esc(t) + "</span>"; }).join("");
+    $("dBody").textContent = z.d;
+    $("dKv").innerHTML =
+      "<dt>准入门槛</dt><dd>" + z.th + " / 100</dd>" +
+      "<dt>生活成本</dt><dd>" + z.cost + " / 100</dd>" +
+      "<dt>风险指数</dt><dd" + (z.risk > 70 ? ' style="color:var(--bad)"' : "") + ">" + z.risk + " / 100</dd>" +
+      "<dt>状态</dt><dd" + (z.locked ? ' style="color:var(--warn)"' : "") + ">" +
+        (z.locked ? "未解锁" : "可进入") + "</dd>" +
+      (z.locked ? "<dt>入场券</dt><dd>" + esc(gateOf(z)) + "</dd>" : "");
+    $("dMeters").innerHTML =
+      meter("门槛", z.th, "fc-meter--cyan") +
+      meter("物价", z.cost, "") +
+      meter("风险", z.risk, "fc-meter--blood");
+
+    var rows = document.querySelectorAll(".fc-strata");
+    for (var r = 0; r < rows.length; r++) rows[r].classList.toggle("is-active", rows[r].dataset.layer === pinned.l);
+    var nodes = document.querySelectorAll(".fc-zone");
+    for (var n = 0; n < nodes.length; n++) {
+      nodes[n].classList.toggle("is-active", nodes[n].dataset.l === pinned.l && +nodes[n].dataset.z === pinned.z);
+    }
+  }
+
+  $("map").addEventListener("click", function (e) {
+    var node = e.target.closest(".fc-zone");
+    if (node) show(node.dataset.l, +node.dataset.z, true);
+  });
+
+  // Hovering previews a zone; the pinned selection keeps its ring until you click.
+  $("map").addEventListener("mouseover", function (e) {
+    var node = e.target.closest(".fc-zone");
+    if (node) show(node.dataset.l, +node.dataset.z, false);
+  });
+
+  $("map").addEventListener("mouseleave", function () {
+    show(pinned.l, pinned.z, false);
+  });
+
+  show("L1", 0, true);
+  }
+
+  FC.ready.then(init, function () {
+    $("map").removeAttribute("aria-busy");
+    $("map").innerHTML = '<div class="fc-panel">城市剖面读取失败。请通过本地服务器打开，或检查 data/story.json。</div>';
+    $("dTitle").textContent = "数据加载失败";
+    $("dTitle").style.color = "var(--bad)";
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,111 @@
+/*
+ * Small shared visual utilities extracted from the Round 1 effects probe.
+ * Keep these classes composable; component layout stays in main/screens CSS.
+ */
+.fc-neon-title,
+.neon-title {
+  --fc-neon-title-rgb: var(--fc-neon-cyan-rgb);
+  position: relative;
+  color: var(--fc-ink-100);
+  text-shadow:
+    0 0 2px rgba(255, 255, 255, 0.95),
+    0 0 10px rgba(var(--fc-neon-title-rgb), 0.78),
+    0 0 34px rgba(var(--fc-neon-title-rgb), 0.42);
+}
+
+.fc-neon-title[data-text]::before,
+.fc-neon-title[data-text]::after {
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  content: attr(data-text);
+  pointer-events: none;
+}
+
+.fc-neon-title[data-text]::before {
+  transform: translate(2px, 1px);
+  color: var(--fc-l4-alt);
+  opacity: 0.3;
+  clip-path: inset(12% 0 61%);
+}
+
+.fc-neon-title[data-text]::after {
+  transform: translate(-2px, 1px);
+  color: var(--fc-neon-magenta);
+  opacity: 0.25;
+  clip-path: inset(66% 0 12%);
+}
+
+.fc-neon-title--breathe {
+  animation: fc-neon-breathe 4.8s ease-in-out infinite alternate;
+}
+
+.fc-glass-panel,
+.glass-panel {
+  --fc-glass-panel-bg: var(--fc-glass-1-bg);
+  --fc-glass-panel-line: var(--fc-glass-1-line);
+  --fc-glass-panel-filter: var(--fc-glass-1-filter);
+  border: 1px solid var(--fc-glass-panel-line);
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.07), transparent 48%),
+    var(--fc-glass-panel-bg);
+  box-shadow: var(--fc-glass-highlight), 0 18px 50px rgba(0, 0, 0, 0.3);
+  -webkit-backdrop-filter: var(--fc-glass-panel-filter);
+  backdrop-filter: var(--fc-glass-panel-filter);
+}
+
+.fc-glass-panel--1,
+.glass-panel--1,
+[data-glass-tier="1"] {
+  --fc-glass-panel-bg: var(--fc-glass-1-bg);
+  --fc-glass-panel-line: var(--fc-glass-1-line);
+  --fc-glass-panel-filter: var(--fc-glass-1-filter);
+}
+
+.fc-glass-panel--2,
+.glass-panel--2,
+[data-glass-tier="2"] {
+  --fc-glass-panel-bg: var(--fc-glass-2-bg);
+  --fc-glass-panel-line: var(--fc-glass-2-line);
+  --fc-glass-panel-filter: var(--fc-glass-2-filter);
+}
+
+.fc-glass-panel--3,
+.glass-panel--3,
+[data-glass-tier="3"] {
+  --fc-glass-panel-bg: var(--fc-glass-3-bg);
+  --fc-glass-panel-line: var(--fc-glass-3-line);
+  --fc-glass-panel-filter: var(--fc-glass-3-filter);
+}
+
+.fc-particle-canvas {
+  position: fixed;
+  z-index: 0;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0.42;
+  pointer-events: none;
+}
+
+@keyframes fc-neon-breathe {
+  50% {
+    text-shadow:
+      0 0 2px rgba(255, 255, 255, 0.9),
+      0 0 8px rgba(var(--fc-neon-title-rgb), 0.65),
+      0 0 24px rgba(var(--fc-neon-title-rgb), 0.3);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fc-neon-title--breathe {
+    animation: none;
+  }
+}
+
+@supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
+  .fc-glass-panel,
+  .glass-panel {
+    background: color-mix(in srgb, var(--fc-bg-raised) 96%, transparent);
+  }
+}

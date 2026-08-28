@@ -1,0 +1,342 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#080b16">
+  <meta name="description" content="《浮城人生》霓虹文字、玻璃卡片、城市粒子雨与层级转场效果画廊。">
+  <title>浮城人生 · 城市视觉实验室</title>
+  <link rel="stylesheet" href="../css/fc-tokens.css">
+  <link rel="stylesheet" href="../css/fc-ui.css">
+  <link rel="stylesheet" href="./effects.css">
+  <script src="./effects.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#gallery">跳至效果画廊</a>
+  <canvas id="city-rain" aria-hidden="true"></canvas>
+  <div class="ambient-light ambient-light--cyan" aria-hidden="true"></div>
+  <div class="ambient-light ambient-light--violet" aria-hidden="true"></div>
+  <div class="noise" aria-hidden="true"></div>
+
+  <header class="topbar glass-panel">
+    <a class="brand" href="#top" aria-label="浮城人生效果画廊首页">
+      <span class="brand__signal" aria-hidden="true"></span>
+      <span>浮城人生</span>
+      <small>FX LAB / R1</small>
+    </a>
+    <nav class="topbar__nav" aria-label="画廊导航">
+      <a href="#neon">霓虹文字</a>
+      <a href="#glass">玻璃卡片</a>
+      <a href="#layers">层级转场</a>
+    </nav>
+    <button class="icon-button" type="button" data-motion-toggle aria-pressed="false">
+      <span class="icon-button__pulse" aria-hidden="true"></span>
+      <span data-motion-label>动态开启</span>
+    </button>
+  </header>
+
+  <main id="gallery">
+    <section class="hero section-shell" id="top" aria-labelledby="hero-title">
+      <div class="hero__eyebrow reveal-item">
+        <span>URBAN LIFE SIMULATOR</span>
+        <span class="hero__coordinates">31°13′N / CITY PROCESS 08:46</span>
+      </div>
+      <div class="hero__content">
+        <div>
+          <p class="kicker reveal-item">城市视觉实验室 · EFFECTS PROBE 01</p>
+          <h1 class="neon-title reveal-item" id="hero-title" data-text="灯火有价">
+            灯火有价
+          </h1>
+          <p class="hero__subtitle reveal-item">
+            霓虹沉默，潮汐准时。<br>
+            你只是这座城市里，正在发光的一个进程。
+          </p>
+        </div>
+        <aside class="hero__status glass-panel reveal-item" aria-label="城市实时状态">
+          <div class="status-ring" aria-hidden="true">
+            <span>84</span>
+          </div>
+          <div>
+            <span class="micro-label">CITY LOAD</span>
+            <strong>城市负载稳定</strong>
+            <p><span class="live-dot"></span> 8,412,037 个进程在线</p>
+          </div>
+        </aside>
+      </div>
+      <div class="hero__rail reveal-item" aria-label="城市状态指标">
+        <div><span>空气湿度</span><strong>78%</strong></div>
+        <div><span>通勤速度</span><strong>21.4<small> km/h</small></strong></div>
+        <div><span>金钱温度</span><strong>42.8<small>°C</small></strong></div>
+        <div><span>当前圈层</span><strong>L2</strong></div>
+      </div>
+      <a class="scroll-cue" href="#neon">
+        <span>浏览效果</span>
+        <i aria-hidden="true"></i>
+      </a>
+    </section>
+
+    <section class="effect-section section-shell" id="neon" aria-labelledby="neon-heading">
+      <div class="section-heading">
+        <div>
+          <p class="kicker">01 / NEON TYPOGRAPHY</p>
+          <h2 id="neon-heading">霓虹不是颜色，<br>是城市的脉搏。</h2>
+        </div>
+        <p class="section-heading__note">
+          多层 <code>text-shadow</code> 叠加轻微色散与呼吸动画。标题、金额、警报等级均可复用。
+        </p>
+      </div>
+
+      <div class="neon-grid">
+        <article class="neon-sample neon-sample--cyan glass-panel">
+          <span class="sample-index">N—01 / CYAN</span>
+          <p class="neon-type neon-type--cyan" data-text="上升通道">上升通道</p>
+          <footer>
+            <span>机会流速</span>
+            <strong>+12.8%</strong>
+          </footer>
+        </article>
+        <article class="neon-sample neon-sample--gold glass-panel">
+          <span class="sample-index">N—02 / GOLD</span>
+          <p class="neon-type neon-type--gold" data-text="钱是氧气">钱是氧气</p>
+          <footer>
+            <span>本月可支配</span>
+            <strong>¥ 8,420</strong>
+          </footer>
+        </article>
+        <article class="neon-sample neon-sample--danger glass-panel">
+          <span class="sample-index">N—03 / SIGNAL</span>
+          <p class="neon-type neon-type--danger flicker" data-text="账单将至">账单将至</p>
+          <footer>
+            <span>距离扣款日</span>
+            <strong>02 DAYS</strong>
+          </footer>
+        </article>
+      </div>
+    </section>
+
+    <section class="effect-section section-shell" id="glass" aria-labelledby="glass-heading">
+      <div class="section-heading section-heading--split">
+        <div>
+          <p class="kicker">02 / GLASS SURFACES</p>
+          <h2 id="glass-heading">隔着玻璃，<br>看见人生的价格。</h2>
+        </div>
+        <div class="material-legend" aria-label="玻璃材质参数">
+          <span><i class="swatch swatch--blur"></i>BLUR 24</span>
+          <span><i class="swatch swatch--edge"></i>EDGE 12%</span>
+          <span><i class="swatch swatch--glow"></i>GLOW 18%</span>
+        </div>
+      </div>
+
+      <div class="glass-showcase">
+        <article class="finance-card glass-card">
+          <header class="card-header">
+            <div>
+              <span class="micro-label">现金流 / CASHFLOW</span>
+              <p>八月资产快照</p>
+            </div>
+            <button class="more-button" type="button" aria-label="更多现金流选项">•••</button>
+          </header>
+          <div class="balance-block">
+            <span>可支配余额</span>
+            <strong><small>¥</small> 42,680<span>.00</span></strong>
+            <em>较上月 <b>↑ 8.2%</b></em>
+          </div>
+          <div class="sparkline" aria-label="七日余额趋势：整体上升">
+            <svg viewBox="0 0 500 120" role="img" aria-hidden="true">
+              <defs>
+                <linearGradient id="line-fill" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="#4fe3ff" stop-opacity=".34"/>
+                  <stop offset="100%" stop-color="#4fe3ff" stop-opacity="0"/>
+                </linearGradient>
+              </defs>
+              <path class="sparkline__fill" d="M0,100 C45,92 54,70 96,75 S160,105 204,72 S275,33 315,53 S385,88 425,40 S470,15 500,20 L500,120 L0,120 Z"/>
+              <path class="sparkline__line" d="M0,100 C45,92 54,70 96,75 S160,105 204,72 S275,33 315,53 S385,88 425,40 S470,15 500,20"/>
+              <circle cx="425" cy="40" r="5"/>
+              <circle cx="500" cy="20" r="7"/>
+            </svg>
+          </div>
+          <div class="card-stats">
+            <div><span>固定支出</span><strong>¥ 12,430</strong><small>29.1%</small></div>
+            <div><span>本月收入</span><strong>¥ 18,600</strong><small class="positive">+3.4%</small></div>
+            <div><span>下一账单</span><strong>房租</strong><small>09.01</small></div>
+          </div>
+        </article>
+
+        <div class="glass-stack">
+          <article class="identity-card glass-card">
+            <div class="identity-card__top">
+              <span class="level-chip">L2 · 工薪层</span>
+              <span class="signal-bars" aria-label="城市信号良好"><i></i><i></i><i></i><i></i></span>
+            </div>
+            <div class="identity-card__person">
+              <div class="avatar-orbit" aria-hidden="true"><span>林</span></div>
+              <div>
+                <h3>林默</h3>
+                <p>产品经理 · 27岁</p>
+              </div>
+            </div>
+            <blockquote>“账单比闹钟准时。”</blockquote>
+            <div class="identity-card__code"><span></span><b>FC—E7—018402</b></div>
+          </article>
+          <article class="notification-card glass-card">
+            <span class="notification-card__icon" aria-hidden="true">↗</span>
+            <div>
+              <span class="micro-label">机会窗口 · 仅剩 04:12</span>
+              <strong>猎头发来新的职位邀请</strong>
+              <p>薪资 +35% · 通勤 +48 min · 风险未知</p>
+            </div>
+            <button type="button" aria-label="查看职位邀请">查看</button>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="effect-section section-shell" id="atmosphere" aria-labelledby="atmosphere-heading">
+      <div class="section-heading">
+        <div>
+          <p class="kicker">03 / CITY ATMOSPHERE</p>
+          <h2 id="atmosphere-heading">雨落下来，<br>城市才显出深度。</h2>
+        </div>
+        <p class="section-heading__note">
+          页面背景由单个 Canvas 实时绘制：纵深雨线、微尘、远近灯火与鼠标视差，自适应像素密度。
+        </p>
+      </div>
+      <div class="city-window glass-panel" aria-label="城市粒子雨效果参数展示">
+        <div class="city-window__skyline" aria-hidden="true">
+          <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+        </div>
+        <div class="city-window__copy">
+          <span class="micro-label">LIVE PARTICLE FIELD</span>
+          <strong><span data-particle-count>000</span> 个光点正在漂移</strong>
+          <p>移动光标，改变这座城市的风向。</p>
+        </div>
+        <div class="atmosphere-meters">
+          <div><span>RAIN</span><i style="--meter: 78%"></i><b>78</b></div>
+          <div><span>LIGHT</span><i style="--meter: 62%"></i><b>62</b></div>
+          <div><span>DEPTH</span><i style="--meter: 91%"></i><b>91</b></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="effect-section section-shell" id="layers" aria-labelledby="layers-heading">
+      <div class="section-heading section-heading--split">
+        <div>
+          <p class="kicker">04 / LAYER TRANSITIONS</p>
+          <h2 id="layers-heading">每上升一层，<br>城市就换一种语言。</h2>
+        </div>
+        <p class="section-heading__note">
+          点击 L1–L5，体验可复用的遮罩切片、内容错峰进场与色域切换。连续点击也能稳定收束。
+        </p>
+      </div>
+
+      <div class="layer-console glass-panel" data-layer-console>
+        <div class="layer-tabs" role="tablist" aria-label="选择城市层级">
+          <button type="button" role="tab" aria-selected="true" tabindex="0" data-layer-target="1">
+            <span>L1</span><small>市井</small>
+          </button>
+          <button type="button" role="tab" aria-selected="false" tabindex="-1" data-layer-target="2">
+            <span>L2</span><small>工薪</small>
+          </button>
+          <button type="button" role="tab" aria-selected="false" tabindex="-1" data-layer-target="3">
+            <span>L3</span><small>上升</small>
+          </button>
+          <button type="button" role="tab" aria-selected="false" tabindex="-1" data-layer-target="4">
+            <span>L4</span><small>名利</small>
+          </button>
+          <button type="button" role="tab" aria-selected="false" tabindex="-1" data-layer-target="5">
+            <span>L5</span><small>暗流</small>
+          </button>
+        </div>
+
+        <div class="layer-stage" data-active-layer="1">
+          <div class="transition-shutters" aria-hidden="true">
+            <i></i><i></i><i></i><i></i><i></i>
+          </div>
+          <div class="layer-scanline" aria-hidden="true"></div>
+
+          <article class="city-layer is-active" role="tabpanel" data-city-layer="1" style="--layer-color: #ffb454; --layer-rgb: 255, 180, 84">
+            <div class="city-layer__number">01</div>
+            <div class="city-layer__content">
+              <span class="micro-label">STREET LEVEL / 06:18</span>
+              <h3>市井层</h3>
+              <p>油烟、早市、卷帘门。这里的人用最短的句子，谈最具体的钱。</p>
+              <div class="layer-tags"><span>城中村</span><span>早市</span><span>外卖站</span></div>
+            </div>
+            <div class="city-layer__metric"><span>生存成本</span><strong>¥ 3,200</strong><i></i></div>
+          </article>
+
+          <article class="city-layer" role="tabpanel" hidden data-city-layer="2" style="--layer-color: #8fa8c8; --layer-rgb: 143, 168, 200">
+            <div class="city-layer__number">02</div>
+            <div class="city-layer__content">
+              <span class="micro-label">WORKING LEVEL / 08:46</span>
+              <h3>工薪层</h3>
+              <p>地铁吞吐人群，写字楼点亮格子。稳定，是一份按月续费的服务。</p>
+              <div class="layer-tags"><span>地铁</span><span>合租房</span><span>KPI</span></div>
+            </div>
+            <div class="city-layer__metric"><span>时间价格</span><strong>¥ 68/h</strong><i></i></div>
+          </article>
+
+          <article class="city-layer" role="tabpanel" hidden data-city-layer="3" style="--layer-color: #3be8b0; --layer-rgb: 59, 232, 176">
+            <div class="city-layer__number">03</div>
+            <div class="city-layer__content">
+              <span class="micro-label">ASCENDING LEVEL / 20:17</span>
+              <h3>上升通道</h3>
+              <p>考场、校招、资格证。所有门都半开着，也都标着隐形的价格。</p>
+              <div class="layer-tags"><span>教育</span><span>考试</span><span>机会</span></div>
+            </div>
+            <div class="city-layer__metric"><span>机会浓度</span><strong>71.4%</strong><i></i></div>
+          </article>
+
+          <article class="city-layer" role="tabpanel" hidden data-city-layer="4" style="--layer-color: #f0c75e; --layer-rgb: 240, 199, 94">
+            <div class="city-layer__number">04</div>
+            <div class="city-layer__content">
+              <span class="micro-label">CAPITAL LEVEL / 23:08</span>
+              <h3>资本名利</h3>
+              <p>落地窗外没有街道，只有资产曲线。名字在这里，也是一种可交易资源。</p>
+              <div class="layer-tags"><span>会所</span><span>资本</span><span>声望</span></div>
+            </div>
+            <div class="city-layer__metric"><span>入场筹码</span><strong>¥ 8.4M</strong><i></i></div>
+          </article>
+
+          <article class="city-layer" role="tabpanel" hidden data-city-layer="5" style="--layer-color: #e3255f; --layer-rgb: 227, 37, 95">
+            <div class="city-layer__number">05</div>
+            <div class="city-layer__content">
+              <span class="micro-label">UNDERCURRENT / --:--</span>
+              <h3>暗流</h3>
+              <p>没有地图，也没有收据。每一条捷径都提前写好了代价。</p>
+              <div class="layer-tags"><span>地下金融</span><span>红线</span><span>未知</span></div>
+            </div>
+            <div class="city-layer__metric"><span>可见风险</span><strong>UNKNOWN</strong><i></i></div>
+          </article>
+
+          <div class="layer-progress" aria-hidden="true">
+            <span>GROUND</span><i><b data-layer-progress></b></i><span>SKYLINE</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="tokens section-shell" aria-labelledby="tokens-heading">
+      <div>
+        <p class="kicker">READY TO REUSE</p>
+        <h2 id="tokens-heading">四组效果，一套城市语言。</h2>
+      </div>
+      <div class="token-list">
+        <span><i style="--token:#4fe3ff"></i>霓虹青 <b>#4FE3FF</b></span>
+        <span><i style="--token:#a06bff"></i>资本紫 <b>#A06BFF</b></span>
+        <span><i style="--token:#ff5c5c"></i>风险红 <b>#FF5C5C</b></span>
+        <span><i style="--token:#ffd666"></i>市井金 <b>#FFD666</b></span>
+      </div>
+    </section>
+  </main>
+
+  <footer class="page-footer section-shell">
+    <span>浮城人生 / VISUAL SYSTEM ROUND 01</span>
+    <span>灯光、房租、关系，都有价格。</span>
+  </footer>
+
+  <noscript>
+    <p class="noscript-note">动态粒子与层级切换需要启用 JavaScript；其余视觉效果仍可浏览。</p>
+  </noscript>
+</body>
+</html>

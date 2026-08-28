@@ -1,0 +1,205 @@
+/* ==========================================================================
+   浮城人生 · fc-ledger.css
+   O2 账单抽屉 — the month closes and the city hands over the receipt.
+   Implements round2/fable-overlay-spec.md §2. Layered on top of the overlay
+   tokens fc-events.css publishes; the fallbacks keep the sheet usable if it
+   is ever dropped on a page without them.
+   ========================================================================== */
+
+.fc-sheet {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-sheet, 200);
+}
+
+/* No layer vignette here — settling the month is a neutral ceremony. */
+.fc-sheet__scrim {
+  position: absolute;
+  inset: 0;
+  background: rgba(4, 6, 13, 0.6);
+  animation: fc-fade-in var(--ov-t-fast, 200ms) ease-out both;
+}
+
+.fc-sheet.is-closing .fc-sheet__scrim {
+  animation: fc-fade-out var(--ov-t-fast, 200ms) ease-in both;
+}
+
+.fc-sheet__panel {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  margin: 0 auto;
+  max-width: 560px;
+  max-height: 78vh;
+  overflow-y: auto;
+  padding: 10px 20px calc(20px + env(safe-area-inset-bottom, 0px));
+  border-radius: var(--r-xl, 28px) var(--r-xl, 28px) 0 0;
+  background: rgba(11, 17, 32, 0.9);
+  border: 1px solid var(--line-hi, rgba(255, 255, 255, 0.24));
+  border-bottom: 0;
+  backdrop-filter: blur(20px) saturate(140%);
+  -webkit-backdrop-filter: blur(20px) saturate(140%);
+  box-shadow: 0 -26px 70px rgba(0, 0, 0, 0.6);
+  animation: fc-sheet-up var(--ov-t-panel, 320ms)
+    var(--ov-ease-out, cubic-bezier(0.22, 1, 0.36, 1)) both;
+}
+
+.fc-sheet.is-closing .fc-sheet__panel {
+  animation: fc-sheet-down 240ms ease-in both;
+}
+
+.fc-sheet__panel:focus {
+  outline: none;
+}
+
+@supports not (backdrop-filter: blur(1px)) {
+  .fc-sheet__panel {
+    background: rgba(11, 17, 32, 0.98);
+  }
+}
+
+@keyframes fc-fade-in {
+  from { opacity: 0; }
+}
+
+@keyframes fc-fade-out {
+  to { opacity: 0; }
+}
+
+@keyframes fc-sheet-up {
+  from { transform: translateY(100%); }
+}
+
+@keyframes fc-sheet-down {
+  to { transform: translateY(100%); }
+}
+
+/* ------------------------------------------------------------------ head */
+.fc-sheet__grip {
+  display: block;
+  width: 36px;
+  height: 4px;
+  margin: 2px auto 12px;
+  border-radius: 99px;
+  background: var(--line-hi, rgba(255, 255, 255, 0.24));
+}
+
+.fc-sheet__title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-hi, #f2f4ff);
+}
+
+.fc-sheet__ym {
+  font-family: var(--font-mono, ui-monospace, monospace);
+  letter-spacing: 0.04em;
+}
+
+.fc-sheet__caption {
+  margin: 4px 0 14px;
+  font-family: var(--font-serif, Georgia, serif);
+  font-size: 12px;
+  color: var(--text-faint, rgba(242, 244, 255, 0.32));
+}
+
+/* ------------------------------------------------------------------ rows */
+.fc-ledger {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+/* Line by line, 90ms apart: the month is read out, not dumped. */
+.fc-ledger__row {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  padding: 9px 0;
+  border-bottom: 1px dashed rgba(140, 165, 214, 0.14);
+  font-size: 13px;
+  color: var(--text, rgba(242, 244, 255, 0.72));
+  animation: fc-rise 0.4s var(--ease, ease) both;
+  animation-delay: calc(var(--i, 0) * 90ms);
+}
+
+.fc-ledger__note {
+  font-size: 11px;
+  color: var(--text-faint, rgba(242, 244, 255, 0.32));
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.fc-ledger__amount {
+  margin-left: auto;
+  flex: none;
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-weight: 600;
+  color: var(--bad, #ff5c5c);
+}
+
+.fc-ledger__row--income {
+  border-bottom-style: solid;
+}
+
+.fc-ledger__row--income .fc-ledger__amount {
+  color: var(--ok, #3de8a0);
+}
+
+/* ----------------------------------------------------------------- total */
+.fc-ledger__total {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 14px 0 16px;
+  animation: fc-rise 0.4s var(--ease, ease) both;
+  animation-delay: calc(var(--i, 0) * 90ms + 120ms);
+}
+
+.fc-ledger__total-label {
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  color: var(--text-dim, rgba(242, 244, 255, 0.45));
+}
+
+.fc-ledger__total-value {
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1.1;
+  color: var(--bad, #ff5c5c);
+  text-shadow: 0 0 26px color-mix(in srgb, currentColor 40%, transparent);
+}
+
+.fc-ledger__total.up .fc-ledger__total-value {
+  color: var(--ok, #3de8a0);
+}
+
+.fc-sheet__done {
+  width: 100%;
+}
+
+/* ------------------------------------------------------------ responsive */
+@media (max-width: 560px) {
+  .fc-sheet__panel {
+    padding: 10px 16px calc(16px + env(safe-area-inset-bottom, 0px));
+    max-height: 82vh;
+  }
+  .fc-ledger__total-value {
+    font-size: 25px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fc-sheet__scrim,
+  .fc-sheet__panel,
+  .fc-sheet.is-closing .fc-sheet__scrim,
+  .fc-sheet.is-closing .fc-sheet__panel,
+  .fc-ledger__row,
+  .fc-ledger__total {
+    animation: none;
+  }
+}

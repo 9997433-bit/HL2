@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>人生仪表盘 — 浮城人生</title>
+<meta name="description" content="浮城人生 · 人生仪表盘：金钱、健康、人脉、圈层、年龄与事件日志。">
+<meta name="theme-color" content="#05070f">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 44 44'%3E%3Crect width='44' height='44' rx='11' fill='%2305070f'/%3E%3Cg fill='%234fe3ff'%3E%3Crect x='9' y='21' width='4.4' height='12'/%3E%3Crect x='16.2' y='14' width='4' height='19'/%3E%3Crect x='23.4' y='18.5' width='4.2' height='14.5' fill='%23ff3fa4'/%3E%3Crect x='30.6' y='11' width='4.4' height='22'/%3E%3C/g%3E%3Crect x='7' y='35.6' width='30' height='1.6' rx='.8' fill='%23ffc861'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="../css/fc-tokens.css">
+<link rel="stylesheet" href="../css/screens.css">
+<link rel="stylesheet" href="../css/fc-ui.css">
+<link rel="stylesheet" href="../css/fc-events.css">
+<link rel="stylesheet" href="../css/fc-ledger.css">
+</head>
+<body>
+<div class="fc-atmos"></div>
+<canvas class="fc-particle-canvas" data-fc-particles data-particle-count="84" aria-hidden="true"></canvas>
+<div class="fc-skyline"></div>
+
+<header class="fc-topbar">
+  <a class="fc-brand" href="../index.html">
+    <span class="fc-brand__mark"></span>
+    <span>浮城人生 <span class="fc-brand__en">URBAN LIFE SIM</span></span>
+  </a>
+  <nav class="fc-nav">
+    <a href="era-select.html">入城登记</a>
+    <a href="origin-select.html">出身</a>
+    <a href="dashboard.html" aria-current="page">人生仪表盘</a>
+    <a href="city-map.html">城市地图</a>
+  </nav>
+</header>
+
+<main class="fc-page fc-page--wide">
+
+  <!-- Identity strip -->
+  <section class="fc-panel fc-rise" style="margin-bottom:18px">
+    <div class="fc-rowgap" style="justify-content:space-between;align-items:flex-start">
+      <div style="min-width:0">
+        <p class="fc-eyebrow" style="margin-bottom:8px">LIFE DASHBOARD · 人生仪表盘</p>
+        <h1 class="fc-title" style="font-size:clamp(24px,3.4vw,34px);margin-bottom:8px" id="identity">正在读取市民档案……</h1>
+        <div class="fc-rowgap">
+          <span class="fc-chip fc-chip--accent" id="eraChip">E7 · 当前时代</span>
+          <span class="fc-chip" id="originChip">普通工薪</span>
+          <span class="fc-chip" id="layerChip">L2 工薪层</span>
+        </div>
+      </div>
+      <div style="text-align:right">
+        <div class="fc-actionbar__label">City Clock</div>
+        <div class="fc-mono" id="clock" style="font-size:22px;color:var(--text-hi);letter-spacing:.04em">2020.03</div>
+        <div class="fc-quote" id="season" style="font-size:12px">雨季 · 账单日临近</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- HUD -->
+  <section class="fc-hud fc-rise" style="margin-bottom:18px">
+    <div class="fc-stat" id="moneyStat" style="--tint:var(--neon-amber)">
+      <div class="fc-stat__label">￥ 现金 <span class="fc-stat__warn" id="moneyWarn" hidden>氧气不足</span></div>
+      <div class="fc-stat__value" id="sMoney">0</div>
+      <div class="fc-stat__delta" id="dMoney">月净流 —</div>
+    </div>
+    <div class="fc-stat" style="--tint:var(--neon-jade)">
+      <div class="fc-stat__label">♡ 健康</div>
+      <div class="fc-stat__value"><span id="sHealth">0</span><small>/100</small></div>
+      <div class="fc-stat__meter fc-meter fc-meter--jade"><i id="mHealth"></i></div>
+    </div>
+    <div class="fc-stat" style="--tint:var(--neon-violet)">
+      <div class="fc-stat__label">◎ 人脉</div>
+      <div class="fc-stat__value"><span id="sSocial">0</span><small>/100</small></div>
+      <div class="fc-stat__meter fc-meter fc-meter--violet"><i id="mSocial"></i></div>
+    </div>
+    <div class="fc-stat" style="--tint:var(--neon-cyan)">
+      <div class="fc-stat__label">✦ 声望</div>
+      <div class="fc-stat__value"><span id="sRep">0</span><small>/100</small></div>
+      <div class="fc-stat__meter fc-meter fc-meter--cyan"><i id="mRep"></i></div>
+    </div>
+    <div class="fc-stat" style="--tint:var(--neon-rose)">
+      <div class="fc-stat__label">⧗ 年龄</div>
+      <div class="fc-stat__value"><span id="sAge">22</span><small>岁</small></div>
+      <div class="fc-stat__delta" id="dAge">已在城中 0 个月</div>
+    </div>
+    <div class="fc-stat" style="--tint:var(--neon-blood)">
+      <div class="fc-stat__label">⚑ 负债</div>
+      <div class="fc-stat__value" id="sDebt">0</div>
+      <div class="fc-stat__delta" id="dDebt">无未结清账目</div>
+    </div>
+  </section>
+
+  <div class="fc-split fc-split--main">
+
+    <!-- Event log -->
+    <section class="fc-panel fc-rise">
+      <h2 class="fc-sectiontitle">事件日志 <span>EVENT LOG</span></h2>
+      <div class="fc-rowgap">
+        <button class="fc-btn fc-btn--primary" id="tickBtn" disabled>推进一个月 ▸</button>
+        <button class="fc-btn fc-btn--ghost" id="tick6Btn" disabled>快进半年 ▸▸</button>
+        <button class="fc-btn fc-btn--ghost" id="resetBtn" disabled>重开人生</button>
+        <a class="fc-btn fc-btn--ghost" href="city-map.html">打开城市地图</a>
+      </div>
+      <hr class="fc-hr">
+      <ul class="fc-log" id="log"></ul>
+    </section>
+
+    <!-- Side rail -->
+    <aside class="fc-stack fc-rise">
+
+      <div class="fc-panel" id="elevatorPanel">
+        <h2 class="fc-sectiontitle">圈层 <span>LAYER</span></h2>
+        <div class="fc-elevator" id="elevator"></div>
+        <p class="fc-quote" id="layerNote" style="margin:14px 0 0;font-size:12px">
+          城市把人放在不同的高度，然后收不同的租。
+        </p>
+      </div>
+
+      <div class="fc-panel">
+        <h2 class="fc-sectiontitle">本月账单 <span>BILLS</span></h2>
+        <dl class="fc-kv" id="bills" style="margin-top:0"></dl>
+        <hr class="fc-hr">
+        <div class="fc-statline"><span>收支比</span><b id="ratio">—</b></div>
+        <div class="fc-meter"><i id="mRatio"></i></div>
+        <p class="fc-quote" style="margin:12px 0 0;font-size:12px">「账单比闹钟准时。」</p>
+        <button class="fc-btn fc-btn--ghost" id="ledgerBtn"
+                style="width:100%;margin-top:12px" disabled>查看结算单</button>
+      </div>
+
+      <div class="fc-panel">
+        <h2 class="fc-sectiontitle">承重柱 <span>PILLARS</span></h2>
+        <div class="fc-taglist">
+          <span class="fc-chip">教育</span><span class="fc-chip">公权力</span>
+          <span class="fc-chip">资本</span><span class="fc-chip">家庭</span>
+          <span class="fc-chip">媒体</span><span class="fc-chip">职场</span>
+          <span class="fc-chip">房产</span><span class="fc-chip">消费</span>
+          <span class="fc-chip">科技</span>
+        </div>
+      </div>
+
+    </aside>
+  </div>
+
+  <p class="fc-footnote">
+    《浮城人生》· 人生仪表盘 — 原型界面（Mock 数据驱动）·
+    <a href="../index.html">返回游戏入口</a>
+  </p>
+</main>
+
+<script src="../js/story-loader.js"></script>
+<script src="../js/fc-ui.js"></script>
+<script src="../js/screens.js"></script>
+<script src="../js/fc-motion.js"></script>
+<script src="../js/fc-events.js"></script>
+<script src="../js/fc-ledger.js"></script>
+<script>
+(function () {
+  var $ = function (id) { return document.getElementById(id); };
+  var esc = FC.esc;
+
+  function init() {
+  var era = FC.era();
+  var origin = FC.origin();
+
+  /* ------------------------------------------------------------ run state */
+  var START_MONEY = parseInt(String(origin.start).replace(/[^\d]/g, ""), 10) || 1000;
+
+  function freshRun() {
+    var money = START_MONEY;
+    return {
+      key: era.id + "/" + origin.id,
+      year: era.startYear || era.yearAnchor || 2021,
+      month: 3,
+      age: 22,
+      months: 0,
+      money: money,
+      health: origin.mods.health,
+      social: origin.mods.social,
+      rep: Math.round((origin.mods.edu + origin.mods.social) / 2),
+      debt: origin.layer >= 4 ? 0 : Math.round(money * 0.35),
+      income: 0,
+      gap: 0,
+      sinceModal: 1,
+      log: []
+    };
+  }
+
+  var saved = FC.read().run;
+  var run = saved && saved.key === era.id + "/" + origin.id ? saved : freshRun();
+
+  /* Every log entry carries a sequence number so renderLog can tell what is
+     new from what is already on screen. Restored saves are renumbered on the
+     way in — a counter from a previous session means nothing to this one. */
+  var logSeq = 0;
+  for (var s = run.log.length - 1; s >= 0; s--) run.log[s].seq = ++logSeq;
+
+  function pushLog(entry) {
+    entry.seq = ++logSeq;
+    run.log.unshift(entry);
+    if (run.log.length > 60) run.log.length = 60;
+    return entry;
+  }
+
+  /* O1 事件弹窗 — the city knocks on its own schedule. The odds climb with
+     every quiet month and hit certainty at four, so a demo that advances
+     three or four times always sees one. Older saves join the rotation. */
+  var MODAL_ODDS = [0, 0, 0.45, 0.65, 1];
+  if (typeof run.sinceModal !== "number") run.sinceModal = 1;
+
+  /* --------------------------------------------------------------- 经济模型
+     Money is oxygen: bills eat most of the paycheque at every layer, and
+     climbing a layer raises the cost of living faster than it raises pay. */
+  function income() {
+    var skill = (origin.mods.edu + run.rep) / 2;
+    var eraBoost = 0.85 + era.stats.opportunity / 180;
+    var gross = (1500 + skill * 44 + run.social * 16) * eraBoost * (0.7 + layerOf() * 0.16);
+    return Math.round(gross * (run.gap > 0 ? 0.18 : 1));
+  }
+
+  function bills() {
+    var burden = [0, 0.8, 0.74, 0.71, 0.6, 0.68][layerOf()] || 0.74;
+    var base = income() * burden;
+    return [
+      { k: "房租", v: Math.round(base * 0.46) },
+      { k: "通勤", v: Math.round(base * 0.08) },
+      { k: "伙食", v: Math.round(base * 0.22) },
+      { k: "人情", v: Math.round(base * 0.14) },
+      { k: "杂费", v: Math.round(base * 0.1) },
+      { k: "还贷", v: Math.round(run.debt * 0.015) }
+    ];
+  }
+
+  /* Layer drifts from where you started — wealth relative to your own origin,
+     not an absolute number. Reputation collapse drops you into the undercurrent. */
+  function layerOf() {
+    if (run.rep < 20) return 5;
+    var mult = run.money / Math.max(START_MONEY, 800);
+    var drift = mult > 60 ? 2 : mult > 8 ? 1 : mult < 0.3 ? -1 : 0;
+    return Math.max(1, Math.min(4, origin.layer + drift));
+  }
+
+  /* -------------------------------------------------------------- events
+     w = draw weight. Ordinary months are common; the months that rearrange
+     a life are rare, and a few of them only ever happen once. */
+  var POOL = [
+    { id: "kpi", w: 10, tag: "职场", tint: "var(--l2)",
+      text: "季度 KPI 出榜，你在名单中段。主管说「再顶一顶」，没说顶到哪。",
+      d: { money: 1, health: -4, rep: 3 } },
+    { id: "metro", w: 10, tag: "城市", tint: "var(--l1)",
+      text: "早高峰的地铁停了十一分钟。广播说前方站台拥挤，车厢里没人说话。",
+      d: { health: -2 } },
+    { id: "luck", w: 10, tag: "运气", tint: "var(--l1)",
+      text: "楼下便利店的关东煮买一送一。这是这周最顺的十分钟。",
+      d: { health: 3 } },
+    { id: "rent", w: 10, tag: "账单", tint: "var(--l1)",
+      text: "房东在群里发了续租通知，涨 300。他加了个笑脸。",
+      d: { money: -1, health: -2 } },
+    { id: "wedding", w: 10, tag: "人情", tint: "var(--l4)",
+      text: "老同学婚宴，红包 800。人情账本上你这一栏，终于不再欠着。",
+      d: { money: -1, social: 6, rep: 2 } },
+
+    { id: "poach", w: 5, tag: "职场", tint: "var(--l3)",
+      text: "隔壁组挖你，涨 18%，代价是每周飞一次。你要了三天考虑期。",
+      d: { money: 2, social: 4, health: -6, rep: 5 } },
+    { id: "checkup", w: 5, tag: "健康", tint: "var(--l3)",
+      text: "体检报告有两个箭头向上。医生让你少熬夜，你说好，然后打开了电脑。",
+      d: { health: -8, money: -1 } },
+    { id: "dinner", w: 5, tag: "机会", tint: "var(--l4)",
+      text: "有人拉你进一个饭局，桌上没人递名片——都认识彼此，只有你需要介绍。",
+      d: { social: 9, rep: 4, money: -1 } },
+    { id: "cert", w: 5, tag: "上升", tint: "var(--l3)",
+      text: "报名了周末的证书班。两个月的学费，换一行简历。",
+      d: { money: -2, rep: 6, health: -3 } },
+    { id: "side", w: 5, tag: "副业", tint: "var(--l3)",
+      text: "深夜接的私活收到尾款。到账短信亮了一下，屏幕又暗下去。",
+      d: { money: 2, health: -5 } },
+    { id: "flat", w: 5, tag: "居住", tint: "var(--l2)",
+      text: "合租室友搬走，押金退得干干净净。空出来的房间比预想的大。",
+      d: { money: -2, health: 3 } },
+    { id: "home", w: 5, tag: "家庭", tint: "var(--l4)",
+      text: "家里来电话，问你什么时候回去看看。你听见背景里电视的声音。",
+      d: { money: -1, health: 4, social: 2 } },
+
+    { id: "grey", w: 2, tag: "风险", tint: "var(--l5)",
+      text: "熟人介绍了一笔「稳赚」的短期周转，年化写在纸巾上。红线在灯下若隐若现。",
+      d: { money: 4, rep: -8, health: -3 } },
+    { id: "layoff", w: 2, tag: "裁员", tint: "var(--l5)",
+      text: "楼层里搬走了三张工位。HR 的会议室从早上开到中午，门一直关着。",
+      d: { rep: -4, health: -5, social: -3 } },
+    { id: "lend", w: 2, tag: "人情", tint: "var(--l1)",
+      text: "老乡开口借钱，说三个月就还。你答应了，没写借条。",
+      d: { money: -3, social: 7 } },
+    { id: "hospital", w: 2, tag: "意外", tint: "var(--l5)",
+      text: "父母住院，押金先交。你在缴费窗口前把余额算了两遍。",
+      d: { money: -5, health: -4, social: 2 } },
+
+    { id: "downpay", w: 1, once: true, tag: "房产", tint: "var(--l4)",
+      text: "看中一套小两居。首付要掏空所有的卡，签字的手很稳，心跳不稳。",
+      d: { money: -10, rep: 6, health: -2 } },
+    { id: "fired", w: 1, tag: "失业", tint: "var(--l5)",
+      text: "邮件标题写着「组织架构调整」。工卡在下午五点失效。",
+      d: { rep: -6, health: -6 }, gap: 3 }
+  ];
+
+  function pick() {
+    var pool = [], total = 0, i;
+    var recent = run.recent || [];
+    for (i = 0; i < POOL.length; i++) {
+      if (POOL[i].once && run.done && run.done[POOL[i].id]) continue;
+      if (recent.indexOf(POOL[i].id) >= 0) continue;
+      pool.push(POOL[i]);
+      total += POOL[i].w;
+    }
+    var r = Math.random() * total;
+    for (i = 0; i < pool.length; i++) {
+      r -= pool[i].w;
+      if (r <= 0) return pool[i];
+    }
+    return pool[pool.length - 1];
+  }
+
+  /* Deltas are written in units, not amounts: money moves in steps of roughly
+     a third of a month's income, so a choice costs the same share of a life
+     in 1984 as it does in 2026. FC.events.moneyOf is the same conversion the
+     event card shows the player, so the card and the HUD cannot disagree. */
+  function toMoney(units) {
+    if (FC.events && FC.events.moneyOf) return FC.events.moneyOf(units, income());
+    return units * Math.max(400, Math.round(income() * 0.3));
+  }
+
+  function applyDeltas(d) {
+    var applied = {};
+    for (var k in d) {
+      if (!Object.prototype.hasOwnProperty.call(d, k)) continue;
+      if (k === "money") {
+        var amount = toMoney(d[k]);
+        run.money += amount;
+        applied.money = Math.round(amount / 100) * 100;
+      } else if (typeof run[k] === "number") {
+        run[k] = Math.max(0, Math.min(100, run[k] + d[k]));
+        applied[k] = d[k];
+      }
+    }
+    return applied;
+  }
+
+  /* ----------------------------------------------------------- rendering */
+  var fmt = function (n) { return n.toLocaleString("zh-CN"); };
+
+  /* Every HUD number rolls, the first paint included — arriving on the
+     dashboard should look like the city is counting you in. FCMotion sizes the
+     roll to the jump (400–800ms) and writes the value outright when the player
+     has asked for reduced motion. */
+  function paintNumber(id, value, prefix) {
+    var element = $(id);
+    value = Math.round(value);
+    if (window.FCMotion && FCMotion.countUp) {
+      FCMotion.countUp(element, value, { prefix: prefix || "" });
+    } else {
+      element.textContent = (prefix || "") + fmt(value);
+    }
+  }
+
+  function bump(el) {
+    el.classList.remove("fc-flash");
+    void el.offsetWidth;
+    el.classList.add("fc-flash");
+  }
+
+  /* Sends each ¥ movement up to the cash figure, 150ms apart so a month that
+     moved money three ways arrives as three events instead of one blur.
+     Amounts under ¥50 are noise and stay in the log where they belong. */
+  function flyMoney(amounts, source) {
+    if (!window.FCMotion || !FCMotion.moneyFloat) return;
+    var shown = 0;
+    for (var i = 0; i < amounts.length && shown < 3; i++) {
+      if (!amounts[i] || Math.abs(amounts[i]) < 50) continue;
+      FCMotion.moneyFloat(amounts[i], {
+        target: $("sMoney"),
+        from: source,
+        delay: shown * 150
+      });
+      shown++;
+    }
+  }
+
+  function render(flash) {
+    var L = layerOf();
+    var layer = FC.LAYERS[L - 1];
+    var inc = income();
+    var out = bills().reduce(function (a, b) { return a + b.v; }, 0);
+    run.income = inc - out;
+
+    $("identity").textContent = origin.name + "　·　" + era.name;
+    $("eraChip").textContent = era.id + " · " + era.name + "　" + era.years;
+    $("originChip").textContent = "出身 " + origin.name + " / " + origin.en;
+    $("layerChip").textContent = layer.id + " " + layer.name;
+    $("layerChip").className = "fc-chip";
+    $("layerChip").style.color = "var(--" + layer.key + ")";
+    $("layerChip").style.borderColor = "var(--" + layer.key + ")";
+
+    $("clock").textContent = run.year + "." + (run.month < 10 ? "0" : "") + run.month;
+    $("season").textContent = [
+      "深冬 · 暖气与欠费", "早春 · 招聘季", "雨季 · 账单日临近", "盛夏 · 电费翻倍", "秋汛 · 年底考核"
+    ][Math.floor(run.month / 2.5) % 5];
+
+    /* 「氧气不足」(architecture §2 S4): cash that no longer covers next
+       month's fixed spend. The figure keeps breathing red until it does. */
+    var starving = run.money < out;
+    $("moneyStat").classList.toggle("is-warning", starving);
+    $("moneyWarn").hidden = !starving;
+
+    paintNumber("sMoney", run.money, "¥");
+    $("dMoney").textContent = run.gap > 0
+      ? "空窗期 · 剩 " + run.gap + " 个月　月净流 " + (run.income >= 0 ? "+¥" : "−¥") + fmt(Math.abs(run.income))
+      : "月净流 " + (run.income >= 0 ? "+¥" : "−¥") + fmt(Math.abs(run.income));
+    $("dMoney").className = "fc-stat__delta " + (run.income >= 0 ? "up" : "down");
+
+    paintNumber("sHealth", run.health);
+    $("mHealth").style.width = Math.max(0, Math.min(100, run.health)) + "%";
+    $("mHealth").parentNode.className =
+      "fc-stat__meter fc-meter " + (run.health < 30 ? "fc-meter--blood" : "fc-meter--jade");
+    paintNumber("sSocial", run.social);
+    $("mSocial").style.width = Math.max(0, Math.min(100, run.social)) + "%";
+    paintNumber("sRep", run.rep);
+    $("mRep").style.width = Math.max(0, Math.min(100, run.rep)) + "%";
+
+    paintNumber("sAge", run.age);
+    $("dAge").textContent = "已在城中 " + run.months + " 个月";
+    paintNumber("sDebt", run.debt, "¥");
+    $("dDebt").textContent = run.debt > 0 ? "每月还本付息 ¥" + fmt(Math.round(run.debt * 0.015)) : "无未结清账目";
+    $("dDebt").className = "fc-stat__delta " + (run.debt > 0 ? "down" : "up");
+
+    $("bills").innerHTML = bills().map(function (b) {
+      return "<dt>" + b.k + "</dt><dd>−¥" + fmt(b.v) + "</dd>";
+    }).join("") + "<dt>月收入</dt><dd style='color:var(--ok)'>+¥" + fmt(inc) + "</dd>";
+
+    var ratio = Math.round((out / Math.max(inc, 1)) * 100);
+    $("ratio").textContent = ratio + "% 支出占比";
+    $("mRatio").style.width = Math.min(100, ratio) + "%";
+    $("mRatio").parentNode.className = "fc-meter " + (ratio > 85 ? "fc-meter--blood" : ratio > 60 ? "" : "fc-meter--jade");
+
+    $("elevatorPanel").style.setProperty("--tint", "var(--" + layer.key + ")");
+    $("elevator").innerHTML = FC.LAYERS.map(function (l, i) {
+      var here = i + 1 === L;
+      return '<div class="fc-elevator__step ' + (here ? "is-here" : "") + '" style="--tint:var(--' + l.key + ')">' +
+        "<b>" + l.id + "</b><span>" + l.name + "</span></div>";
+    }).join("");
+    $("layerNote").textContent = layer.description;
+
+    if (flash) {
+      bump($("sMoney"));
+      bump($("sHealth"));
+    }
+    FC.write({ run: run });
+  }
+
+  var STAT_NAME = { money: "现金", health: "健康", social: "人脉", rep: "声望" };
+
+  // Only the visible head of the list is staggered; below the fold the
+  // delay would just be dead time before the reader ever gets there.
+  function logItem(e, i) {
+    var deltas = Object.keys(e.d).map(function (k) {
+      var v = e.d[k];
+      return '<span class="' + (v >= 0 ? "up" : "down") + '">' +
+        STAT_NAME[k] + " " + (v >= 0 ? "+" : "−") + Math.abs(v) + "</span>";
+    }).join("");
+    return '<li class="fc-log__item is-new" style="--i:' + Math.min(i, 7) + '">' +
+      '<div class="fc-log__time">' + e.t + "</div>" +
+      '<div class="fc-log__body">' +
+        '<span class="fc-log__tag" style="color:' + e.tint + '">' + esc(e.tag) + "</span>" +
+        "<p>" + esc(e.text) + "</p>" +
+        '<div class="fc-log__delta">' + deltas + "</div>" +
+      "</div></li>";
+  }
+
+  /* Sequence numbers of the entries currently in the DOM, newest first. The
+     log only ever grows at the head, so anything above the highest number we
+     have painted is this month's news and is the only thing that animates. */
+  var painted = [];
+
+  function renderLog() {
+    var list = $("log");
+    var head = run.log.slice(0, 24);
+    var top = painted.length ? painted[0] : 0;
+    var fresh = [];
+    var i;
+
+    for (i = 0; i < head.length; i++) {
+      if (head[i].seq <= top) break;
+      fresh.push(head[i]);
+    }
+
+    var stale = list.children.length !== painted.length;
+    if (!painted.length || stale || fresh.length === head.length) {
+      list.innerHTML = head.map(logItem).join("");
+    } else if (fresh.length) {
+      // Inserted back to front so the newest entry ends up on top with --i 0.
+      for (i = fresh.length - 1; i >= 0; i--) {
+        list.insertAdjacentHTML("afterbegin", logItem(fresh[i], i));
+      }
+      while (list.children.length > head.length) list.removeChild(list.lastChild);
+    }
+
+    painted = head.map(function (e) { return e.seq; });
+  }
+
+  /* The slide is a one-off announcement, not a property of the entry: drop
+     the class once it has played so a later full rebuild is the only thing
+     that can ever replay it. */
+  $("log").addEventListener("animationend", function (ev) {
+    if (ev.animationName === "fc-logslide") ev.target.classList.remove("is-new");
+  });
+
+  /* -------------------------------------------------------- O2 账单抽屉
+     The side panel carries the same numbers all month; the drawer is the
+     moment they are read out loud. */
+  var RENT_NOTE = ["城中村单间", "合租主卧", "一室一厅", "江景两居", "临时落脚"];
+
+  function billNote(key) {
+    if (key === "房租") return RENT_NOTE[layerOf() - 1] || "";
+    if (key === "还贷") return "月供利息";
+    return "";
+  }
+
+  function buildLedgerPayload() {
+    return {
+      ym: run.year + "." + (run.month < 10 ? "0" : "") + run.month,
+      rows: bills().map(function (b) {
+        return { label: b.k, note: billNote(b.k), amount: -b.v };
+      }),
+      income: income(),
+      net: run.income
+    };
+  }
+
+  /* Three months deserve the ceremony: the first one in the city, any month
+     that closed in the red, and every December. */
+  function maybeShowLedger(silent) {
+    if (silent || !FC.ledger) return;
+    if (run.months === 1 || run.income < 0 || run.month === 12) {
+      FC.ledger.show(buildLedgerPayload());
+    }
+  }
+
+  /* ------------------------------------------------------------ the tick */
+  function tick(silent) {
+    run.months++;
+    run.month++;
+    if (run.month > 12) { run.month = 1; run.year++; }
+    if (run.months % 12 === 0) run.age++;
+
+    var e = pick();
+    if (e.once) {
+      run.done = run.done || {};
+      run.done[e.id] = 1;
+    }
+    run.recent = (run.recent || []).concat(e.id).slice(-4);
+
+    /* Every ¥ that moves this month, in the order it moves, so the floats
+       replay the settlement rather than summarising it. */
+    var moves = [];
+    var applied = applyDeltas(e.d);
+    if (applied.money) moves.push(applied.money);
+
+    if (e.gap) run.gap = e.gap;
+    else if (run.gap > 0) run.gap--;
+
+    moves.push(run.income);
+    run.money += run.income;
+    run.debt = Math.max(0, run.debt - Math.round(run.debt * 0.015));
+    if (run.money < 0) {
+      run.debt += -run.money;
+      run.money = 0;
+    }
+
+    // Rest only pays off in a month that closed in the black; age charges interest.
+    var rest = run.income > 0 ? 2.1 : 0.8;
+    var wear = 0.4 + Math.max(0, (run.age - 35) * 0.05);
+    run.health = Math.max(0, Math.min(100, run.health + rest - wear));
+
+    pushLog({
+      t: run.year + "." + (run.month < 10 ? "0" : "") + run.month,
+      tag: e.tag,
+      tint: e.tint,
+      text: e.text,
+      d: applied
+    });
+
+    // The body keeps its own ledger, and settles it all at once.
+    if (run.health <= 4) {
+      var fee = Math.round(income() * 2.2);
+      run.money -= fee;
+      if (run.money < 0) { run.debt += -run.money; run.money = 0; }
+      run.health = 26;
+      moves.push(-fee);
+      pushLog({
+        t: run.year + "." + (run.month < 10 ? "0" : "") + run.month,
+        tag: "透支",
+        tint: "var(--bad)",
+        text: "你在工位上失去意识，醒来时天花板是白的。身体的账单，最后一起结。",
+        d: { money: -Math.round(fee / 100) * 100, health: 22 }
+      });
+    }
+
+    render(true);
+    renderLog();
+    flyMoney(moves, $("tickBtn"));
+
+    var ev = drawModalEvent();
+    if (!ev) {
+      maybeShowLedger(silent);
+      return Promise.resolve(false);
+    }
+    return openEvent(ev, silent);
+  }
+
+  /* The undercurrent stays shut for the first half-year, and once it opens it
+     stays shut for another twelve months. */
+  function drawModalEvent() {
+    if (!FC.events || FC.events.isOpen()) return null;
+
+    run.sinceModal++;
+    if (Math.random() >= MODAL_ODDS[Math.min(run.sinceModal, 4)]) return null;
+
+    var draw = { layer: layerOf(), avoid: run.recentModal || [] };
+    var ev = FC.events.pick(draw);
+    if (!ev) return null; /* deck still loading — the month rolls on quietly */
+
+    var redlineShut = run.months < 6 ||
+      (typeof run.lastRedline === "number" && run.months - run.lastRedline < 12);
+    if (ev.type === "redline" && redlineShut) {
+      draw.allowRedline = false;
+      ev = FC.events.pick(draw);
+      if (!ev) return null;
+    }
+    if (ev.type === "redline") run.lastRedline = run.months;
+
+    run.sinceModal = 0;
+    run.recentModal = (run.recentModal || []).concat(ev.id).slice(-3);
+    return ev;
+  }
+
+  /* The overlay is pure UI: it hands back the choice, the dashboard is what
+     actually charges the player for it. */
+  function openEvent(ev, silent) {
+    return FC.events.show(ev, { moneyRef: income() }).then(function (res) {
+      if (res.dismissed) return true;
+      var applied = applyDeltas(res.deltas);
+      pushLog({
+        t: run.year + "." + (run.month < 10 ? "0" : "") + run.month,
+        tag: FC.events.TYPE_LABEL[ev.type] || ev.category,
+        tint: "var(--l" + ev.layerIndex + ")",
+        text: "【" + ev.title + "】" + ((res.choice && res.choice.result) || ""),
+        d: applied
+      });
+      render(true);
+      renderLog();
+      /* No source element: the card that charged the player has already been
+         torn down, so the delta rises into the HUD from just below it. */
+      flyMoney([applied.money], null);
+      maybeShowLedger(silent);
+      return true;
+    });
+  }
+
+  function note(text) {
+    pushLog({
+      t: run.year + "." + (run.month < 10 ? "0" : "") + run.month,
+      tag: "系统",
+      tint: "var(--text-faint)",
+      text: text,
+      d: {}
+    });
+    renderLog();
+  }
+
+  $("tickBtn").addEventListener("click", function () { tick(); });
+
+  /* Fast-forward runs the months one after another and stops at the first
+     interruption — six modals in a row would be a queue, not a life. */
+  $("tick6Btn").addEventListener("click", function () {
+    var months = 6;
+    (function step(i) {
+      if (i >= months) return;
+      var last = i === months - 1;
+      tick(!last).then(function (interrupted) {
+        if (!interrupted) { step(i + 1); return; }
+        note("快进被一件事打断。");
+        /* The month that got interrupted is the one the player ends on, so
+           it earns the drawer the silent pass had held back. */
+        if (!last) maybeShowLedger(false);
+      });
+    })(0);
+  });
+
+  $("ledgerBtn").addEventListener("click", function () {
+    if (FC.ledger) FC.ledger.show(buildLedgerPayload());
+  });
+
+  $("resetBtn").addEventListener("click", function () {
+    if (FC.events) FC.events.close();
+    if (FC.ledger) FC.ledger.close();
+    run = freshRun();
+    seed();
+    render(true);
+    renderLog();
+  });
+
+  function seed() {
+    run.log = [];
+    pushLog({
+      t: run.year + "." + (run.month < 10 ? "0" : "") + run.month,
+      tag: "入城",
+      tint: "var(--neon-amber)",
+      text: "你在" + era.name + "走出车站。城市照常运转，你只是千万进程里的一个节点。",
+      d: {}
+    });
+  }
+
+  if (!run.log.length) seed();
+  if (FC.events) FC.events.load();
+  $("tickBtn").disabled = false;
+  $("tick6Btn").disabled = false;
+  $("resetBtn").disabled = false;
+  $("ledgerBtn").disabled = !FC.ledger;
+  render(false);
+  renderLog();
+  }
+
+  FC.ready.then(init, function () {
+    $("identity").textContent = "市民档案读取失败";
+    $("identity").style.color = "var(--bad)";
+    $("season").textContent = "请通过本地服务器打开，或检查 data/story.json";
+  });
+})();
+</script>
+</body>
+</html>

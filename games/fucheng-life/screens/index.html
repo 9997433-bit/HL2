@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>浮城人生 · URBAN LIFE SIMULATOR</title>
+<meta name="description" content="浮城人生 — 现代都市高自由度人生模拟原型界面：年代登记、出身档案、人生仪表盘、五层城市地图。">
+<meta name="theme-color" content="#05070f">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 44 44'%3E%3Crect width='44' height='44' rx='11' fill='%2305070f'/%3E%3Cg fill='%234fe3ff'%3E%3Crect x='9' y='21' width='4.4' height='12'/%3E%3Crect x='16.2' y='14' width='4' height='19'/%3E%3Crect x='23.4' y='18.5' width='4.2' height='14.5' fill='%23ff3fa4'/%3E%3Crect x='30.6' y='11' width='4.4' height='22'/%3E%3C/g%3E%3Crect x='7' y='35.6' width='30' height='1.6' rx='.8' fill='%23ffc861'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="../css/fc-tokens.css">
+<link rel="stylesheet" href="../css/screens.css">
+<link rel="stylesheet" href="../css/fc-ui.css">
+</head>
+<body>
+<div class="fc-atmos"></div>
+<div class="fc-skyline"></div>
+<div class="fc-rain"></div>
+
+<header class="fc-topbar">
+  <span class="fc-brand">
+    <span class="fc-brand__mark"></span>
+    <span>浮城人生 <span class="fc-brand__en">URBAN LIFE SIM</span></span>
+  </span>
+  <nav class="fc-nav">
+    <a href="era-select.html">入城登记</a>
+    <a href="origin-select.html">出身</a>
+    <a href="dashboard.html">人生仪表盘</a>
+    <a href="city-map.html">城市地图</a>
+  </nav>
+</header>
+
+<main class="fc-page">
+  <section class="fc-rise" style="margin-bottom:34px">
+    <p class="fc-eyebrow">URBAN LIFE SIMULATOR · 原型界面</p>
+    <h1 class="fc-title fc-neon-title" data-text="浮城人生">浮城<em>人生</em></h1>
+    <p class="fc-lede">
+      现代都市高自由度人生引擎。城市照常运转，你只是千万进程里的一个节点——
+      运行需要钱，灯光、房租、关系都有价格。
+    </p>
+    <p class="fc-quote" style="margin-top:14px">「没钱的人没有秘密。账单就是他们的隐私。」</p>
+    <div class="fc-rowgap" style="margin-top:20px">
+      <a class="fc-btn fc-btn--primary" href="era-select.html">进入城市 · 开始登记 →</a>
+      <a class="fc-btn" href="city-map.html">先看看这座城</a>
+    </div>
+  </section>
+
+  <h2 class="fc-sectiontitle">核心界面 <span>CORE SCREENS</span></h2>
+  <div class="fc-grid fc-grid--3">
+
+    <a class="fc-card fc-rise" href="era-select.html" style="--tint:var(--neon-amber);--i:0">
+      <span class="fc-card__glyph" aria-hidden="true">代</span>
+      <div class="fc-card__head">
+        <span class="fc-card__code">01</span>
+        <h3 class="fc-card__name">入城登记<span class="fc-card__years">ERA SELECT · E1—E7</span></h3>
+      </div>
+      <p class="fc-card__desc">从单位时代到当前时代，七个年代卡片。同一条街，不同的价格、机会与代价。</p>
+      <p class="fc-card__line">潮汐准时，灯牌照旧。</p>
+    </a>
+
+    <a class="fc-card fc-rise" href="origin-select.html" style="--tint:var(--l3);--i:1">
+      <span class="fc-card__glyph" aria-hidden="true">身</span>
+      <div class="fc-card__head">
+        <span class="fc-card__code">02</span>
+        <h3 class="fc-card__name">出身档案<span class="fc-card__years">ORIGIN SELECT · 10 TYPES</span></h3>
+      </div>
+      <p class="fc-card__desc">寒门、中产、体制内、城中村、富商…… 10 种起点，各自的初始汇率。</p>
+      <p class="fc-card__line">出身不是命，是初始汇率。</p>
+    </a>
+
+    <a class="fc-card fc-rise" href="dashboard.html" style="--tint:var(--neon-violet);--i:2">
+      <span class="fc-card__glyph" aria-hidden="true">生</span>
+      <div class="fc-card__head">
+        <span class="fc-card__code">03</span>
+        <h3 class="fc-card__name">人生仪表盘<span class="fc-card__years">LIFE DASHBOARD</span></h3>
+      </div>
+      <p class="fc-card__desc">金钱、健康、人脉、声望、年龄、圈层与事件日志。可按月推进的 Mock 生命周期。</p>
+      <p class="fc-card__line">账单比闹钟准时。</p>
+    </a>
+
+    <a class="fc-card fc-rise" href="city-map.html" style="--tint:var(--l5);--i:3">
+      <span class="fc-card__glyph" aria-hidden="true">城</span>
+      <div class="fc-card__head">
+        <span class="fc-card__code">04</span>
+        <h3 class="fc-card__name">城市地图<span class="fc-card__years">CITY SECTION · L1—L5</span></h3>
+      </div>
+      <p class="fc-card__desc">市井层 / 工薪层 / 上升通道 / 资本名利 / 暗流。可交互的五层剖面与地点详情。</p>
+      <p class="fc-card__line">同一片雨，落在五个高度上。</p>
+    </a>
+
+  </div>
+
+  <p class="fc-footnote">
+    原型界面 · Mock 数据驱动 · 无后端 ·
+    <a href="../../../index.html">返回原型总目录</a>
+  </p>
+</main>
+
+<script src="../js/fc-motion.js"></script>
+</body>
+</html>

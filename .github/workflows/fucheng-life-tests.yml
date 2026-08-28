@@ -1,0 +1,34 @@
+name: Fucheng Life Tests
+
+on:
+  push:
+    paths:
+      - "games/fucheng-life/**"
+      - "scripts/run-fucheng-life-tests.sh"
+      - ".github/workflows/fucheng-life-tests.yml"
+  pull_request:
+    paths:
+      - "games/fucheng-life/**"
+      - "scripts/run-fucheng-life-tests.sh"
+      - ".github/workflows/fucheng-life-tests.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Node.js test gate
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Run 浮城人生 tests
+        run: ./scripts/run-fucheng-life-tests.sh
