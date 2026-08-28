@@ -972,6 +972,42 @@ button {
 }
 
 /* --------------------------------------------------------------------------
+   12c. Money float — a ¥ delta flying into the HUD figure it changes
+   Transient by definition: nothing here is ever on screen for a whole second,
+   so the glow does not count against the resting glow budget.
+   -------------------------------------------------------------------------- */
+.fc-float {
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 140;
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+  font-family: var(--font-mono);
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  will-change: transform, opacity;
+  text-shadow: 0 0 14px currentColor, 0 2px 9px rgba(0, 0, 0, 0.7);
+}
+
+.fc-float.is-up { color: var(--ok); }
+.fc-float.is-down { color: var(--bad); }
+
+/* Fallback for engines without the Web Animations API: it rises and fades in
+   place instead of travelling, which still reads as money leaving or landing. */
+.fc-float--rise {
+  animation: fc-float-rise 640ms var(--ease) both;
+}
+
+@keyframes fc-float-rise {
+  0% { opacity: 0; transform: translate(-50%, -50%) scale(0.82); }
+  22% { opacity: 1; transform: translate(-50%, -50%) translateY(-14px) scale(1.06); }
+  100% { opacity: 0; transform: translate(-50%, -50%) translateY(-52px) scale(0.86); }
+}
+
+/* --------------------------------------------------------------------------
    13. Event log
    -------------------------------------------------------------------------- */
 .fc-log {

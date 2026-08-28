@@ -364,6 +364,23 @@
     el.classList.add("fc-flash");
   }
 
+  /* Sends each ¥ movement up to the cash figure, 150ms apart so a month that
+     moved money three ways arrives as three events instead of one blur.
+     Amounts under ¥50 are noise and stay in the log where they belong. */
+  function flyMoney(amounts, source) {
+    if (!window.FCMotion || !FCMotion.moneyFloat) return;
+    var shown = 0;
+    for (var i = 0; i < amounts.length && shown < 3; i++) {
+      if (!amounts[i] || Math.abs(amounts[i]) < 50) continue;
+      FCMotion.moneyFloat(amounts[i], {
+        target: $("sMoney"),
+        from: source,
+        delay: shown * 150
+      });
+      shown++;
+    }
+  }
+
   function render(flash) {
     var L = layerOf();
     var layer = FC.LAYERS[L - 1];
@@ -537,11 +554,16 @@
     }
     run.recent = (run.recent || []).concat(e.id).slice(-4);
 
+    /* Every ¥ that moves this month, in the order it moves, so the floats
+       replay the settlement rather than summarising it. */
+    var moves = [];
     var applied = applyDeltas(e.d);
+    if (applied.money) moves.push(applied.money);
 
     if (e.gap) run.gap = e.gap;
     else if (run.gap > 0) run.gap--;
 
+    moves.push(run.income);
     run.money += run.income;
     run.debt = Math.max(0, run.debt - Math.round(run.debt * 0.015));
     if (run.money < 0) {
@@ -568,6 +590,7 @@
       run.money -= fee;
       if (run.money < 0) { run.debt += -run.money; run.money = 0; }
       run.health = 26;
+      moves.push(-fee);
       pushLog({
         t: run.year + "." + (run.month < 10 ? "0" : "") + run.month,
         tag: "透支",
@@ -579,6 +602,7 @@
 
     render(true);
     renderLog();
+    flyMoney(moves, $("tickBtn"));
 
     var ev = drawModalEvent();
     if (!ev) {
@@ -629,6 +653,9 @@
       });
       render(true);
       renderLog();
+      /* No source element: the card that charged the player has already been
+         torn down, so the delta rises into the HUD from just below it. */
+      flyMoney([applied.money], null);
       maybeShowLedger(silent);
       return true;
     });

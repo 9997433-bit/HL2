@@ -95,6 +95,81 @@
     else requestAnimationFrame(frame);
   }
 
+  /* --------------------------------------------------------- money float */
+
+  /* A ¥ delta peels off whatever caused it and flies into the HUD figure it
+     changes, so the number the player watches move is the number they were
+     shown. Fixed-position and self-removing; four in flight is the cap,
+     because a month that moves money five ways is no longer readable. */
+  var FLOAT_MS = 640;
+  var flying = 0;
+
+  function centerOf(el) {
+    var r = el.getBoundingClientRect();
+    return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
+  }
+
+  function moneyFloat(amount, opts) {
+    opts = opts || {};
+    amount = Math.round(Number(amount) || 0);
+
+    var target = typeof opts.target === "string" ? doc.getElementById(opts.target) : opts.target;
+    if (!amount || !target || !doc.body || reduced() || flying >= 4) return;
+
+    var to = centerOf(target);
+    var from = opts.from && opts.from.nodeType === 1
+      ? centerOf(opts.from)
+      : { x: to.x, y: to.y + 96 };
+
+    var el = doc.createElement("span");
+    el.className = "fc-float " + (amount >= 0 ? "is-up" : "is-down");
+    el.setAttribute("aria-hidden", "true");
+    el.textContent = (amount >= 0 ? "+¥" : "−¥") + format(Math.abs(amount), 0);
+    el.style.left = Math.round(from.x) + "px";
+    el.style.top = Math.round(from.y) + "px";
+
+    var delay = opts.delay || 0;
+    var dx = to.x - from.x;
+    var dy = to.y - from.y;
+    var base = "translate(-50%, -50%) ";
+
+    flying++;
+    doc.body.appendChild(el);
+
+    function drop() {
+      if (!el.parentNode) return;
+      el.parentNode.removeChild(el);
+      flying = Math.max(0, flying - 1);
+    }
+
+    if (el.animate) {
+      /* Lifts clear of its source before it commits to the trip — a straight
+         line between two points reads as a tooltip, not as money moving. */
+      var run = el.animate(
+        [
+          { transform: base + "translate(0, 6px) scale(.82)", opacity: 0 },
+          { transform: base + "translate(" + dx * 0.16 + "px, " + (dy * 0.1 - 18) + "px) scale(1.06)", opacity: 1, offset: 0.24 },
+          { transform: base + "translate(" + dx * 0.86 + "px, " + dy * 0.86 + "px) scale(1)", opacity: 0.92, offset: 0.78 },
+          { transform: base + "translate(" + dx + "px, " + dy + "px) scale(.78)", opacity: 0 }
+        ],
+        {
+          duration: FLOAT_MS,
+          delay: delay,
+          easing: "cubic-bezier(.22, 1, .36, 1)",
+          fill: "both"
+        }
+      );
+      run.onfinish = drop;
+      run.oncancel = drop;
+    } else {
+      el.style.animationDelay = delay + "ms";
+      el.classList.add("fc-float--rise");
+    }
+
+    /* Belt and braces: a tab backgrounded mid-flight never fires onfinish. */
+    global.setTimeout(drop, delay + FLOAT_MS + 260);
+  }
+
   /* -------------------------------------------------------------- stagger */
 
   /* Sets --i on each node so CSS can derive its own animation-delay, then adds
@@ -264,6 +339,7 @@
   global.FCMotion = {
     reduced: reduced,
     countUp: countUp,
+    moneyFloat: moneyFloat,
     stagger: stagger,
     leaveTo: leaveTo,
     format: function (n, decimals) {
