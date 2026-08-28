@@ -1259,10 +1259,18 @@
     return had;
   }
 
-  /* 合约结算走自己的 resolutionPending，不占这条通道；其余强弹窗默认都占。 */
+  /* 合约结算走自己的 resolutionPending，由调用方显式传 pending:false 让开这条
+     通道；除它以外的强弹窗一律挂账 —— 合约「要不要接这单」这类带 ev.contract
+     的机会卡也要挂，不然刷掉就永远丢了。 */
+  function isContractResolutionEvent(ev) {
+    return !!(ev && typeof ev.id === "string" &&
+      ev.id.indexOf("contract_") === 0 && ev.category === "合约");
+  }
+
   function tracksPending(ev, opts) {
     if (opts && typeof opts.pending === "boolean") return opts.pending;
-    return !!(ev && ev.id) && !(ev && ev.contract);
+    if (!ev || !ev.id) return false;
+    return !isContractResolutionEvent(ev);
   }
 
   /* onApplied 只在玩家真把这张卡结掉时才跑：被 dismiss 的卡没落账，
@@ -1753,13 +1761,30 @@
     /* 补弹结算 → 补弹危机/O1 → 选轨 → 合约 → 教学：欠玩家的那两张卡排在
        最前面，合约结算先于危机，因为它带的是上个月已经判定完的账；
        教学要指着已经挂上的合约 HUD 与行动区，所以放在几张选卡之后；
-       点遮罩不会关掉，必须「下一步 / 跳过」。 */
+       点遮罩不会关掉，必须「下一步 / 跳过」。
+       只要补弹真的发生过，这一次进门就到此为止：选轨 / 合约 / 教学都顺延到
+       下次进门，免得补的那张卡后面又排一串新弹窗。唯一的例外是闯城主目标 ——
+       没选目标这一局没法计分，所以它照弹。 */
+    var replayed = false;
     replayContractResolution()
-      .then(function () { return replayPendingModal(); })
-      .then(function () { return maybeOfferCareerTrack(); })
+      .then(function (shown) {
+        if (shown) replayed = true;
+        return replayPendingModal();
+      })
+      .then(function (shown) {
+        if (shown) replayed = true;
+        /* 轨道没选过时 maybeOfferCareerTrack 自己会兜底，这里跳过只是把它
+           推到下次进门；已经选过就本来也没这一步。 */
+        if (replayed) return false;
+        return maybeOfferCareerTrack();
+      })
       .then(function () { return maybeOfferChallengeGoal(); })
-      .then(function () { return maybeOfferContract(); })
       .then(function () {
+        if (replayed) return false;
+        return maybeOfferContract();
+      })
+      .then(function () {
+        if (replayed) return false;
         if (FC.guide && FC.guide.shouldShow()) return FC.guide.show();
         return false;
       });
