@@ -146,8 +146,10 @@
   var ERA_START_YEAR = { E1: 1981, E2: 1990, E3: 1998, E4: 2005, E5: 2012, E6: 2017, E7: 2021 };
 
   /* ------------------------------------------------------------ run state */
+  var START_MONEY = parseInt(String(origin.start).replace(/[^\d]/g, ""), 10) || 1000;
+
   function freshRun() {
-    var money = parseInt(String(origin.start).replace(/[^\d]/g, ""), 10) || 0;
+    var money = START_MONEY;
     return {
       key: era.id + "/" + origin.id,
       year: ERA_START_YEAR[era.id] || 2021,
@@ -160,6 +162,7 @@
       rep: Math.round((origin.mods.edu + origin.mods.social) / 2),
       debt: origin.layer >= 4 ? 0 : Math.round(money * 0.35),
       income: 0,
+      gap: 0,
       log: []
     };
   }
@@ -167,69 +170,114 @@
   var saved = FC.read().run;
   var run = saved && saved.key === era.id + "/" + origin.id ? saved : freshRun();
 
-  /* --------------------------------------------------------------- bills */
+  /* --------------------------------------------------------------- 经济模型
+     Money is oxygen: bills eat most of the paycheque at every layer, and
+     climbing a layer raises the cost of living faster than it raises pay. */
+  function income() {
+    var skill = (origin.mods.edu + run.rep) / 2;
+    var eraBoost = 0.85 + era.stats.opportunity / 180;
+    var gross = (1500 + skill * 44 + run.social * 16) * eraBoost * (0.7 + layerOf() * 0.16);
+    return Math.round(gross * (run.gap > 0 ? 0.18 : 1));
+  }
+
   function bills() {
-    var scale = [0, 0.55, 1, 1.35, 3.2, 2.1][layerOf()] || 1;
-    var base = Math.max(1200, Math.round(run.money * 0.012) + 1600);
+    var burden = [0, 0.8, 0.74, 0.71, 0.6, 0.68][layerOf()] || 0.74;
+    var base = income() * burden;
     return [
-      { k: "房租", v: Math.round(base * 0.52 * scale) },
-      { k: "通勤", v: Math.round(base * 0.09 * scale) },
-      { k: "伙食", v: Math.round(base * 0.22 * scale) },
-      { k: "人情", v: Math.round(base * 0.13 * scale) },
-      { k: "还贷", v: Math.round(run.debt * 0.018) }
+      { k: "房租", v: Math.round(base * 0.46) },
+      { k: "通勤", v: Math.round(base * 0.08) },
+      { k: "伙食", v: Math.round(base * 0.22) },
+      { k: "人情", v: Math.round(base * 0.14) },
+      { k: "杂费", v: Math.round(base * 0.1) },
+      { k: "还贷", v: Math.round(run.debt * 0.015) }
     ];
   }
 
-  function income() {
-    var skill = (origin.mods.edu + run.rep) / 2;
-    var eraBoost = 1 + era.stats.opportunity / 160;
-    return Math.round((2200 + skill * 86 + run.social * 34) * eraBoost * (0.6 + layerOf() * 0.24));
-  }
-
+  /* Layer drifts from where you started — wealth relative to your own origin,
+     not an absolute number. Reputation collapse drops you into the undercurrent. */
   function layerOf() {
-    var m = run.money;
-    var score = Math.log10(Math.max(m, 100)) * 12 + run.rep * 0.28 + run.social * 0.16;
-    if (run.rep < 22 && run.social > 74) return 5;   // 暗流：人面广，名声薄
-    if (score > 74) return 4;
-    if (score > 58) return 3;
-    if (score > 44) return 2;
-    return 1;
+    if (run.rep < 20) return 5;
+    var mult = run.money / Math.max(START_MONEY, 800);
+    var drift = mult > 60 ? 2 : mult > 8 ? 1 : mult < 0.3 ? -1 : 0;
+    return Math.max(1, Math.min(4, origin.layer + drift));
   }
 
-  /* -------------------------------------------------------------- events */
+  /* -------------------------------------------------------------- events
+     w = draw weight. Ordinary months are common; the months that rearrange
+     a life are rare, and a few of them only ever happen once. */
   var POOL = [
-    { tag: "职场", tint: "var(--l2)", text: "季度 KPI 出榜，你在名单中段。主管说「再顶一顶」，没说顶到哪。",
+    { id: "kpi", w: 10, tag: "职场", tint: "var(--l2)",
+      text: "季度 KPI 出榜，你在名单中段。主管说「再顶一顶」，没说顶到哪。",
       d: { money: 1, health: -4, rep: 3 } },
-    { tag: "职场", tint: "var(--l3)", text: "隔壁组挖你，涨 18%，代价是每周飞一次。你要了三天考虑期。",
-      d: { money: 2, social: 4, health: -6, rep: 5 } },
-    { tag: "账单", tint: "var(--l1)", text: "房东在群里发了续租通知，涨 300。他加了个笑脸。",
-      d: { money: -1, health: -2 } },
-    { tag: "人情", tint: "var(--l4)", text: "老同学婚宴，红包 800。人情账本上你这一栏，终于不再欠着。",
-      d: { money: -1, social: 6, rep: 2 } },
-    { tag: "健康", tint: "var(--l3)", text: "体检报告有两个箭头向上。医生让你少熬夜，你说好，然后打开了电脑。",
-      d: { health: -8, money: -1 } },
-    { tag: "机会", tint: "var(--l4)", text: "有人拉你进一个饭局，桌上没人递名片——都认识彼此，只有你需要介绍。",
-      d: { social: 9, rep: 4, money: -1 } },
-    { tag: "风险", tint: "var(--l5)", text: "熟人介绍了一笔「稳赚」的短期周转，年化写在纸巾上。红线在灯下若隐若现。",
-      d: { money: 4, rep: -8, health: -3 } },
-    { tag: "城市", tint: "var(--l1)", text: "早高峰的地铁停了十一分钟。广播说前方站台拥挤，车厢里没人说话。",
+    { id: "metro", w: 10, tag: "城市", tint: "var(--l1)",
+      text: "早高峰的地铁停了十一分钟。广播说前方站台拥挤，车厢里没人说话。",
       d: { health: -2 } },
-    { tag: "居住", tint: "var(--l2)", text: "合租室友搬走，押金退得干干净净。空出来的房间比预想的大。",
-      d: { money: -2, health: 3 } },
-    { tag: "上升", tint: "var(--l3)", text: "报名了周末的证书班。两个月的学费，换一行简历。",
+    { id: "luck", w: 10, tag: "运气", tint: "var(--l1)",
+      text: "楼下便利店的关东煮买一送一。这是这周最顺的十分钟。",
+      d: { health: 3 } },
+    { id: "rent", w: 10, tag: "账单", tint: "var(--l1)",
+      text: "房东在群里发了续租通知，涨 300。他加了个笑脸。",
+      d: { money: -1, health: -2 } },
+    { id: "wedding", w: 10, tag: "人情", tint: "var(--l4)",
+      text: "老同学婚宴，红包 800。人情账本上你这一栏，终于不再欠着。",
+      d: { money: -1, social: 6, rep: 2 } },
+
+    { id: "poach", w: 5, tag: "职场", tint: "var(--l3)",
+      text: "隔壁组挖你，涨 18%，代价是每周飞一次。你要了三天考虑期。",
+      d: { money: 2, social: 4, health: -6, rep: 5 } },
+    { id: "checkup", w: 5, tag: "健康", tint: "var(--l3)",
+      text: "体检报告有两个箭头向上。医生让你少熬夜，你说好，然后打开了电脑。",
+      d: { health: -8, money: -1 } },
+    { id: "dinner", w: 5, tag: "机会", tint: "var(--l4)",
+      text: "有人拉你进一个饭局，桌上没人递名片——都认识彼此，只有你需要介绍。",
+      d: { social: 9, rep: 4, money: -1 } },
+    { id: "cert", w: 5, tag: "上升", tint: "var(--l3)",
+      text: "报名了周末的证书班。两个月的学费，换一行简历。",
       d: { money: -2, rep: 6, health: -3 } },
-    { tag: "家庭", tint: "var(--l4)", text: "家里来电话，问你什么时候回去看看。你听见背景里电视的声音。",
-      d: { money: -1, health: 4, social: 2 } },
-    { tag: "副业", tint: "var(--l3)", text: "深夜接的私活收到尾款。到账短信亮了一下，屏幕又暗下去。",
+    { id: "side", w: 5, tag: "副业", tint: "var(--l3)",
+      text: "深夜接的私活收到尾款。到账短信亮了一下，屏幕又暗下去。",
       d: { money: 2, health: -5 } },
-    { tag: "裁员", tint: "var(--l5)", text: "楼层里搬走了三张工位。HR 的会议室从早上开到中午，门一直关着。",
+    { id: "flat", w: 5, tag: "居住", tint: "var(--l2)",
+      text: "合租室友搬走，押金退得干干净净。空出来的房间比预想的大。",
+      d: { money: -2, health: 3 } },
+    { id: "home", w: 5, tag: "家庭", tint: "var(--l4)",
+      text: "家里来电话，问你什么时候回去看看。你听见背景里电视的声音。",
+      d: { money: -1, health: 4, social: 2 } },
+
+    { id: "grey", w: 2, tag: "风险", tint: "var(--l5)",
+      text: "熟人介绍了一笔「稳赚」的短期周转，年化写在纸巾上。红线在灯下若隐若现。",
+      d: { money: 4, rep: -8, health: -3 } },
+    { id: "layoff", w: 2, tag: "裁员", tint: "var(--l5)",
+      text: "楼层里搬走了三张工位。HR 的会议室从早上开到中午，门一直关着。",
       d: { rep: -4, health: -5, social: -3 } },
-    { tag: "运气", tint: "var(--l1)", text: "楼下便利店的关东煮买一送一。这是这周最顺的十分钟。",
-      d: { health: 3 } }
+    { id: "lend", w: 2, tag: "人情", tint: "var(--l1)",
+      text: "老乡开口借钱，说三个月就还。你答应了，没写借条。",
+      d: { money: -3, social: 7 } },
+    { id: "hospital", w: 2, tag: "意外", tint: "var(--l5)",
+      text: "父母住院，押金先交。你在缴费窗口前把余额算了两遍。",
+      d: { money: -5, health: -4, social: 2 } },
+
+    { id: "downpay", w: 1, once: true, tag: "房产", tint: "var(--l4)",
+      text: "看中一套小两居。首付要掏空所有的卡，签字的手很稳，心跳不稳。",
+      d: { money: -10, rep: 6, health: -2 } },
+    { id: "fired", w: 1, tag: "失业", tint: "var(--l5)",
+      text: "邮件标题写着「组织架构调整」。工卡在下午五点失效。",
+      d: { rep: -6, health: -6 }, gap: 3 }
   ];
 
   function pick() {
-    return POOL[Math.floor(Math.random() * POOL.length)];
+    var pool = [], total = 0, i;
+    for (i = 0; i < POOL.length; i++) {
+      if (POOL[i].once && run.done && run.done[POOL[i].id]) continue;
+      pool.push(POOL[i]);
+      total += POOL[i].w;
+    }
+    var r = Math.random() * total;
+    for (i = 0; i < pool.length; i++) {
+      r -= pool[i].w;
+      if (r <= 0) return pool[i];
+    }
+    return pool[pool.length - 1];
   }
 
   /* ----------------------------------------------------------- rendering */
@@ -262,11 +310,15 @@
     ][Math.floor(run.month / 2.5) % 5];
 
     $("sMoney").textContent = "¥" + fmt(run.money);
-    $("dMoney").textContent = (run.income >= 0 ? "月净流 +¥" : "月净流 −¥") + fmt(Math.abs(run.income));
+    $("dMoney").textContent = run.gap > 0
+      ? "空窗期 · 剩 " + run.gap + " 个月　月净流 " + (run.income >= 0 ? "+¥" : "−¥") + fmt(Math.abs(run.income))
+      : "月净流 " + (run.income >= 0 ? "+¥" : "−¥") + fmt(Math.abs(run.income));
     $("dMoney").className = "fc-stat__delta " + (run.income >= 0 ? "up" : "down");
 
     $("sHealth").innerHTML = Math.round(run.health) + "<small>/100</small>";
     $("mHealth").style.width = Math.max(0, Math.min(100, run.health)) + "%";
+    $("mHealth").parentNode.className =
+      "fc-stat__meter fc-meter " + (run.health < 30 ? "fc-meter--blood" : "fc-meter--jade");
     $("sSocial").innerHTML = Math.round(run.social) + "<small>/100</small>";
     $("mSocial").style.width = Math.max(0, Math.min(100, run.social)) + "%";
     $("sRep").innerHTML = Math.round(run.rep) + "<small>/100</small>";
@@ -334,8 +386,12 @@
     if (run.months % 12 === 0) run.age++;
 
     var e = pick();
-    var scale = Math.max(600, Math.round(income() * 0.42));
+    var scale = Math.max(400, Math.round(income() * 0.3));
     var applied = {};
+    if (e.once) {
+      run.done = run.done || {};
+      run.done[e.id] = 1;
+    }
 
     for (var k in e.d) {
       var v = e.d[k];
@@ -349,13 +405,20 @@
       }
     }
 
+    if (e.gap) run.gap = e.gap;
+    else if (run.gap > 0) run.gap--;
+
     run.money += run.income;
-    run.debt = Math.max(0, run.debt - Math.round(run.debt * 0.018));
+    run.debt = Math.max(0, run.debt - Math.round(run.debt * 0.015));
     if (run.money < 0) {
       run.debt += -run.money;
       run.money = 0;
     }
-    run.health = Math.max(0, Math.min(100, run.health - 0.4));
+
+    // Rest only pays off in a month that closed in the black; age charges interest.
+    var rest = run.income > 0 ? 2.1 : 0.8;
+    var wear = 0.4 + Math.max(0, (run.age - 35) * 0.05);
+    run.health = Math.max(0, Math.min(100, run.health + rest - wear));
 
     run.log.unshift({
       t: run.year + "." + (run.month < 10 ? "0" : "") + run.month,
@@ -364,6 +427,22 @@
       text: e.text,
       d: applied
     });
+
+    // The body keeps its own ledger, and settles it all at once.
+    if (run.health <= 4) {
+      var fee = Math.round(income() * 2.2);
+      run.money -= fee;
+      if (run.money < 0) { run.debt += -run.money; run.money = 0; }
+      run.health = 26;
+      run.log.unshift({
+        t: run.year + "." + (run.month < 10 ? "0" : "") + run.month,
+        tag: "透支",
+        tint: "var(--bad)",
+        text: "你在工位上失去意识，醒来时天花板是白的。身体的账单，最后一起结。",
+        d: { money: -Math.round(fee / 100) * 100, health: 22 }
+      });
+    }
+
     if (run.log.length > 60) run.log.length = 60;
 
     render(true);
@@ -386,7 +465,7 @@
       t: run.year + "." + (run.month < 10 ? "0" : "") + run.month,
       tag: "入城",
       tint: "var(--neon-amber)",
-      text: "你在 " + era.name + " 走出车站。城市照常运转，你只是千万进程里的一个节点。",
+      text: "你在" + era.name + "走出车站。城市照常运转，你只是千万进程里的一个节点。",
       d: {}
     }];
   }
