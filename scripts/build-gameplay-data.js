@@ -10,6 +10,7 @@ const ambientLayers = require("./curated/ambient-layers");
 const zones = require("./curated/zones");
 const sagasExtra = require("./curated/sagas-extra");
 const originSagas = require("./curated/origin-sagas");
+const presentation = require("./curated/presentation");
 
 const LAYERS = ["L1", "L2", "L3", "L4", "L5"];
 /* Backfill legacy ambient rows by their strongest semantic signal. Everyday
@@ -138,9 +139,11 @@ function buildAmbientEvents() {
   function push(ev) {
     if (seen.has(ev.id)) throw new Error("duplicate event id: " + ev.id);
     seen.add(ev.id);
-    events.push(normalizeEvent(ev, {
+    /* R5-B：选目表里的那批日常升级成日志大卡片（presentation: inline），
+       顺带换掉「类目 · 层」的占位标题。 */
+    events.push(presentation.applyAmbient(normalizeEvent(ev, {
       layerId: AMBIENT_LAYER_BY_CATEGORY[ev.category] || "L2"
-    }));
+    })));
   }
 
   ambientCore.universal.forEach((e) => push(Object.assign({}, e)));

@@ -209,6 +209,7 @@
   "ambientEvents": [
     {
       "layerId": "L1",
+      "presentation": "inline",
       "id": "U001",
       "category": "居住",
       "text": "合租房热水器坏了，房东说「凑活用」。你洗了一周冷水。",
@@ -217,7 +218,7 @@
         "money": -1
       },
       "weight": 7,
-      "title": "居住 · L1"
+      "title": "冷水一周"
     },
     {
       "layerId": "L2",
@@ -233,6 +234,7 @@
     },
     {
       "layerId": "L2",
+      "presentation": "inline",
       "id": "U003",
       "category": "金钱",
       "text": "工资到账短信和花呗还款提醒几乎同时弹出。",
@@ -241,10 +243,11 @@
         "health": -2
       },
       "weight": 8,
-      "title": "金钱 · L2"
+      "title": "两条短信"
     },
     {
       "layerId": "L2",
+      "presentation": "inline",
       "id": "U004",
       "category": "健康",
       "text": "体检报告建议「复查」。预约电话打了三次才接通。",
@@ -253,10 +256,11 @@
         "money": -1
       },
       "weight": 7,
-      "title": "健康 · L2"
+      "title": "建议复查"
     },
     {
       "layerId": "L2",
+      "presentation": "inline",
       "id": "U005",
       "category": "职场",
       "text": "周会延长四十分钟，主题只有一个：「降本增效」。",
@@ -265,7 +269,7 @@
         "health": -3
       },
       "weight": 8,
-      "title": "职场 · L2"
+      "title": "降本增效"
     },
     {
       "layerId": "L2",
@@ -352,6 +356,7 @@
     },
     {
       "layerId": "L3",
+      "presentation": "inline",
       "id": "U013",
       "category": "居住",
       "text": "邻居装修，电钻从八点响到六点。物业说「已备案」。",
@@ -359,7 +364,7 @@
         "health": -4
       },
       "weight": 7,
-      "title": "居住 · L3"
+      "title": "已备案的电钻"
     },
     {
       "layerId": "L3",
@@ -460,6 +465,7 @@
     },
     {
       "layerId": "L1",
+      "presentation": "inline",
       "id": "U022",
       "category": "金钱",
       "text": "菜市场涨价，摊主说「进货也贵」。你数了数零钱，够买三天。",
@@ -468,7 +474,7 @@
         "health": -1
       },
       "weight": 8,
-      "title": "金钱 · L1"
+      "title": "够买三天"
     },
     {
       "layerId": "L1",
@@ -518,6 +524,7 @@
     },
     {
       "layerId": "L2",
+      "presentation": "inline",
       "id": "U027",
       "category": "职场",
       "text": "考勤改为人脸识别。你迟到那天的照片被自动发给了主管。",
@@ -525,7 +532,7 @@
         "rep": -3
       },
       "weight": 7,
-      "title": "职场 · L2"
+      "title": "人脸识别"
     },
     {
       "layerId": "L2",
@@ -540,6 +547,7 @@
     },
     {
       "layerId": "L2",
+      "presentation": "inline",
       "id": "U029",
       "category": "居住",
       "text": "租约到期，房东涨租「市场价」。你算了算搬家成本，签了。",
@@ -548,7 +556,7 @@
         "health": -2
       },
       "weight": 8,
-      "title": "居住 · L2"
+      "title": "市场价"
     },
     {
       "layerId": "L3",
@@ -589,6 +597,7 @@
     },
     {
       "layerId": "L2",
+      "presentation": "inline",
       "id": "U033",
       "category": "健康",
       "text": "通勤单程九十分钟。你在地铁上睡着，坐过站两次。",
@@ -597,7 +606,7 @@
         "rep": -1
       },
       "weight": 7,
-      "title": "健康 · L2"
+      "title": "坐过站"
     },
     {
       "layerId": "L2",
@@ -2625,6 +2634,7 @@
     },
     {
       "layerId": "L1",
+      "presentation": "inline",
       "id": "L1_08",
       "category": "居住",
       "text": "隔断间隔音差，隔壁打电话你像旁听。",
@@ -2632,7 +2642,7 @@
         "health": -3
       },
       "weight": 8,
-      "title": "居住 · L1"
+      "title": "隔壁的电话"
     },
     {
       "layerId": "L1",
@@ -2730,6 +2740,7 @@
     },
     {
       "layerId": "L1",
+      "presentation": "inline",
       "id": "L1_17",
       "category": "职场",
       "text": "外卖超时罚款，平台扣款比顾客还快。",
@@ -2738,7 +2749,7 @@
         "health": -3
       },
       "weight": 7,
-      "title": "职场 · L1"
+      "title": "超时扣款"
     },
     {
       "layerId": "L1",
@@ -2835,6 +2846,7 @@
     },
     {
       "layerId": "L2",
+      "presentation": "inline",
       "id": "L2_01",
       "category": "职场",
       "text": "地铁早高峰，鞋被踩掉。你单脚跳，仍打卡成功。",
@@ -2843,7 +2855,7 @@
         "rep": 1
       },
       "weight": 8,
-      "title": "职场 · L2"
+      "title": "单脚打卡"
     },
     {
       "layerId": "L2",
@@ -2905,6 +2917,7 @@
     },
     {
       "layerId": "L2",
+      "presentation": "inline",
       "id": "L2_07",
       "category": "人情",
       "text": "同事借五百，说下周还。三个月了，你们还说话。",
@@ -2913,7 +2926,7 @@
         "social": 1
       },
       "weight": 7,
-      "title": "人情 · L2"
+      "title": "那五百块"
     },
     {
       "layerId": "L2",
@@ -3127,6 +3140,7 @@
     },
     {
       "layerId": "L3",
+      "presentation": "inline",
       "id": "L3_01",
       "category": "职场",
       "text": "带两个新人，绩效算你头上。一个聪明，一个请假。",
@@ -3135,7 +3149,7 @@
         "health": -3
       },
       "weight": 7,
-      "title": "职场 · L3"
+      "title": "两个新人"
     },
     {
       "layerId": "L3",
@@ -3151,6 +3165,7 @@
     },
     {
       "layerId": "L3",
+      "presentation": "inline",
       "id": "L3_03",
       "category": "金钱",
       "text": "年终奖谈话，「公司困难」。数字仍比上年少一截。",
@@ -3159,7 +3174,7 @@
         "rep": -1
       },
       "weight": 7,
-      "title": "金钱 · L3"
+      "title": "公司困难"
     },
     {
       "layerId": "L3",

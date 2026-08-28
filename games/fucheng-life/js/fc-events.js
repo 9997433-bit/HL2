@@ -14,14 +14,27 @@
    when the page is served, and the mirror at the bottom of this file covers
    the case where neither is reachable.
 
+   R5-B 之后，同一份数据可以走四种壳：`presentation` 决定城市用什么口气说话。
+     modal   重大抉择 —— 现有 O1 卡，占满屏幕，必须回答
+     toast   小插曲   —— 顶部通知，4 秒自动收走，只有一个「知道了」
+     letter  账单合同 —— 信纸全屏，底部签字 / 撕掉
+     inline  日常     —— 不弹窗，返回一段可插进日志流的大卡片
+   壳是壳，账是账：四种都解析出同一个 {choiceId, choice, deltas, event} 结果，
+   调用方（dashboard-app）不需要知道城市刚才用的是哪一种。
+
    Public API
      FC.overlay.push(kind, el) / .pop(el) / .top() / .trap(el, event)
      FC.events.load()                → Promise<deck>
      FC.events.deck()                → array | null
      FC.events.pick({layer, avoid, allowRedline, era, months, done})
-     FC.events.show(payload, opts?)  → Promise<{choiceId, choice, deltas, event, dismissed}>
+     FC.events.show(payload, opts?)  → Promise<result>  按 presentation 分流
+     FC.events.showToast(payload, opts?)  → Promise<result>
+     FC.events.showLetter(payload, opts?) → Promise<result>
+     FC.events.showInline(payload, opts?) → result（同步，带 .card / .html）
      FC.events.close()               → force-close, resolves dismissed:true
      FC.events.moneyOf(units, ref)   → ¥ amount for a money delta
+
+   result = { presentation, choiceId, choice, deltas, event, dismissed }
 */
 (function (global) {
   "use strict";
@@ -36,6 +49,11 @@
   var TYPE_LABEL = {
     opportunity: "机遇", bill: "账单", relation: "人情", redline: "红线"
   };
+  /* 四种呈现壳。数据里写错或没写的一律回落 modal —— 少一种形态只是腻，
+     多一种未定义的形态是白屏。 */
+  var PRESENTATIONS = ["modal", "toast", "inline", "letter"];
+  /* 通知停留 4 秒：够读完两行，短过一次犹豫。 */
+  var TOAST_MS = 4000;
   /* story.json only carries a Chinese `category`; overlay-spec §4.2 maps it. */
   var CATEGORY_TYPE = {
     "机会": "opportunity",
@@ -124,12 +142,18 @@
   var deck = null;
   var loading = null;
 
+  function presentationOf(raw) {
+    var p = raw && raw.presentation;
+    return PRESENTATIONS.indexOf(p) >= 0 ? p : "modal";
+  }
+
   function toPayload(raw) {
     var type = CATEGORY_TYPE[raw.category] || "opportunity";
     var layer = raw.layerId || raw.layer || "L2";
     return {
       id: raw.id,
       type: raw.type || type,
+      presentation: presentationOf(raw),
       layer: layer,
       layerIndex: layerNum(layer),
       scene: raw.scene || (layer + " · " + (LAYER_NAME[layer] || "城市")),
@@ -377,9 +401,61 @@
     else el.textContent = (prefix || "") + fmt(value);
   }
 
-  /* ------------------------------------------------------------------ 视图 */
+  /* 结算清单。modal 的结果面和 letter 的回执共用同一张表，所以两种壳里
+     「−¥1,200」的写法永远一致。 */
+  function deltaListHtml(deltas, moneyRef) {
+    return '<ul class="fc-event__deltas" aria-live="polite">' +
+      Object.keys(deltas).map(function (k, i) {
+        var isMoney = k === "money";
+        var value = isMoney ? moneyOf(deltas[k], moneyRef) : deltas[k];
+        return '<li class="fc-event__delta-row ' + (value >= 0 ? "up" : "down") +
+          '" style="--i:' + i + '">' +
+          "<span>" + esc(STAT_LABEL[k] || k) + "</span>" +
+          '<b data-value="' + value + '"' + (isMoney ? ' data-money="1"' : "") + ">" +
+          signed(value, isMoney ? "¥" : "") + "</b></li>";
+      }).join("") +
+      "</ul>";
+  }
+
+  /* 数字先写死在 markup 里，滚动只是装饰 —— 动效没跑起来也读得到账。 */
+  function rollDeltas(root) {
+    [].slice.call(root.querySelectorAll("b[data-value]")).forEach(function (b) {
+      var v = Number(b.getAttribute("data-value"));
+      var money = b.getAttribute("data-money");
+      b.textContent = (v < 0 ? "−" : "+") + (money ? "¥" : "");
+      var span = doc.createElement("span");
+      b.appendChild(span);
+      countTo(span, Math.abs(v));
+    });
+  }
+
+  /* ------------------------------------------------------------------ 视图
+     四种壳共用一个 `current` 槽位和一条队列：城市一次只说一句话，说完了
+     `pump()` 再放下一句。inline 不进队列 —— 它不占屏幕，只是日志里的一张卡。 */
   var current = null;
   var queue = [];
+
+  function pump() {
+    var next = queue.shift();
+    if (next) present(next.mode, next.ev, next.opts, next.resolve);
+  }
+
+  /* 每种壳解析出的结果形状必须一致，否则 dashboard 得认壳。 */
+  function outcome(mode, ev, choice) {
+    var deltas = {};
+    var d = (choice && (choice.d || choice.deltas)) || {};
+    for (var k in d) {
+      if (Object.prototype.hasOwnProperty.call(d, k) && d[k]) deltas[k] = d[k];
+    }
+    return {
+      presentation: mode,
+      choiceId: choice ? choice.id : null,
+      choice: choice || null,
+      deltas: deltas,
+      event: ev,
+      dismissed: false
+    };
+  }
 
   function render(ev, opts, resolve) {
     var soft = reduced();
@@ -445,8 +521,7 @@
         FC.overlay.pop(host);
         current = null;
         resolve(result);
-        var next = queue.shift();
-        if (next) render(next.ev, next.opts, next.resolve);
+        pump();
       };
       if (soft) done();
       else global.setTimeout(done, 200);
@@ -469,37 +544,16 @@
 
     function answer(choice) {
       if (settled || cooling) return;
-      var deltas = {};
-      var d = (choice && (choice.d || choice.deltas)) || {};
-      for (var k in d) {
-        if (Object.prototype.hasOwnProperty.call(d, k) && d[k]) deltas[k] = d[k];
-      }
-      answered = {
-        choiceId: choice ? choice.id : null,
-        choice: choice,
-        deltas: deltas,
-        event: ev,
-        dismissed: false
-      };
+      answered = outcome("modal", ev, choice);
+      var deltas = answered.deltas;
 
       /* ack mode has nothing to settle — the button *is* the acknowledgement */
       if (!choice) { finish(answered); return; }
 
-      var keys = Object.keys(deltas);
       resultFace.innerHTML =
         (choice && choice.result
           ? '<p class="fc-event__result">' + esc(choice.result) + "</p>" : "") +
-        '<ul class="fc-event__deltas" aria-live="polite">' +
-          keys.map(function (k, i) {
-            var isMoney = k === "money";
-            var value = isMoney ? moneyOf(deltas[k], moneyRef) : deltas[k];
-            return '<li class="fc-event__delta-row ' + (value >= 0 ? "up" : "down") +
-              '" style="--i:' + i + '">' +
-              "<span>" + esc(STAT_LABEL[k] || k) + "</span>" +
-              '<b data-value="' + value + '"' + (isMoney ? ' data-money="1"' : "") + ">" +
-              signed(value, isMoney ? "¥" : "") + "</b></li>";
-          }).join("") +
-        "</ul>" +
+        deltaListHtml(deltas, moneyRef) +
         '<button class="fc-btn fc-btn--primary fc-event__continue">记入日志，继续 ▸</button>';
 
       /* Bound before the face swap: the button is in the DOM the moment the
@@ -511,14 +565,7 @@
         askFace.hidden = true;
         resultFace.hidden = false;
         host.classList.add("is-resolved");
-        [].slice.call(resultFace.querySelectorAll("b[data-value]")).forEach(function (b) {
-          var v = Number(b.getAttribute("data-value"));
-          var money = b.getAttribute("data-money");
-          b.textContent = (v < 0 ? "−" : "+") + (money ? "¥" : "");
-          var span = doc.createElement("span");
-          b.appendChild(span);
-          countTo(span, Math.abs(v));
-        });
+        rollDeltas(resultFace);
         go.focus();
       };
 
@@ -591,23 +638,342 @@
     else global.requestAnimationFrame(function () { host.classList.add("is-open"); });
   }
 
-  function show(payload, opts) {
-    var ev = payload && payload.layerIndex ? payload : toPayload(payload || {});
-    opts = opts || {};
-    return new Promise(function (resolve) {
-      if (current) queue.push({ ev: ev, opts: opts, resolve: resolve });
-      else render(ev, opts, resolve);
+  /* ------------------------------------------------------------------ toast
+     小插曲不配一整块屏幕。顶部一条，四秒后自己走；第一个选项就是「你当时
+     顺手做了的那件事」，它的账照记，只是不再问一遍。 */
+  function renderToast(ev, opts, resolve) {
+    var soft = reduced();
+    var moneyRef = opts.moneyRef || 0;
+    var choice = ev.choices && ev.choices.length ? ev.choices[0] : null;
+    var result = outcome("toast", ev, choice);
+
+    var host = doc.createElement("div");
+    host.className = "fc-toast";
+    host.setAttribute("data-layer", ev.layer);
+    host.setAttribute("data-type", ev.type);
+    host.innerHTML =
+      '<div class="fc-toast__card" role="status" aria-live="polite">' +
+        '<i class="fc-toast__accent" aria-hidden="true"></i>' +
+        '<div class="fc-toast__head">' +
+          '<span class="fc-toast__scene">' + esc(ev.scene) + "</span>" +
+          '<span class="fc-toast__badge">' + esc(TYPE_LABEL[ev.type] || "通知") + "</span>" +
+        "</div>" +
+        '<h3 class="fc-toast__title">' + esc(ev.title) + "</h3>" +
+        '<p class="fc-toast__body">' + esc(ev.body) + "</p>" +
+        (choice && choice.result
+          ? '<p class="fc-toast__result">' + esc(choice.result) + "</p>" : "") +
+        '<div class="fc-toast__foot">' +
+          (Object.keys(result.deltas).length
+            ? '<span class="fc-toast__dots" aria-hidden="true">' +
+                dotsHtml(choice || {}, moneyRef) + "</span>" +
+              '<span class="fc-sr">影响：' + esc(affectedNames(choice || {}) || "无") + "</span>"
+            : "") +
+          '<button type="button" class="fc-toast__ack">知道了</button>' +
+        "</div>" +
+        '<i class="fc-toast__timer" aria-hidden="true"></i>' +
+      "</div>";
+
+    var settled = false;
+    var timer = null;
+
+    function finish(override) {
+      if (settled) return;
+      settled = true;
+      if (timer) global.clearTimeout(timer);
+      host.classList.add("is-closing");
+      var done = function () {
+        if (host.parentNode) host.parentNode.removeChild(host);
+        current = null;
+        resolve(override || result);
+        pump();
+      };
+      if (soft) done();
+      else global.setTimeout(done, 200);
+    }
+
+    host.querySelector(".fc-toast__ack").addEventListener("click", function () { finish(); });
+
+    doc.body.appendChild(host);
+    /* 不进 FC.overlay：通知既不锁滚动，也不抢焦点 —— 它没有要问的问题。 */
+    current = { host: host, finish: finish, event: ev, kind: "toast" };
+    timer = global.setTimeout(function () { finish(); }, TOAST_MS);
+
+    if (soft) host.classList.add("is-open");
+    else global.requestAnimationFrame(function () { host.classList.add("is-open"); });
+  }
+
+  /* ----------------------------------------------------------------- letter
+     账单、合同、人事通知不该长得像街上遇见的一件事。信纸铺满屏幕，底部只有
+     两个动作：签，或者撕掉。中间那个选项是「先收着」。 */
+  var LETTER_ACTS = [
+    { key: "sign", mark: "✒" },
+    { key: "hold", mark: "▤" },
+    { key: "tear", mark: "✂" }
+  ];
+
+  function letterActs(choices) {
+    var n = choices.length;
+    return choices.map(function (c, i) {
+      /* 第一条永远是签字，最后一条永远是撕掉，中间的都算「先收着」。 */
+      var act = i === 0 ? LETTER_ACTS[0] : i === n - 1 ? LETTER_ACTS[2] : LETTER_ACTS[1];
+      return { choice: c, act: act, index: i };
     });
+  }
+
+  function renderLetter(ev, opts, resolve) {
+    var soft = reduced();
+    var moneyRef = opts.moneyRef || 0;
+    var choices = ev.choices && ev.choices.length ? ev.choices : [];
+    var acts = letterActs(choices);
+    var isRedline = ev.type === "redline" && acts.length > 0;
+
+    var actsHtml = acts.length
+      ? acts.map(function (a) {
+          return '<button type="button" class="fc-letter__act fc-letter__act--' + a.act.key +
+            (a.choice.risk ? " is-risk" : "") + '" data-i="' + a.index + '">' +
+            '<i class="fc-letter__mark" aria-hidden="true">' + a.act.mark + "</i>" +
+            '<span class="fc-letter__act-label">' + esc(a.choice.label) + "</span>" +
+            (a.choice.cost
+              ? '<span class="fc-letter__act-cost">' + esc(a.choice.cost) + "</span>" : "") +
+            '<span class="fc-choice__dots" aria-hidden="true">' +
+              dotsHtml(a.choice, moneyRef) + "</span>" +
+            '<span class="fc-sr">影响：' + esc(affectedNames(a.choice) || "未知") + "</span>" +
+            "</button>";
+        }).join("")
+      : '<button type="button" class="fc-letter__act fc-letter__act--hold" data-i="-1">' +
+          '<i class="fc-letter__mark" aria-hidden="true">▤</i>' +
+          '<span class="fc-letter__act-label">收进抽屉 ▸</span></button>';
+
+    var host = doc.createElement("div");
+    host.className = "fc-letter";
+    host.setAttribute("data-layer", ev.layer);
+    host.setAttribute("data-type", ev.type);
+    host.innerHTML =
+      '<div class="fc-letter__scrim"></div>' +
+      '<article class="fc-letter__sheet" role="dialog" aria-modal="true" tabindex="-1" ' +
+              'aria-labelledby="fcLtTitle" aria-describedby="fcLtBody">' +
+        '<header class="fc-letter__head">' +
+          '<span class="fc-letter__from">' + esc(ev.scene) + "</span>" +
+          '<span class="fc-letter__stamp">' + esc(TYPE_LABEL[ev.type] || "文书") + "</span>" +
+        "</header>" +
+        '<div class="fc-letter__face fc-letter__face--read">' +
+          '<h2 class="fc-letter__title" id="fcLtTitle">' + esc(ev.title) + "</h2>" +
+          '<p class="fc-letter__body" id="fcLtBody">' + esc(ev.body) + "</p>" +
+          '<div class="fc-letter__rule" aria-hidden="true"></div>' +
+          '<div class="fc-letter__acts" role="group" aria-label="处置">' + actsHtml + "</div>" +
+        "</div>" +
+        '<div class="fc-letter__face fc-letter__face--receipt" hidden></div>' +
+      "</article>";
+
+    var sheet = host.querySelector(".fc-letter__sheet");
+    var stamp = host.querySelector(".fc-letter__stamp");
+    var readFace = host.querySelector(".fc-letter__face--read");
+    var receiptFace = host.querySelector(".fc-letter__face--receipt");
+    var buttons = [].slice.call(host.querySelectorAll(".fc-letter__act"));
+
+    var settled = false;
+    var cooling = isRedline;
+    var answered = null;
+    var coolTimer = null;
+
+    function finish(result) {
+      if (settled) return;
+      settled = true;
+      if (coolTimer) global.clearInterval(coolTimer);
+      host.classList.add("is-closing");
+      var done = function () {
+        if (host.parentNode) host.parentNode.removeChild(host);
+        FC.overlay.pop(host);
+        current = null;
+        resolve(result);
+        pump();
+      };
+      if (soft) done();
+      else global.setTimeout(done, 200);
+    }
+
+    function deny() {
+      if (soft || cooling) return;
+      sheet.classList.remove("is-denied");
+      void sheet.offsetWidth;
+      sheet.classList.add("is-denied");
+    }
+
+    /* 一封已经拆开的信不能装作没看见：签或撕之前，ESC 与信纸外的点击无效。 */
+    function requestClose() {
+      if (answered) finish(answered);
+      else deny();
+    }
+
+    function answer(choice) {
+      if (settled || cooling) return;
+      answered = outcome("letter", ev, choice);
+
+      receiptFace.innerHTML =
+        (choice && choice.result
+          ? '<p class="fc-letter__result">' + esc(choice.result) + "</p>" : "") +
+        deltaListHtml(answered.deltas, moneyRef) +
+        '<button class="fc-btn fc-btn--primary fc-letter__done">归档，继续 ▸</button>';
+
+      var go = receiptFace.querySelector(".fc-letter__done");
+      go.addEventListener("click", function () { finish(answered); });
+
+      var swap = function () {
+        readFace.hidden = true;
+        receiptFace.hidden = false;
+        host.classList.add("is-resolved");
+        rollDeltas(receiptFace);
+        go.focus();
+      };
+
+      if (soft) swap();
+      else {
+        readFace.classList.add("is-leaving");
+        global.setTimeout(swap, 200);
+      }
+    }
+
+    function onKey(e) {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        if (cooling) return;
+        requestClose();
+        return;
+      }
+      if (e.key === "Tab") { FC.overlay.trap(sheet, e); return; }
+      if (answered || cooling) return;
+      var n = parseInt(e.key, 10);
+      if (n >= 1 && n <= buttons.length && !buttons[n - 1].disabled) {
+        e.preventDefault();
+        buttons[n - 1].click();
+      }
+    }
+
+    buttons.forEach(function (b) {
+      b.addEventListener("click", function () {
+        var i = parseInt(b.getAttribute("data-i"), 10);
+        answer(i >= 0 ? choices[i] : null);
+      });
+    });
+
+    host.querySelector(".fc-letter__scrim").addEventListener("click", requestClose);
+
+    doc.body.appendChild(host);
+    FC.overlay.push("modal", host);
+    FC.overlay.top().onKey = onKey;
+    current = { host: host, finish: finish, event: ev, kind: "letter" };
+
+    /* 红线信纸和红线弹窗一样要三秒 —— 换个壳不等于换个门槛。 */
+    if (isRedline) {
+      var left = 3;
+      var label = TYPE_LABEL.redline;
+      buttons.forEach(function (b) { b.disabled = true; b.classList.add("is-cooling"); });
+      stamp.textContent = label + " · " + left;
+      sheet.focus();
+      coolTimer = global.setInterval(function () {
+        left--;
+        if (left > 0) { stamp.textContent = label + " · " + left; return; }
+        global.clearInterval(coolTimer);
+        coolTimer = null;
+        if (settled) return;
+        cooling = false;
+        stamp.textContent = label;
+        buttons.forEach(function (b) {
+          b.disabled = false;
+          b.classList.remove("is-cooling");
+        });
+        buttons[0].focus();
+      }, 1000);
+    } else if (buttons.length) {
+      buttons[0].focus();
+    }
+
+    if (soft) host.classList.add("is-open");
+    else global.requestAnimationFrame(function () { host.classList.add("is-open"); });
+  }
+
+  /* ----------------------------------------------------------------- inline
+     不弹窗。返回一张卡的数据（外加一段现成的 HTML），让调用方把它插进日志
+     流里 —— 同一条事件，读起来是「这个月发生的事」，不是「请你回答」。 */
+  function inlineCard(ev, opts) {
+    var choice = ev.choices && ev.choices.length ? ev.choices[0] : null;
+    return {
+      id: ev.id,
+      presentation: "inline",
+      layer: ev.layer,
+      layerIndex: ev.layerIndex,
+      type: ev.type,
+      tag: opts.tag || ev.category || TYPE_LABEL[ev.type] || "城市",
+      tint: "var(--l" + ev.layerIndex + ")",
+      title: ev.title || "",
+      text: ev.body || "",
+      /* 有选项的事件（O1 走 inline）把首选项的结果句当作卡片的落款。 */
+      note: opts.note || (choice && choice.result) || ""
+    };
+  }
+
+  /* 只有叙事，不带结算：一条 ambient 的账已经在调用方结过了，卡片再报一遍
+     数字就是复读。调用方要显示增减，自己在卡片下面接一行。 */
+  function inlineHtml(card) {
+    return '<article class="fc-inline" data-layer="' + esc(card.layer) +
+      '" data-type="' + esc(card.type) + '">' +
+      '<i class="fc-inline__accent" aria-hidden="true"></i>' +
+      '<span class="fc-inline__tag">' + esc(card.tag) + "</span>" +
+      (card.title ? '<h3 class="fc-inline__title">' + esc(card.title) + "</h3>" : "") +
+      '<p class="fc-inline__text">' + esc(card.text) + "</p>" +
+      (card.note ? '<p class="fc-inline__note">' + esc(card.note) + "</p>" : "") +
+      "</article>";
+  }
+
+  function showInline(payload, opts) {
+    var ev = normalize(payload);
+    var result = outcome("inline", ev, null);
+    result.inline = true;
+    result.card = inlineCard(ev, opts || {});
+    result.html = inlineHtml(result.card);
+    return result;
+  }
+
+  /* -------------------------------------------------------------- 分流与队列 */
+  function present(mode, ev, opts, resolve) {
+    if (mode === "toast") renderToast(ev, opts, resolve);
+    else if (mode === "letter") renderLetter(ev, opts, resolve);
+    else render(ev, opts, resolve);
+  }
+
+  function normalize(payload) {
+    return payload && payload.layerIndex ? payload : toPayload(payload || {});
+  }
+
+  function showAs(mode, payload, opts) {
+    var ev = normalize(payload);
+    opts = opts || {};
+    if (mode === "inline") return Promise.resolve(showInline(ev, opts));
+    return new Promise(function (resolve) {
+      if (current) queue.push({ mode: mode, ev: ev, opts: opts, resolve: resolve });
+      else present(mode, ev, opts, resolve);
+    });
+  }
+
+  /* 唯一的入口：数据说走哪种壳就走哪种壳，`opts.presentation` 可以临时改道。 */
+  function show(payload, opts) {
+    var ev = normalize(payload);
+    opts = opts || {};
+    return showAs(presentationOf({ presentation: opts.presentation || ev.presentation }), ev, opts);
   }
 
   function close() {
     var pending = queue.splice(0, queue.length);
     pending.forEach(function (q) {
-      q.resolve({ choiceId: null, choice: null, deltas: {}, event: q.ev, dismissed: true });
+      q.resolve({
+        presentation: q.mode, choiceId: null, choice: null,
+        deltas: {}, event: q.ev, dismissed: true
+      });
     });
     if (current) {
       current.finish({
-        choiceId: null, choice: null, deltas: {}, event: current.event, dismissed: true
+        presentation: current.kind || "modal", choiceId: null, choice: null,
+        deltas: {}, event: current.event, dismissed: true
       });
     }
   }
@@ -617,8 +983,13 @@
     deck: function () { return deck; },
     pick: pick,
     show: show,
+    showToast: function (payload, opts) { return showAs("toast", payload, opts); },
+    showLetter: function (payload, opts) { return showAs("letter", payload, opts); },
+    showInline: function (payload, opts) { return showInline(normalize(payload), opts); },
     close: close,
     isOpen: function () { return !!current; },
+    presentationOf: presentationOf,
+    PRESENTATIONS: PRESENTATIONS,
     moneyOf: moneyOf,
     toPayload: toPayload,
     meetsNpc: meetsNpc,

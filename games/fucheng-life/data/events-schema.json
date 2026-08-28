@@ -44,6 +44,12 @@
           "enum": ["L1", "L2", "L3", "L4", "L5"],
           "description": "驱动层色与 pick() 层距加权。"
         },
+        "presentation": {
+          "type": "string",
+          "enum": ["modal", "toast", "inline", "letter"],
+          "default": "modal",
+          "description": "呈现壳（R5-B）：modal = 现有 O1 卡；toast = 顶部 4 秒通知，单按钮「知道了」，落地时自动结算 choices[0]（所以只给首选项代价最轻的通知类事件用）；letter = 信纸全屏，choices 首条映射签字、末条映射撕掉，红线信纸同样有三秒冷静期；inline = 不弹窗，返回一张插进日志流的大卡片。缺省或写了未知值一律回落 modal。由 FC.events.show 分流，FC.events.PRESENTATIONS 是白名单。"
+        },
         "weight": {
           "type": "integer",
           "minimum": 1,
