@@ -10,10 +10,88 @@
   background: rgba(6, 10, 22, 0.7);
   border: 1px solid rgba(255, 255, 255, 0.08);
   box-shadow: inset 3px 0 0 0 var(--tint, var(--neon-cyan));
+  transition: border-color 0.3s, box-shadow 0.3s;
 }
 
 .fc-contract-hud[hidden] { display: none !important; }
 .fc-contract-hud.is-idle { opacity: 0.72; }
+
+.fc-contract-hud.is-awaiting {
+  border-color: rgba(255, 169, 64, 0.55);
+  box-shadow: inset 3px 0 0 0 var(--warn),
+    0 0 0 1px rgba(255, 169, 64, 0.25),
+    0 0 28px rgba(255, 169, 64, 0.12);
+  animation: fc-contract-pulse 2.4s ease-in-out infinite;
+}
+
+@keyframes fc-contract-pulse {
+  0%, 100% {
+    border-color: rgba(255, 169, 64, 0.35);
+    box-shadow: inset 3px 0 0 0 var(--warn),
+      0 0 0 1px rgba(255, 169, 64, 0.15),
+      0 0 18px rgba(255, 169, 64, 0.08);
+  }
+  50% {
+    border-color: rgba(255, 169, 64, 0.75);
+    box-shadow: inset 3px 0 0 0 var(--warn),
+      0 0 0 2px rgba(255, 169, 64, 0.35),
+      0 0 36px rgba(255, 169, 64, 0.2);
+  }
+}
+
+.fc-contract-hud__ring-wrap {
+  position: relative;
+  flex: 0 0 auto;
+  width: 52px;
+  height: 52px;
+}
+
+.fc-contract-hud__ring {
+  display: block;
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+
+.fc-contract-hud__ring-track {
+  stroke: rgba(255, 255, 255, 0.1);
+  stroke-width: 3;
+}
+
+.fc-contract-hud__ring-arc {
+  stroke: var(--tint, var(--neon-cyan));
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-dasharray: 100.53;
+  stroke-dashoffset: 100.53;
+  transition: stroke-dashoffset 0.5s var(--ease-out),
+    stroke 0.3s;
+  filter: drop-shadow(0 0 6px var(--tint, var(--neon-cyan)));
+}
+
+.fc-contract-hud.is-awaiting .fc-contract-hud__ring-arc {
+  stroke: var(--warn);
+  filter: drop-shadow(0 0 6px rgba(255, 169, 64, 0.55));
+}
+
+.fc-contract-hud__ring-label {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font: 700 11px/1 var(--font-mono);
+  color: var(--text-hi);
+  pointer-events: none;
+}
+
+.fc-contract-hud__prompt {
+  margin: 0 0 8px;
+  font: 600 13px/1.4 var(--font-sans);
+  color: var(--warn);
+  letter-spacing: 0.02em;
+}
+
+.fc-contract-hud__prompt[hidden] { display: none !important; }
 
 .fc-contract-hud__main { flex: 1 1 auto; min-width: 0; }
 
@@ -67,6 +145,15 @@
   transition: width 0.45s var(--ease-out);
 }
 
+.fc-contract-hud.is-active .fc-contract-hud__meter i {
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--tint, var(--neon-cyan)) 65%, #000),
+    var(--tint, var(--neon-cyan)),
+    color-mix(in srgb, var(--tint, var(--neon-cyan)) 55%, #fff)
+  );
+}
+
 .fc-contract-hud__foot {
   display: flex;
   justify-content: space-between;
@@ -81,6 +168,7 @@
 
 @media (max-width: 640px) {
   .fc-contract-hud { flex-direction: column; align-items: stretch; }
+  .fc-contract-hud__ring-wrap { align-self: center; }
   .fc-contract-hud__btn { width: 100%; }
 }
 
@@ -230,6 +318,8 @@
   .fc-contract-pick,
   .fc-contract-pick__panel,
   .fc-contract-card,
-  .fc-contract-hud__meter i { transition: none; }
+  .fc-contract-hud__meter i,
+  .fc-contract-hud__ring-arc { transition: none; }
   .fc-contract-pick__panel { transform: none; }
+  .fc-contract-hud.is-awaiting { animation: none; }
 }

@@ -6,6 +6,8 @@
   var era, origin, run, logSeq = 0, painted = [], lastLayer = null;
   var MODAL_ODDS = [0, 0, 0.28, 0.42, 0.72];
   var STAT_NAME = { money: "现金", health: "健康", social: "人脉", rep: "声望", edu: "学历" };
+  var NPC_LAYER = { laozhou: 2, chenjie: 1, amin: 1, wangzong: 4, xiaoyu: 2 };
+  var CONTRACT_RING_C = 100.53;
   var fmt = function (n) { return n.toLocaleString("zh-CN"); };
   var esc = function (s) { return FC.esc(s); };
 
@@ -275,22 +277,48 @@
     }).join("；") + "）";
   }
 
+  function npcFlagLine(n) {
+    var flag = n.flags && n.flags.length ? n.flags[n.flags.length - 1] : null;
+    if (flag) return "「" + FC.Sim.flagLabel(flag) + " · 第" + run.months + "月」";
+    if (n.last) return "「" + n.last + " · 第" + run.months + "月」";
+    return "「暂时两不相欠」";
+  }
+
+  function setContractRing(ratio, label) {
+    var ring = $("contractRing");
+    if (!ring) return;
+    var pct = Math.max(0, Math.min(1, ratio || 0));
+    ring.style.strokeDasharray = String(CONTRACT_RING_C);
+    ring.style.strokeDashoffset = String(CONTRACT_RING_C * (1 - pct));
+    var lbl = $("contractRingLabel");
+    if (lbl) lbl.textContent = label || "";
+  }
+
   function renderNpcs() {
     var list = $("relList");
     if (!list) return;
     if (!run.npcs) FC.Sim.migrateNpcs(run);
     list.innerHTML = run.npcs.map(function (n) {
       var cls = n.balance > 0 ? "up" : n.balance < 0 ? "down" : "";
-      var flag = n.flags && n.flags.length ? n.flags[n.flags.length - 1] : null;
-      var last = flag ? FC.Sim.flagLabel(flag) : n.last || "暂时两不相欠";
-      return '<li class="fc-relations__item fc-npc">' +
-        '<div class="fc-npc__head"><span class="fc-npc__name">' + esc(n.name) +
-          '<i class="fc-npc__role">' + esc(n.role) + "</i></span>" +
-          '<b class="' + cls + '">' + (n.balance > 0 ? "+" : "") + n.balance + "</b></div>" +
-        '<div class="fc-npc__bar" role="img" aria-label="人情结余 ' + n.balance + ' / 5">' +
-          '<i class="' + cls + '" style="width:' + Math.abs(n.balance) * 10 + "%;" +
-            (n.balance < 0 ? "right:50%" : "left:50%") + '"></i></div>' +
-        '<p class="fc-npc__last">' + esc(last) + "</p></li>";
+      var layer = NPC_LAYER[n.id] || 2;
+      var barW = Math.abs(n.balance) * 10;
+      var barStyle = n.balance > 0
+        ? 'left:50%;width:' + barW + '%'
+        : n.balance < 0
+          ? 'right:50%;width:' + barW + '%'
+          : 'width:0';
+      var score = n.balance > 0 ? "+" + n.balance : String(n.balance);
+      return '<li class="fc-npc-card" style="--ring:var(--l' + layer + ')">' +
+        '<div class="fc-npc-card__avatar" aria-hidden="true"><span>' +
+          esc(n.name.charAt(0)) + "</span></div>" +
+        '<div class="fc-npc-card__body">' +
+          '<div class="fc-npc-card__head">' +
+            '<b class="fc-npc-card__name">' + esc(n.name) + "</b>" +
+            '<span class="fc-npc-card__role">' + esc(n.role) + "</span></div>" +
+          '<div class="fc-npc-card__balance" role="img" aria-label="人情结余 ' + n.balance + ' / 5">' +
+            '<div class="fc-npc-card__bar"><i class="' + cls + '" style="' + barStyle + '"></i></div>' +
+            '<span class="fc-npc-card__score ' + cls + '">' + score + "</span></div>" +
+          '<p class="fc-npc-card__flag">' + esc(npcFlagLine(n)) + "</p></div></li>";
     }).join("");
   }
 
@@ -301,14 +329,19 @@
     var c = run.contract;
     var btn = $("contractPickBtn");
     var state = $("contractState");
+    var prompt = $("contractPrompt");
     var canPick = FC.contract.canPick(run);
+    var awaiting = canPick && !c;
 
     hud.hidden = false;
     hud.classList.toggle("is-idle", !c);
+    hud.classList.toggle("is-active", !!(c && c.status === "active"));
+    hud.classList.toggle("is-awaiting", awaiting);
     if (btn) btn.hidden = !canPick;
+    if (prompt) prompt.hidden = !awaiting;
 
     if (!c) {
-      hud.style.setProperty("--tint", "var(--text-dim)");
+      hud.style.setProperty("--tint", awaiting ? "var(--warn)" : "var(--text-dim)");
       $("contractName").textContent = "尚未签约";
       state.textContent = canPick ? "可签" : "已错过";
       state.className = "fc-contract-hud__state" + (canPick ? " is-urgent" : "");
@@ -319,12 +352,20 @@
       $("contractDeadline").textContent = canPick
         ? "第 " + FC.contract.PICK_WINDOW + " 月前有效"
         : "签约窗口已关闭";
+      if (canPick) {
+        var pickSpan = FC.contract.PICK_WINDOW + 1;
+        var pickLeft = Math.max(0, pickSpan - (run.months || 0));
+        setContractRing(pickLeft / pickSpan, pickLeft + "月");
+      } else {
+        setContractRing(0, "");
+      }
       return;
     }
 
     var def = FC.contract.def(c.id) || {};
     var pct = FC.Sim.refreshContract(run);
     var monthsLeft = FC.Sim.contractMonthsLeft(run);
+    var deadlineTotal = c.deadlineMonths || def.deadline || 1;
     hud.style.setProperty("--tint", def.tint || "var(--neon-cyan)");
     $("contractName").textContent = def.name || c.id;
     $("contractBar").style.width = Math.min(100, pct) + "%";
@@ -338,6 +379,15 @@
       (c.status === "won" ? " is-won"
         : c.status === "failed" ? " is-failed"
           : monthsLeft <= 6 ? " is-urgent" : "");
+
+    if (c.status === "active") {
+      setContractRing(
+        Math.max(0, monthsLeft) / deadlineTotal,
+        Math.max(0, monthsLeft) + "月"
+      );
+    } else {
+      setContractRing(c.status === "won" ? 1 : 0, c.status === "won" ? "✓" : "×");
+    }
   }
 
   /* 签约窗口只有头三个月。「再想想」记下当月，下个月才会再问一次。 */
@@ -753,6 +803,18 @@
     renderLog();
   }
 
+  function animateTabPanel(panel) {
+    if (!panel || !window.FCMotion) return;
+    var nodes = panel.querySelectorAll(".fc-panel, .fc-npc-card, .fc-statline, .fc-kv");
+    var i;
+    for (i = 0; i < nodes.length; i++) nodes[i].classList.remove("fc-rise");
+    if (FCMotion.reduced && FCMotion.reduced()) {
+      for (i = 0; i < nodes.length; i++) nodes[i].classList.add("fc-rise");
+      return;
+    }
+    FCMotion.stagger(nodes, { max: 8 });
+  }
+
   function bindTabs() {
     document.querySelectorAll(".fc-tabs__btn").forEach(function (btn) {
       btn.addEventListener("click", function () {
@@ -765,6 +827,7 @@
           var on = p.id === "tab-" + tab;
           p.hidden = !on;
           p.classList.toggle("is-active", on);
+          if (on) animateTabPanel(p);
         });
       });
     });
