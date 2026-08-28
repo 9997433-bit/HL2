@@ -11,6 +11,7 @@
 <link rel="stylesheet" href="../css/screens.css">
 <link rel="stylesheet" href="../css/fc-ui.css">
 <link rel="stylesheet" href="../css/fc-events.css">
+<link rel="stylesheet" href="../css/fc-ledger.css">
 </head>
 <body>
 <div class="fc-atmos"></div>
@@ -119,6 +120,8 @@
         <div class="fc-statline"><span>收支比</span><b id="ratio">—</b></div>
         <div class="fc-meter"><i id="mRatio"></i></div>
         <p class="fc-quote" style="margin:12px 0 0;font-size:12px">「账单比闹钟准时。」</p>
+        <button class="fc-btn fc-btn--ghost" id="ledgerBtn"
+                style="width:100%;margin-top:12px" disabled>查看结算单</button>
       </div>
 
       <div class="fc-panel">
@@ -146,6 +149,7 @@
 <script src="../js/screens.js"></script>
 <script src="../js/fc-motion.js"></script>
 <script src="../js/fc-events.js"></script>
+<script src="../js/fc-ledger.js"></script>
 <script>
 (function () {
   var $ = function (id) { return document.getElementById(id); };
@@ -432,8 +436,39 @@
     }).join("");
   }
 
+  /* -------------------------------------------------------- O2 账单抽屉
+     The side panel carries the same numbers all month; the drawer is the
+     moment they are read out loud. */
+  var RENT_NOTE = ["城中村单间", "合租主卧", "一室一厅", "江景两居", "临时落脚"];
+
+  function billNote(key) {
+    if (key === "房租") return RENT_NOTE[layerOf() - 1] || "";
+    if (key === "还贷") return "月供利息";
+    return "";
+  }
+
+  function buildLedgerPayload() {
+    return {
+      ym: run.year + "." + (run.month < 10 ? "0" : "") + run.month,
+      rows: bills().map(function (b) {
+        return { label: b.k, note: billNote(b.k), amount: -b.v };
+      }),
+      income: income(),
+      net: run.income
+    };
+  }
+
+  /* Three months deserve the ceremony: the first one in the city, any month
+     that closed in the red, and every December. */
+  function maybeShowLedger(silent) {
+    if (silent || !FC.ledger) return;
+    if (run.months === 1 || run.income < 0 || run.month === 12) {
+      FC.ledger.show(buildLedgerPayload());
+    }
+  }
+
   /* ------------------------------------------------------------ the tick */
-  function tick() {
+  function tick(silent) {
     run.months++;
     run.month++;
     if (run.month > 12) { run.month = 1; run.year++; }
@@ -492,8 +527,11 @@
     renderLog();
 
     var ev = drawModalEvent();
-    if (!ev) return Promise.resolve(false);
-    return openEvent(ev);
+    if (!ev) {
+      maybeShowLedger(silent);
+      return Promise.resolve(false);
+    }
+    return openEvent(ev, silent);
   }
 
   /* The undercurrent stays shut for the first half-year, and once it opens it
@@ -524,7 +562,7 @@
 
   /* The overlay is pure UI: it hands back the choice, the dashboard is what
      actually charges the player for it. */
-  function openEvent(ev) {
+  function openEvent(ev, silent) {
     return FC.events.show(ev, { moneyRef: income() }).then(function (res) {
       if (res.dismissed) return true;
       var applied = applyDeltas(res.deltas);
@@ -538,6 +576,7 @@
       if (run.log.length > 60) run.log.length = 60;
       render(true);
       renderLog();
+      maybeShowLedger(silent);
       return true;
     });
   }
@@ -561,14 +600,19 @@
     var months = 6;
     (function step(i) {
       if (i >= months) return;
-      tick().then(function (interrupted) {
-        if (interrupted) {
-          note("快进被一件事打断。");
-          return;
-        }
-        step(i + 1);
+      var last = i === months - 1;
+      tick(!last).then(function (interrupted) {
+        if (!interrupted) { step(i + 1); return; }
+        note("快进被一件事打断。");
+        /* The month that got interrupted is the one the player ends on, so
+           it earns the drawer the silent pass had held back. */
+        if (!last) maybeShowLedger(false);
       });
     })(0);
+  });
+
+  $("ledgerBtn").addEventListener("click", function () {
+    if (FC.ledger) FC.ledger.show(buildLedgerPayload());
   });
 
   $("resetBtn").addEventListener("click", function () {
@@ -595,6 +639,7 @@
   $("tickBtn").disabled = false;
   $("tick6Btn").disabled = false;
   $("resetBtn").disabled = false;
+  $("ledgerBtn").disabled = !FC.ledger;
   render(false);
   renderLog();
   }
