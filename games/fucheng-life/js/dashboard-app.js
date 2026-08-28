@@ -430,6 +430,11 @@
           (actHtml ? '<div class="fc-npc-card__acts">' + actHtml + "</div>" : "") +
           "</div></li>";
     }).join("");
+    /* 关系 Tab 内重绘时补回 fc-rise，否则 is-active 规则会把新卡压成透明。 */
+    if (list.closest(".fc-tabpanel.is-active")) {
+      var cards = list.querySelectorAll(".fc-npc-card");
+      for (var i = 0; i < cards.length; i++) cards[i].classList.add("fc-rise");
+    }
   }
 
   function onNpcInteract(npcId, kind) {
