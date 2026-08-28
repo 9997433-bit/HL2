@@ -1341,6 +1341,15 @@
     }, { pending: false }).then(function () { return true; });
   }
 
+  /* 挂账那一刻合约还在手上，补弹时可能已经结算、换签或进度跑出了区间 ——
+     入池时的门禁在这里重验一次，过期的通知不该再敲门。 */
+  function pendingContractStale(ev) {
+    if (!ev || !ev.contract) return false;
+    if (!FC.events || typeof FC.events.meetsContract !== "function") return false;
+    if (!FC.Sim || typeof FC.Sim.contractCtx !== "function") return false;
+    return !FC.events.meetsContract(FC.Sim.contractCtx(run), ev);
+  }
+
   /* 进门时补弹：上一局停在「危机 / O1 已经敲过门但没答完」，这里把那张卡
      原样开回来。玩家再关一次就继续欠着，下次进门再弹。 */
   function replayPendingModal(silent) {
@@ -1349,6 +1358,13 @@
     var ev = pending && pending.event;
     if (!ev || !ev.id) {
       clearPendingModal();
+      return Promise.resolve(false);
+    }
+    /* 销掉过期合约卡时返回 false：这一步没弹窗，不该占掉本轮的敲门额度。 */
+    if (pendingContractStale(ev)) {
+      clearPendingModal();
+      sysLog("那张合约相关的通知过期了，不再补弹。");
+      FC.write({ run: run });
       return Promise.resolve(false);
     }
     return openEvent(ev, silent !== false, null, {
