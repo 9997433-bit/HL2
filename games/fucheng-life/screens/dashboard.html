@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>人生仪表盘 — 浮城人生</title>
+<meta name="description" content="浮城人生 · 人生仪表盘：金钱、健康、人脉、圈层、年龄与事件日志。">
+<link rel="stylesheet" href="../css/screens.css">
+</head>
+<body>
+<div class="fc-atmos"></div>
+<div class="fc-skyline"></div>
+
+<header class="fc-topbar">
+  <a class="fc-brand" href="../index.html">
+    <span class="fc-brand__mark"></span>
+    <span>浮城人生 <span class="fc-brand__en">URBAN LIFE SIM</span></span>
+  </a>
+  <nav class="fc-nav">
+    <a href="era-select.html">入城登记</a>
+    <a href="origin-select.html">出身</a>
+    <a href="dashboard.html" aria-current="page">人生仪表盘</a>
+    <a href="city-map.html">城市地图</a>
+  </nav>
+</header>
+
+<main class="fc-page fc-page--wide">
+
+  <!-- Identity strip -->
+  <section class="fc-panel fc-rise" style="margin-bottom:18px">
+    <div class="fc-rowgap" style="justify-content:space-between;align-items:flex-start">
+      <div style="min-width:0">
+        <p class="fc-eyebrow" style="margin-bottom:8px">LIFE DASHBOARD · 人生仪表盘</p>
+        <h1 class="fc-title" style="font-size:clamp(24px,3.4vw,34px);margin-bottom:8px" id="identity">市民档案</h1>
+        <div class="fc-rowgap">
+          <span class="fc-chip fc-chip--accent" id="eraChip">E7 · 当前时代</span>
+          <span class="fc-chip" id="originChip">普通工薪</span>
+          <span class="fc-chip" id="layerChip">L2 工薪层</span>
+        </div>
+      </div>
+      <div style="text-align:right">
+        <div class="fc-actionbar__label">City Clock</div>
+        <div class="fc-mono" id="clock" style="font-size:22px;color:var(--text-hi);letter-spacing:.04em">2020.03</div>
+        <div class="fc-quote" id="season" style="font-size:12px">雨季 · 账单日临近</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- HUD -->
+  <section class="fc-hud fc-rise" style="margin-bottom:18px">
+    <div class="fc-stat" style="--tint:var(--neon-amber)">
+      <div class="fc-stat__label">￥ 现金</div>
+      <div class="fc-stat__value" id="sMoney">0</div>
+      <div class="fc-stat__delta" id="dMoney">月净流 —</div>
+    </div>
+    <div class="fc-stat" style="--tint:var(--neon-jade)">
+      <div class="fc-stat__label">♡ 健康</div>
+      <div class="fc-stat__value" id="sHealth">0<small>/100</small></div>
+      <div class="fc-stat__meter fc-meter fc-meter--jade"><i id="mHealth"></i></div>
+    </div>
+    <div class="fc-stat" style="--tint:var(--neon-violet)">
+      <div class="fc-stat__label">◎ 人脉</div>
+      <div class="fc-stat__value" id="sSocial">0<small>/100</small></div>
+      <div class="fc-stat__meter fc-meter fc-meter--violet"><i id="mSocial"></i></div>
+    </div>
+    <div class="fc-stat" style="--tint:var(--neon-cyan)">
+      <div class="fc-stat__label">✦ 声望</div>
+      <div class="fc-stat__value" id="sRep">0<small>/100</small></div>
+      <div class="fc-stat__meter fc-meter fc-meter--cyan"><i id="mRep"></i></div>
+    </div>
+    <div class="fc-stat" style="--tint:var(--neon-rose)">
+      <div class="fc-stat__label">⧗ 年龄</div>
+      <div class="fc-stat__value" id="sAge">22<small>岁</small></div>
+      <div class="fc-stat__delta" id="dAge">已在城中 0 个月</div>
+    </div>
+    <div class="fc-stat" style="--tint:var(--neon-blood)">
+      <div class="fc-stat__label">⚑ 负债</div>
+      <div class="fc-stat__value" id="sDebt">0</div>
+      <div class="fc-stat__delta" id="dDebt">无未结清账目</div>
+    </div>
+  </section>
+
+  <div class="fc-split fc-split--main">
+
+    <!-- Event log -->
+    <section class="fc-panel fc-rise">
+      <h2 class="fc-sectiontitle">事件日志 <span>EVENT LOG</span></h2>
+      <ul class="fc-log" id="log"></ul>
+      <hr class="fc-hr">
+      <div class="fc-rowgap">
+        <button class="fc-btn fc-btn--primary" id="tickBtn">推进一个月 ▸</button>
+        <button class="fc-btn fc-btn--ghost" id="tick6Btn">快进半年 ▸▸</button>
+        <button class="fc-btn fc-btn--ghost" id="resetBtn">重开人生</button>
+        <a class="fc-btn fc-btn--ghost" href="city-map.html">打开城市地图</a>
+      </div>
+    </section>
+
+    <!-- Side rail -->
+    <aside class="fc-stack fc-rise">
+
+      <div class="fc-panel" id="elevatorPanel">
+        <h2 class="fc-sectiontitle">圈层 <span>LAYER</span></h2>
+        <div class="fc-elevator" id="elevator"></div>
+        <p class="fc-quote" id="layerNote" style="margin:14px 0 0;font-size:12px">
+          城市把人放在不同的高度，然后收不同的租。
+        </p>
+      </div>
+
+      <div class="fc-panel">
+        <h2 class="fc-sectiontitle">本月账单 <span>BILLS</span></h2>
+        <dl class="fc-kv" id="bills" style="margin-top:0"></dl>
+        <hr class="fc-hr">
+        <div class="fc-statline"><span>收支比</span><b id="ratio">—</b></div>
+        <div class="fc-meter"><i id="mRatio"></i></div>
+        <p class="fc-quote" style="margin:12px 0 0;font-size:12px">「账单比闹钟准时。」</p>
+      </div>
+
+      <div class="fc-panel">
+        <h2 class="fc-sectiontitle">承重柱 <span>PILLARS</span></h2>
+        <div class="fc-taglist">
+          <span class="fc-chip">教育</span><span class="fc-chip">公权力</span>
+          <span class="fc-chip">资本</span><span class="fc-chip">家庭</span>
+          <span class="fc-chip">媒体</span><span class="fc-chip">职场</span>
+          <span class="fc-chip">房产</span><span class="fc-chip">消费</span>
+          <span class="fc-chip">科技</span>
+        </div>
+      </div>
+
+    </aside>
+  </div>
+
+  <p class="fc-footnote">
+    《浮城人生》· 人生仪表盘 — 原型界面（Mock 数据驱动）·
+    <a href="../index.html">返回游戏入口</a>
+  </p>
+</main>
+
+<script src="../js/screens.js"></script>
+<script>
+(function () {
+  var $ = function (id) { return document.getElementById(id); };
+  var esc = FC.esc;
+  var era = FC.era();
+  var origin = FC.origin();
+
+  var ERA_START_YEAR = { E1: 1981, E2: 1990, E3: 1998, E4: 2005, E5: 2012, E6: 2017, E7: 2021 };
+
+  /* ------------------------------------------------------------ run state */
+  function freshRun() {
+    var money = parseInt(String(origin.start).replace(/[^\d]/g, ""), 10) || 0;
+    return {
+      key: era.id + "/" + origin.id,
+      year: ERA_START_YEAR[era.id] || 2021,
+      month: 3,
+      age: 22,
+      months: 0,
+      money: money,
+      health: origin.mods.health,
+      social: origin.mods.social,
+      rep: Math.round((origin.mods.edu + origin.mods.social) / 2),
+      debt: origin.layer >= 4 ? 0 : Math.round(money * 0.35),
+      income: 0,
+      log: []
+    };
+  }
+
+  var saved = FC.read().run;
+  var run = saved && saved.key === era.id + "/" + origin.id ? saved : freshRun();
+
+  /* --------------------------------------------------------------- bills */
+  function bills() {
+    var scale = [0, 0.55, 1, 1.35, 3.2, 2.1][layerOf()] || 1;
+    var base = Math.max(1200, Math.round(run.money * 0.012) + 1600);
+    return [
+      { k: "房租", v: Math.round(base * 0.52 * scale) },
+      { k: "通勤", v: Math.round(base * 0.09 * scale) },
+      { k: "伙食", v: Math.round(base * 0.22 * scale) },
+      { k: "人情", v: Math.round(base * 0.13 * scale) },
+      { k: "还贷", v: Math.round(run.debt * 0.018) }
+    ];
+  }
+
+  function income() {
+    var skill = (origin.mods.edu + run.rep) / 2;
+    var eraBoost = 1 + era.stats.opportunity / 160;
+    return Math.round((2200 + skill * 86 + run.social * 34) * eraBoost * (0.6 + layerOf() * 0.24));
+  }
+
+  function layerOf() {
+    var m = run.money;
+    var score = Math.log10(Math.max(m, 100)) * 12 + run.rep * 0.28 + run.social * 0.16;
+    if (run.rep < 22 && run.social > 74) return 5;   // 暗流：人面广，名声薄
+    if (score > 74) return 4;
+    if (score > 58) return 3;
+    if (score > 44) return 2;
+    return 1;
+  }
+
+  /* -------------------------------------------------------------- events */
+  var POOL = [
+    { tag: "职场", tint: "var(--l2)", text: "季度 KPI 出榜，你在名单中段。主管说「再顶一顶」，没说顶到哪。",
+      d: { money: 1, health: -4, rep: 3 } },
+    { tag: "职场", tint: "var(--l3)", text: "隔壁组挖你，涨 18%，代价是每周飞一次。你要了三天考虑期。",
+      d: { money: 2, social: 4, health: -6, rep: 5 } },
+    { tag: "账单", tint: "var(--l1)", text: "房东在群里发了续租通知，涨 300。他加了个笑脸。",
+      d: { money: -1, health: -2 } },
+    { tag: "人情", tint: "var(--l4)", text: "老同学婚宴，红包 800。人情账本上你这一栏，终于不再欠着。",
+      d: { money: -1, social: 6, rep: 2 } },
+    { tag: "健康", tint: "var(--l3)", text: "体检报告有两个箭头向上。医生让你少熬夜，你说好，然后打开了电脑。",
+      d: { health: -8, money: -1 } },
+    { tag: "机会", tint: "var(--l4)", text: "有人拉你进一个饭局，桌上没人递名片——都认识彼此，只有你需要介绍。",
+      d: { social: 9, rep: 4, money: -1 } },
+    { tag: "风险", tint: "var(--l5)", text: "熟人介绍了一笔「稳赚」的短期周转，年化写在纸巾上。红线在灯下若隐若现。",
+      d: { money: 4, rep: -8, health: -3 } },
+    { tag: "城市", tint: "var(--l1)", text: "早高峰的地铁停了十一分钟。广播说前方站台拥挤，车厢里没人说话。",
+      d: { health: -2 } },
+    { tag: "居住", tint: "var(--l2)", text: "合租室友搬走，押金退得干干净净。空出来的房间比预想的大。",
+      d: { money: -2, health: 3 } },
+    { tag: "上升", tint: "var(--l3)", text: "报名了周末的证书班。两个月的学费，换一行简历。",
+      d: { money: -2, rep: 6, health: -3 } },
+    { tag: "家庭", tint: "var(--l4)", text: "家里来电话，问你什么时候回去看看。你听见背景里电视的声音。",
+      d: { money: -1, health: 4, social: 2 } },
+    { tag: "副业", tint: "var(--l3)", text: "深夜接的私活收到尾款。到账短信亮了一下，屏幕又暗下去。",
+      d: { money: 2, health: -5 } },
+    { tag: "裁员", tint: "var(--l5)", text: "楼层里搬走了三张工位。HR 的会议室从早上开到中午，门一直关着。",
+      d: { rep: -4, health: -5, social: -3 } },
+    { tag: "运气", tint: "var(--l1)", text: "楼下便利店的关东煮买一送一。这是这周最顺的十分钟。",
+      d: { health: 3 } }
+  ];
+
+  function pick() {
+    return POOL[Math.floor(Math.random() * POOL.length)];
+  }
+
+  /* ----------------------------------------------------------- rendering */
+  var fmt = function (n) { return n.toLocaleString("zh-CN"); };
+
+  function bump(el) {
+    el.classList.remove("fc-flash");
+    void el.offsetWidth;
+    el.classList.add("fc-flash");
+  }
+
+  function render(flash) {
+    var L = layerOf();
+    var layer = FC.LAYERS[L - 1];
+    var inc = income();
+    var out = bills().reduce(function (a, b) { return a + b.v; }, 0);
+    run.income = inc - out;
+
+    $("identity").textContent = origin.name + "　·　" + era.name;
+    $("eraChip").textContent = era.id + " · " + era.name + "　" + era.years;
+    $("originChip").textContent = "出身 " + origin.name + " / " + origin.en;
+    $("layerChip").textContent = layer.id + " " + layer.name;
+    $("layerChip").className = "fc-chip";
+    $("layerChip").style.color = "var(--" + layer.key + ")";
+    $("layerChip").style.borderColor = "var(--" + layer.key + ")";
+
+    $("clock").textContent = run.year + "." + (run.month < 10 ? "0" : "") + run.month;
+    $("season").textContent = [
+      "深冬 · 暖气与欠费", "早春 · 招聘季", "雨季 · 账单日临近", "盛夏 · 电费翻倍", "秋汛 · 年底考核"
+    ][Math.floor(run.month / 2.5) % 5];
+
+    $("sMoney").textContent = "¥" + fmt(run.money);
+    $("dMoney").textContent = (run.income >= 0 ? "月净流 +¥" : "月净流 −¥") + fmt(Math.abs(run.income));
+    $("dMoney").className = "fc-stat__delta " + (run.income >= 0 ? "up" : "down");
+
+    $("sHealth").innerHTML = Math.round(run.health) + "<small>/100</small>";
+    $("mHealth").style.width = Math.max(0, Math.min(100, run.health)) + "%";
+    $("sSocial").innerHTML = Math.round(run.social) + "<small>/100</small>";
+    $("mSocial").style.width = Math.max(0, Math.min(100, run.social)) + "%";
+    $("sRep").innerHTML = Math.round(run.rep) + "<small>/100</small>";
+    $("mRep").style.width = Math.max(0, Math.min(100, run.rep)) + "%";
+
+    $("sAge").innerHTML = run.age + "<small>岁</small>";
+    $("dAge").textContent = "已在城中 " + run.months + " 个月";
+    $("sDebt").textContent = "¥" + fmt(run.debt);
+    $("dDebt").textContent = run.debt > 0 ? "每月还本付息 ¥" + fmt(Math.round(run.debt * 0.018)) : "无未结清账目";
+    $("dDebt").className = "fc-stat__delta " + (run.debt > 0 ? "down" : "up");
+
+    $("bills").innerHTML = bills().map(function (b) {
+      return "<dt>" + b.k + "</dt><dd>−¥" + fmt(b.v) + "</dd>";
+    }).join("") + "<dt>月收入</dt><dd style='color:var(--ok)'>+¥" + fmt(inc) + "</dd>";
+
+    var ratio = Math.round((out / Math.max(inc, 1)) * 100);
+    $("ratio").textContent = ratio + "% 支出占比";
+    $("mRatio").style.width = Math.min(100, ratio) + "%";
+    $("mRatio").parentNode.className = "fc-meter " + (ratio > 85 ? "fc-meter--blood" : ratio > 60 ? "" : "fc-meter--jade");
+
+    $("elevatorPanel").style.setProperty("--tint", "var(--" + layer.key + ")");
+    $("elevator").innerHTML = FC.LAYERS.map(function (l, i) {
+      var here = i + 1 === L;
+      return '<div class="fc-elevator__step ' + (here ? "is-here" : "") + '" style="--tint:var(--' + l.key + ')">' +
+        "<b>" + l.id + "</b><span>" + l.name + "</span></div>";
+    }).join("");
+    $("layerNote").textContent = [
+      "灯是暖的，钱是冷的。市井层什么都便宜，除了机会。",
+      "地铁准点，房租准点，你也得准点。工薪层没有意外，只有消耗。",
+      "上升通道很窄，且只在特定的几年开着。",
+      "资本名利层的门是玻璃的：看得见里面，也看得见自己。",
+      "暗流之下没有路牌。走过的人都不说话。"
+    ][L - 1];
+
+    if (flash) {
+      bump($("sMoney"));
+      bump($("sHealth"));
+    }
+    FC.write({ run: run });
+  }
+
+  function renderLog() {
+    $("log").innerHTML = run.log.slice(0, 24).map(function (e) {
+      var deltas = Object.keys(e.d).map(function (k) {
+        var v = e.d[k];
+        var nameMap = { money: "现金", health: "健康", social: "人脉", rep: "声望" };
+        return '<span class="' + (v >= 0 ? "up" : "down") + '">' +
+          nameMap[k] + " " + (v >= 0 ? "+" : "−") + Math.abs(v) + "</span>";
+      }).join("");
+      return '<li class="fc-log__item">' +
+        '<div class="fc-log__time">' + e.t + "</div>" +
+        '<div class="fc-log__body">' +
+          '<span class="fc-log__tag" style="color:' + e.tint + '">' + esc(e.tag) + "</span>" +
+          "<p>" + esc(e.text) + "</p>" +
+          '<div class="fc-log__delta">' + deltas + "</div>" +
+        "</div></li>";
+    }).join("");
+  }
+
+  /* ------------------------------------------------------------ the tick */
+  function tick() {
+    run.months++;
+    run.month++;
+    if (run.month > 12) { run.month = 1; run.year++; }
+    if (run.months % 12 === 0) run.age++;
+
+    var e = pick();
+    var scale = Math.max(600, Math.round(income() * 0.42));
+    var applied = {};
+
+    for (var k in e.d) {
+      var v = e.d[k];
+      if (k === "money") {
+        var amount = v * scale;
+        run.money += amount;
+        applied.money = Math.round(amount / 100) * 100;
+      } else {
+        run[k] = Math.max(0, Math.min(100, run[k] + v));
+        applied[k] = v;
+      }
+    }
+
+    run.money += run.income;
+    run.debt = Math.max(0, run.debt - Math.round(run.debt * 0.018));
+    if (run.money < 0) {
+      run.debt += -run.money;
+      run.money = 0;
+    }
+    run.health = Math.max(0, Math.min(100, run.health - 0.4));
+
+    run.log.unshift({
+      t: run.year + "." + (run.month < 10 ? "0" : "") + run.month,
+      tag: e.tag,
+      tint: e.tint,
+      text: e.text,
+      d: applied
+    });
+    if (run.log.length > 60) run.log.length = 60;
+
+    render(true);
+    renderLog();
+  }
+
+  $("tickBtn").addEventListener("click", function () { tick(); });
+  $("tick6Btn").addEventListener("click", function () {
+    for (var i = 0; i < 6; i++) tick();
+  });
+  $("resetBtn").addEventListener("click", function () {
+    run = freshRun();
+    seed();
+    render(true);
+    renderLog();
+  });
+
+  function seed() {
+    run.log = [{
+      t: run.year + "." + (run.month < 10 ? "0" : "") + run.month,
+      tag: "入城",
+      tint: "var(--neon-amber)",
+      text: "你在 " + era.name + " 走出车站。城市照常运转，你只是千万进程里的一个节点。",
+      d: {}
+    }];
+  }
+
+  if (!run.log.length) seed();
+  render(false);
+  renderLog();
+})();
+</script>
+</body>
+</html>

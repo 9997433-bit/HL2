@@ -1,0 +1,1471 @@
+/* ==========================================================================
+   浮城人生 · URBAN LIFE SIMULATOR
+   screens.css — shared design system for the core game screens
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   1. Tokens
+   -------------------------------------------------------------------------- */
+:root {
+  /* Ink — the city at night */
+  --ink-900: #04060d;
+  --ink-800: #070b16;
+  --ink-700: #0b1120;
+  --ink-600: #111a2e;
+  --ink-500: #1a2540;
+  --ink-400: #253352;
+
+  /* Text */
+  --text-hi: #f2f6ff;
+  --text: #c8d3e8;
+  --text-dim: #8494b3;
+  --text-faint: #55637f;
+
+  /* Neon accents */
+  --neon-amber: #ffb547;
+  --neon-rose: #ff4d7e;
+  --neon-cyan: #35e0ff;
+  --neon-violet: #a56bff;
+  --neon-jade: #34e0a1;
+  --neon-blood: #e0324c;
+
+  /* Five-layer city — L1 市井 / L2 工薪 / L3 上升通道 / L4 资本名利 / L5 暗流 */
+  --l1: #ffb347;
+  --l1-deep: #6b3f0c;
+  --l2: #7fa8d4;
+  --l2-deep: #22364f;
+  --l3: #3fd6a0;
+  --l3-deep: #10402f;
+  --l4: #e8c46a;
+  --l4-alt: #a56bff;
+  --l4-deep: #3b2a55;
+  --l5: #d0325c;
+  --l5-deep: #3a0d24;
+
+  /* Semantic */
+  --ok: #3fd6a0;
+  --warn: #ffb547;
+  --bad: #ff4d6a;
+
+  /* Surfaces */
+  --glass: rgba(18, 27, 48, 0.62);
+  --glass-hi: rgba(30, 43, 72, 0.78);
+  --line: rgba(140, 165, 214, 0.16);
+  --line-hi: rgba(160, 190, 240, 0.34);
+
+  /* Rhythm */
+  --r-sm: 10px;
+  --r-md: 16px;
+  --r-lg: 22px;
+  --r-xl: 30px;
+  --shadow: 0 18px 50px rgba(0, 0, 0, 0.55);
+  --shadow-lift: 0 26px 70px rgba(0, 0, 0, 0.68);
+
+  --ease: cubic-bezier(0.22, 0.9, 0.24, 1);
+
+  --font: "PingFang SC", "HarmonyOS Sans SC", "Microsoft YaHei",
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-serif: "Songti SC", "Noto Serif SC", "Source Han Serif SC", Georgia,
+    "Times New Roman", serif;
+  --font-mono: "SF Mono", ui-monospace, "JetBrains Mono", Menlo, Consolas,
+    monospace;
+}
+
+/* --------------------------------------------------------------------------
+   2. Base
+   -------------------------------------------------------------------------- */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: var(--font);
+  color: var(--text);
+  background: var(--ink-900);
+  line-height: 1.65;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  border: 0;
+  background: none;
+  cursor: pointer;
+}
+
+::selection {
+  background: rgba(255, 181, 71, 0.3);
+  color: #fff;
+}
+
+/* Scrollbar — thin, unobtrusive */
+::-webkit-scrollbar {
+  width: 9px;
+  height: 9px;
+}
+::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.3);
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(140, 165, 214, 0.22);
+  border-radius: 99px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(140, 165, 214, 0.4);
+}
+
+/* --------------------------------------------------------------------------
+   3. Atmosphere — the city behind every screen
+   -------------------------------------------------------------------------- */
+.fc-atmos {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+/* Distant neon bloom */
+.fc-atmos::before {
+  content: "";
+  position: absolute;
+  inset: -20%;
+  background:
+    radial-gradient(46% 34% at 12% 8%, rgba(165, 107, 255, 0.22), transparent 70%),
+    radial-gradient(40% 30% at 88% 4%, rgba(53, 224, 255, 0.16), transparent 70%),
+    radial-gradient(58% 42% at 78% 96%, rgba(255, 77, 126, 0.16), transparent 70%),
+    radial-gradient(50% 36% at 22% 92%, rgba(255, 181, 71, 0.14), transparent 70%);
+  filter: blur(6px);
+  animation: fc-breathe 18s var(--ease) infinite alternate;
+}
+
+/* Wet-asphalt vignette + fine grain */
+.fc-atmos::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(180deg, rgba(4, 6, 13, 0.1) 0%, rgba(4, 6, 13, 0.86) 100%),
+    repeating-linear-gradient(
+      0deg,
+      rgba(255, 255, 255, 0.018) 0px,
+      rgba(255, 255, 255, 0.018) 1px,
+      transparent 1px,
+      transparent 3px
+    );
+}
+
+@keyframes fc-breathe {
+  from {
+    transform: scale(1) translate3d(0, 0, 0);
+    opacity: 0.85;
+  }
+  to {
+    transform: scale(1.08) translate3d(-1.5%, 1.5%, 0);
+    opacity: 1;
+  }
+}
+
+/* Skyline silhouette strip */
+.fc-skyline {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 22vh;
+  min-height: 130px;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.5;
+  background:
+    repeating-linear-gradient(
+        90deg,
+        rgba(8, 12, 24, 0.96) 0 34px,
+        transparent 34px 42px,
+        rgba(8, 12, 24, 0.96) 42px 96px,
+        transparent 96px 108px
+      )
+      bottom / auto 62% no-repeat,
+    repeating-linear-gradient(
+        90deg,
+        rgba(6, 9, 18, 0.9) 0 58px,
+        transparent 58px 76px,
+        rgba(6, 9, 18, 0.9) 76px 132px,
+        transparent 132px 150px
+      )
+      bottom / auto 100% no-repeat;
+  mask-image: linear-gradient(180deg, transparent, #000 55%);
+  -webkit-mask-image: linear-gradient(180deg, transparent, #000 55%);
+}
+
+/* Lit windows drifting in the towers */
+.fc-skyline::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(
+    circle,
+    rgba(255, 190, 110, 0.7) 0.9px,
+    transparent 1.4px
+  );
+  background-size: 17px 21px;
+  mask-image: linear-gradient(180deg, transparent 34%, #000 100%);
+  -webkit-mask-image: linear-gradient(180deg, transparent 34%, #000 100%);
+  opacity: 0.35;
+  animation: fc-windows 9s steps(2) infinite;
+}
+
+@keyframes fc-windows {
+  50% {
+    opacity: 0.2;
+  }
+}
+
+/* Rain — thin diagonal threads */
+.fc-rain {
+  position: fixed;
+  inset: -10% -10% -10% -10%;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.22;
+  background-image: repeating-linear-gradient(
+    104deg,
+    transparent 0 7px,
+    rgba(190, 220, 255, 0.5) 7px 8px,
+    transparent 8px 22px
+  );
+  background-size: 200px 200px;
+  animation: fc-rainfall 0.9s linear infinite;
+}
+
+@keyframes fc-rainfall {
+  to {
+    background-position: -80px 200px;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   4. Layout shell
+   -------------------------------------------------------------------------- */
+.fc-page {
+  position: relative;
+  z-index: 1;
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 30px 22px 90px;
+}
+
+.fc-page--wide {
+  max-width: 1340px;
+}
+
+/* Top bar */
+.fc-topbar {
+  position: relative;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 22px;
+  margin: 0 auto;
+  max-width: 1340px;
+}
+
+.fc-brand {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  color: var(--text-hi);
+}
+
+.fc-brand__mark {
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
+  background: linear-gradient(140deg, var(--neon-amber), var(--neon-rose) 55%, var(--neon-violet));
+  box-shadow: 0 0 18px rgba(255, 120, 130, 0.45);
+  position: relative;
+}
+
+.fc-brand__mark::after {
+  content: "";
+  position: absolute;
+  inset: 6px;
+  border-radius: 3px;
+  background: var(--ink-900);
+}
+
+.fc-brand__en {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.28em;
+  color: var(--text-faint);
+  font-weight: 500;
+}
+
+.fc-nav {
+  margin-left: auto;
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.fc-nav a {
+  font-size: 13px;
+  padding: 7px 13px;
+  border-radius: 99px;
+  color: var(--text-dim);
+  border: 1px solid transparent;
+  transition: all 0.24s var(--ease);
+}
+
+.fc-nav a:hover {
+  color: var(--text-hi);
+  border-color: var(--line-hi);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.fc-nav a[aria-current="page"] {
+  color: var(--neon-amber);
+  border-color: rgba(255, 181, 71, 0.4);
+  background: rgba(255, 181, 71, 0.09);
+}
+
+/* --------------------------------------------------------------------------
+   5. Headings & type
+   -------------------------------------------------------------------------- */
+.fc-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  margin: 0 0 14px;
+}
+
+.fc-eyebrow::before {
+  content: "";
+  width: 26px;
+  height: 1px;
+  background: linear-gradient(90deg, var(--neon-amber), transparent);
+}
+
+.fc-title {
+  margin: 0 0 12px;
+  font-size: clamp(30px, 5.2vw, 52px);
+  line-height: 1.14;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  color: var(--text-hi);
+  text-shadow: 0 0 42px rgba(120, 160, 255, 0.22);
+}
+
+.fc-title em {
+  font-style: normal;
+  background: linear-gradient(100deg, var(--neon-amber), var(--neon-rose) 48%, var(--neon-violet));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.fc-lede {
+  max-width: 62ch;
+  margin: 0;
+  color: var(--text-dim);
+  font-size: 15px;
+}
+
+.fc-quote {
+  font-family: var(--font-serif);
+  color: var(--text-dim);
+  font-size: 14px;
+  letter-spacing: 0.05em;
+}
+
+.fc-sectiontitle {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  margin: 0 0 16px;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  color: var(--text-hi);
+}
+
+.fc-sectiontitle span {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.24em;
+  color: var(--text-faint);
+  font-weight: 500;
+}
+
+.fc-sectiontitle::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, var(--line-hi), transparent);
+}
+
+.fc-mono {
+  font-family: var(--font-mono);
+}
+
+/* --------------------------------------------------------------------------
+   6. Glass panel
+   -------------------------------------------------------------------------- */
+.fc-panel {
+  position: relative;
+  background: var(--glass);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  backdrop-filter: blur(16px) saturate(130%);
+  -webkit-backdrop-filter: blur(16px) saturate(130%);
+  box-shadow: var(--shadow);
+  padding: 20px;
+}
+
+.fc-panel--flush {
+  padding: 0;
+  overflow: hidden;
+}
+
+/* Hairline highlight along the top edge */
+.fc-panel::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 12%;
+  right: 12%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(190, 215, 255, 0.42), transparent);
+}
+
+/* --------------------------------------------------------------------------
+   7. Chips, tags, pills
+   -------------------------------------------------------------------------- */
+.fc-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  border-radius: 99px;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  color: var(--text-dim);
+  background: rgba(255, 255, 255, 0.045);
+  border: 1px solid var(--line);
+  white-space: nowrap;
+}
+
+.fc-chip--accent {
+  color: var(--neon-amber);
+  border-color: rgba(255, 181, 71, 0.34);
+  background: rgba(255, 181, 71, 0.1);
+}
+
+.fc-chip--good {
+  color: var(--ok);
+  border-color: rgba(63, 214, 160, 0.32);
+  background: rgba(63, 214, 160, 0.09);
+}
+
+.fc-chip--bad {
+  color: var(--bad);
+  border-color: rgba(255, 77, 106, 0.32);
+  background: rgba(255, 77, 106, 0.09);
+}
+
+.fc-taglist {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+/* Layer badge L1-L5 */
+.fc-layer {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 3px 11px 3px 5px;
+  border-radius: 99px;
+  font-size: 11.5px;
+  letter-spacing: 0.1em;
+  border: 1px solid currentColor;
+  background: color-mix(in srgb, currentColor 12%, transparent);
+}
+
+.fc-layer::before {
+  content: attr(data-l);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0;
+  padding: 1px 6px;
+  border-radius: 99px;
+  background: currentColor;
+  color: var(--ink-900);
+}
+
+.l1 { color: var(--l1); }
+.l2 { color: var(--l2); }
+.l3 { color: var(--l3); }
+.l4 { color: var(--l4); }
+.l5 { color: var(--l5); }
+
+/* --------------------------------------------------------------------------
+   8. Buttons
+   -------------------------------------------------------------------------- */
+.fc-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  padding: 12px 24px;
+  border-radius: 99px;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  color: var(--text);
+  border: 1px solid var(--line-hi);
+  background: rgba(255, 255, 255, 0.045);
+  transition: all 0.24s var(--ease);
+}
+
+.fc-btn:hover {
+  color: var(--text-hi);
+  border-color: rgba(190, 215, 255, 0.6);
+  background: rgba(255, 255, 255, 0.09);
+  transform: translateY(-1px);
+}
+
+.fc-btn--primary {
+  color: #10060a;
+  border-color: transparent;
+  background: linear-gradient(100deg, var(--neon-amber), #ff8b6b 52%, var(--neon-rose));
+  box-shadow: 0 12px 34px rgba(255, 110, 120, 0.3);
+}
+
+.fc-btn--primary:hover {
+  color: #10060a;
+  box-shadow: 0 18px 46px rgba(255, 110, 120, 0.44);
+  filter: brightness(1.06);
+}
+
+.fc-btn--ghost {
+  padding: 9px 16px;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+}
+
+.fc-btn:disabled,
+.fc-btn[aria-disabled="true"] {
+  opacity: 0.4;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* --------------------------------------------------------------------------
+   9. Meters
+   -------------------------------------------------------------------------- */
+.fc-meter {
+  height: 5px;
+  border-radius: 99px;
+  background: rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+}
+
+.fc-meter > i {
+  display: block;
+  height: 100%;
+  width: 0;
+  border-radius: 99px;
+  background: linear-gradient(90deg, var(--neon-amber), var(--neon-rose));
+  box-shadow: 0 0 12px rgba(255, 150, 120, 0.55);
+  transition: width 0.8s var(--ease);
+}
+
+.fc-meter--jade > i {
+  background: linear-gradient(90deg, var(--neon-jade), #7ef0c8);
+  box-shadow: 0 0 12px rgba(63, 214, 160, 0.5);
+}
+.fc-meter--cyan > i {
+  background: linear-gradient(90deg, var(--neon-cyan), #9ce9ff);
+  box-shadow: 0 0 12px rgba(53, 224, 255, 0.5);
+}
+.fc-meter--violet > i {
+  background: linear-gradient(90deg, var(--neon-violet), #d9b6ff);
+  box-shadow: 0 0 12px rgba(165, 107, 255, 0.5);
+}
+.fc-meter--blood > i {
+  background: linear-gradient(90deg, #8d1030, var(--neon-blood));
+  box-shadow: 0 0 12px rgba(224, 50, 76, 0.5);
+}
+
+.fc-statline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 11.5px;
+  letter-spacing: 0.08em;
+  color: var(--text-dim);
+  margin-bottom: 5px;
+}
+
+.fc-statline b {
+  font-family: var(--font-mono);
+  font-weight: 600;
+  color: var(--text);
+}
+
+/* --------------------------------------------------------------------------
+   10. Selectable card (era / origin)
+   -------------------------------------------------------------------------- */
+.fc-grid {
+  display: grid;
+  gap: 16px;
+}
+
+.fc-grid--3 {
+  grid-template-columns: repeat(auto-fill, minmax(292px, 1fr));
+}
+
+.fc-grid--4 {
+  grid-template-columns: repeat(auto-fill, minmax(238px, 1fr));
+}
+
+.fc-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 20px;
+  border-radius: var(--r-lg);
+  background: var(--glass);
+  border: 1px solid var(--line);
+  backdrop-filter: blur(14px) saturate(125%);
+  -webkit-backdrop-filter: blur(14px) saturate(125%);
+  text-align: left;
+  width: 100%;
+  cursor: pointer;
+  overflow: hidden;
+  transition: transform 0.34s var(--ease), border-color 0.34s var(--ease),
+    box-shadow 0.34s var(--ease), background 0.34s var(--ease);
+  --tint: var(--neon-amber);
+}
+
+/* Accent wash that swells on hover */
+.fc-card::before {
+  content: "";
+  position: absolute;
+  inset: -40% -30% auto -30%;
+  height: 150%;
+  background: radial-gradient(
+    50% 40% at 50% 0%,
+    color-mix(in srgb, var(--tint) 34%, transparent),
+    transparent 72%
+  );
+  opacity: 0;
+  transition: opacity 0.4s var(--ease);
+  pointer-events: none;
+}
+
+/* Left ledger rule in the card's own colour */
+.fc-card::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 18%;
+  bottom: 18%;
+  width: 2px;
+  border-radius: 99px;
+  background: var(--tint);
+  opacity: 0.35;
+  box-shadow: 0 0 14px var(--tint);
+  transition: all 0.34s var(--ease);
+}
+
+.fc-card:hover,
+.fc-card:focus-visible {
+  transform: translateY(-5px);
+  border-color: color-mix(in srgb, var(--tint) 52%, transparent);
+  box-shadow: var(--shadow-lift), 0 0 0 1px color-mix(in srgb, var(--tint) 20%, transparent);
+  outline: none;
+}
+
+.fc-card:hover::before,
+.fc-card:focus-visible::before {
+  opacity: 0.55;
+}
+
+.fc-card:hover::after,
+.fc-card:focus-visible::after {
+  top: 6%;
+  bottom: 6%;
+  opacity: 1;
+}
+
+.fc-card.is-selected {
+  border-color: color-mix(in srgb, var(--tint) 72%, transparent);
+  background: var(--glass-hi);
+  box-shadow: var(--shadow-lift), 0 0 0 1px color-mix(in srgb, var(--tint) 34%, transparent),
+    0 0 60px color-mix(in srgb, var(--tint) 22%, transparent);
+}
+
+.fc-card.is-selected::before {
+  opacity: 0.7;
+}
+
+.fc-card.is-selected::after {
+  top: 6%;
+  bottom: 6%;
+  opacity: 1;
+}
+
+/* Checkmark on the selected card */
+.fc-card__check {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 12px;
+  color: var(--ink-900);
+  background: var(--tint);
+  box-shadow: 0 0 18px color-mix(in srgb, var(--tint) 70%, transparent);
+  opacity: 0;
+  transform: scale(0.4);
+  transition: all 0.3s var(--ease);
+}
+
+.fc-card.is-selected .fc-card__check {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.fc-card__head {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.fc-card__code {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--tint);
+  padding: 3px 8px;
+  border-radius: 7px;
+  border: 1px solid color-mix(in srgb, var(--tint) 40%, transparent);
+  background: color-mix(in srgb, var(--tint) 12%, transparent);
+  flex: none;
+}
+
+.fc-card__name {
+  position: relative;
+  margin: 0;
+  font-size: 19px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--text-hi);
+}
+
+.fc-card__years {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  color: var(--text-faint);
+  font-weight: 500;
+  margin-top: 2px;
+}
+
+.fc-card__glyph {
+  position: absolute;
+  right: 12px;
+  bottom: 2px;
+  font-size: 62px;
+  line-height: 1;
+  font-family: var(--font-serif);
+  color: var(--tint);
+  opacity: 0.07;
+  pointer-events: none;
+  transition: opacity 0.4s var(--ease), transform 0.5s var(--ease);
+}
+
+.fc-card:hover .fc-card__glyph,
+.fc-card.is-selected .fc-card__glyph {
+  opacity: 0.16;
+  transform: translateY(-4px);
+}
+
+.fc-card__desc {
+  position: relative;
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.72;
+  color: var(--text-dim);
+}
+
+.fc-card__line {
+  position: relative;
+  margin: 0;
+  padding-left: 11px;
+  border-left: 2px solid color-mix(in srgb, var(--tint) 45%, transparent);
+  font-family: var(--font-serif);
+  font-size: 12.5px;
+  line-height: 1.7;
+  color: color-mix(in srgb, var(--tint) 62%, var(--text-dim));
+}
+
+.fc-card__stats {
+  position: relative;
+  display: grid;
+  gap: 8px;
+  margin-top: auto;
+  padding-top: 4px;
+}
+
+/* --------------------------------------------------------------------------
+   11. Sticky action bar
+   -------------------------------------------------------------------------- */
+.fc-actionbar {
+  position: sticky;
+  bottom: 16px;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-top: 26px;
+  padding: 14px 20px;
+  border-radius: var(--r-xl);
+  background: rgba(9, 14, 26, 0.86);
+  border: 1px solid var(--line-hi);
+  backdrop-filter: blur(18px) saturate(140%);
+  -webkit-backdrop-filter: blur(18px) saturate(140%);
+  box-shadow: var(--shadow-lift);
+}
+
+.fc-actionbar__info {
+  min-width: 0;
+  flex: 1;
+}
+
+.fc-actionbar__label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+
+.fc-actionbar__value {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-hi);
+  letter-spacing: 0.05em;
+}
+
+/* --------------------------------------------------------------------------
+   12. HUD (dashboard)
+   -------------------------------------------------------------------------- */
+.fc-hud {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(174px, 1fr));
+  gap: 14px;
+}
+
+.fc-stat {
+  position: relative;
+  padding: 15px 16px 14px;
+  border-radius: var(--r-md);
+  background: var(--glass);
+  border: 1px solid var(--line);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  overflow: hidden;
+  --tint: var(--neon-amber);
+  transition: border-color 0.3s var(--ease), transform 0.3s var(--ease);
+}
+
+.fc-stat:hover {
+  transform: translateY(-2px);
+  border-color: color-mix(in srgb, var(--tint) 46%, transparent);
+}
+
+.fc-stat::after {
+  content: "";
+  position: absolute;
+  right: -30px;
+  top: -30px;
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  background: radial-gradient(circle, color-mix(in srgb, var(--tint) 34%, transparent), transparent 70%);
+  pointer-events: none;
+}
+
+.fc-stat__label {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  color: var(--text-faint);
+  margin-bottom: 7px;
+}
+
+.fc-stat__value {
+  font-family: var(--font-mono);
+  font-size: 25px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--text-hi);
+  line-height: 1.1;
+  text-shadow: 0 0 26px color-mix(in srgb, var(--tint) 45%, transparent);
+}
+
+.fc-stat__value small {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-faint);
+  letter-spacing: 0.06em;
+  margin-left: 3px;
+}
+
+.fc-stat__delta {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  margin-top: 6px;
+  color: var(--text-faint);
+}
+
+.fc-stat__delta.up { color: var(--ok); }
+.fc-stat__delta.down { color: var(--bad); }
+
+.fc-stat__meter {
+  margin-top: 9px;
+}
+
+/* Value flash when a stat changes */
+@keyframes fc-flash {
+  0% { filter: brightness(2.1); }
+  100% { filter: brightness(1); }
+}
+
+.fc-flash {
+  animation: fc-flash 0.7s var(--ease);
+}
+
+/* --------------------------------------------------------------------------
+   13. Event log
+   -------------------------------------------------------------------------- */
+.fc-log {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-height: 460px;
+  overflow-y: auto;
+}
+
+.fc-log__item {
+  position: relative;
+  display: grid;
+  grid-template-columns: 74px 1fr;
+  gap: 14px;
+  padding: 13px 4px 13px 0;
+  border-bottom: 1px dashed rgba(140, 165, 214, 0.14);
+  animation: fc-logslide 0.5s var(--ease) both;
+}
+
+.fc-log__item:last-child {
+  border-bottom: 0;
+}
+
+@keyframes fc-logslide {
+  from {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+}
+
+.fc-log__time {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-faint);
+  letter-spacing: 0.04em;
+  padding-top: 2px;
+}
+
+.fc-log__body p {
+  margin: 0;
+  font-size: 13.5px;
+  color: var(--text);
+  line-height: 1.7;
+}
+
+.fc-log__tag {
+  display: inline-block;
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  padding: 1px 7px;
+  border-radius: 5px;
+  margin-bottom: 5px;
+  border: 1px solid currentColor;
+  background: color-mix(in srgb, currentColor 12%, transparent);
+}
+
+.fc-log__delta {
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  margin-top: 6px;
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  color: var(--text-faint);
+}
+
+.fc-log__delta .up { color: var(--ok); }
+.fc-log__delta .down { color: var(--bad); }
+
+/* --------------------------------------------------------------------------
+   14. City map
+   -------------------------------------------------------------------------- */
+.fc-map {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.fc-strata {
+  position: relative;
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+  min-height: 132px;
+  border-radius: var(--r-lg);
+  border: 1px solid color-mix(in srgb, var(--tint) 26%, transparent);
+  background: linear-gradient(
+    100deg,
+    color-mix(in srgb, var(--tint-deep) 82%, transparent),
+    rgba(8, 12, 24, 0.72) 62%
+  );
+  overflow: hidden;
+  transition: transform 0.4s var(--ease), border-color 0.4s var(--ease),
+    box-shadow 0.4s var(--ease);
+  --tint: var(--l1);
+  --tint-deep: var(--l1-deep);
+}
+
+.fc-strata:hover {
+  transform: translateX(5px);
+  border-color: color-mix(in srgb, var(--tint) 62%, transparent);
+  box-shadow: -12px 0 44px color-mix(in srgb, var(--tint) 22%, transparent);
+}
+
+.fc-strata.is-active {
+  border-color: color-mix(in srgb, var(--tint) 78%, transparent);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--tint) 34%, transparent),
+    -14px 0 60px color-mix(in srgb, var(--tint) 28%, transparent);
+}
+
+/* Faint street grid inside each stratum */
+.fc-strata::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--tint) 12%, transparent) 1px,
+      transparent 1px
+    ),
+    linear-gradient(
+      0deg,
+      color-mix(in srgb, var(--tint) 9%, transparent) 1px,
+      transparent 1px
+    );
+  background-size: 46px 46px;
+  mask-image: linear-gradient(90deg, #000, transparent 78%);
+  -webkit-mask-image: linear-gradient(90deg, #000, transparent 78%);
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+.fc-strata__rail {
+  flex: none;
+  width: 108px;
+  padding: 16px 12px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 6px;
+  border-right: 1px solid color-mix(in srgb, var(--tint) 24%, transparent);
+  background: linear-gradient(180deg, transparent, color-mix(in srgb, var(--tint) 10%, transparent));
+  position: relative;
+}
+
+.fc-strata__code {
+  font-family: var(--font-mono);
+  font-size: 27px;
+  font-weight: 800;
+  line-height: 1;
+  color: var(--tint);
+  text-shadow: 0 0 24px color-mix(in srgb, var(--tint) 60%, transparent);
+}
+
+.fc-strata__name {
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  color: var(--text-hi);
+}
+
+.fc-strata__meta {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  color: var(--text-faint);
+}
+
+.fc-strata__body {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.fc-strata__mood {
+  font-family: var(--font-serif);
+  font-size: 12.5px;
+  color: color-mix(in srgb, var(--tint) 55%, var(--text-dim));
+  letter-spacing: 0.05em;
+}
+
+.fc-zones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px;
+}
+
+/* Zone node — the hover-glow target */
+.fc-zone {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px 8px 11px;
+  border-radius: 12px;
+  font-size: 12.5px;
+  letter-spacing: 0.06em;
+  color: var(--text);
+  border: 1px solid color-mix(in srgb, var(--tint) 30%, transparent);
+  background: rgba(6, 10, 20, 0.62);
+  cursor: pointer;
+  transition: all 0.28s var(--ease);
+}
+
+.fc-zone__dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex: none;
+  background: var(--tint);
+  box-shadow: 0 0 9px var(--tint);
+  animation: fc-pulse 2.6s var(--ease) infinite;
+}
+
+@keyframes fc-pulse {
+  50% {
+    opacity: 0.35;
+    transform: scale(0.72);
+  }
+}
+
+.fc-zone:hover,
+.fc-zone:focus-visible {
+  outline: none;
+  color: #fff;
+  transform: translateY(-3px);
+  border-color: var(--tint);
+  background: color-mix(in srgb, var(--tint) 18%, rgba(6, 10, 20, 0.7));
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--tint) 40%, transparent),
+    0 10px 30px color-mix(in srgb, var(--tint) 30%, transparent),
+    0 0 44px color-mix(in srgb, var(--tint) 34%, transparent);
+  text-shadow: 0 0 14px color-mix(in srgb, var(--tint) 80%, transparent);
+}
+
+.fc-zone.is-active {
+  color: #fff;
+  border-color: var(--tint);
+  background: color-mix(in srgb, var(--tint) 26%, rgba(6, 10, 20, 0.7));
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--tint) 55%, transparent),
+    0 0 40px color-mix(in srgb, var(--tint) 32%, transparent);
+}
+
+.fc-zone.is-locked {
+  opacity: 0.42;
+  cursor: not-allowed;
+}
+
+.fc-zone.is-locked:hover {
+  transform: none;
+  box-shadow: none;
+}
+
+/* Layer colour presets applied to any element */
+.tint-l1 { --tint: var(--l1); --tint-deep: var(--l1-deep); }
+.tint-l2 { --tint: var(--l2); --tint-deep: var(--l2-deep); }
+.tint-l3 { --tint: var(--l3); --tint-deep: var(--l3-deep); }
+.tint-l4 { --tint: var(--l4); --tint-deep: var(--l4-deep); }
+.tint-l5 { --tint: var(--l5); --tint-deep: var(--l5-deep); }
+
+/* --------------------------------------------------------------------------
+   15. Layer indicator (vertical elevator, used on dashboard)
+   -------------------------------------------------------------------------- */
+.fc-elevator {
+  display: flex;
+  flex-direction: column-reverse;
+  gap: 6px;
+}
+
+.fc-elevator__step {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 10px;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  font-size: 12.5px;
+  color: var(--text-faint);
+  transition: all 0.3s var(--ease);
+}
+
+.fc-elevator__step b {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  padding: 1px 6px;
+  border-radius: 5px;
+  border: 1px solid currentColor;
+}
+
+.fc-elevator__step.is-here {
+  color: var(--tint);
+  border-color: color-mix(in srgb, var(--tint) 45%, transparent);
+  background: color-mix(in srgb, var(--tint) 12%, transparent);
+  box-shadow: 0 0 26px color-mix(in srgb, var(--tint) 20%, transparent);
+}
+
+.fc-elevator__step.is-here::after {
+  content: "现在";
+  margin-left: auto;
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  opacity: 0.8;
+}
+
+/* --------------------------------------------------------------------------
+   16. Detail drawer (map zone info)
+   -------------------------------------------------------------------------- */
+.fc-detail {
+  position: sticky;
+  top: 20px;
+  --tint: var(--neon-amber);
+}
+
+.fc-detail__title {
+  margin: 0 0 4px;
+  font-size: 21px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--text-hi);
+}
+
+.fc-detail__sub {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  color: var(--text-faint);
+}
+
+.fc-detail__body {
+  margin: 14px 0 0;
+  font-size: 13.5px;
+  line-height: 1.8;
+  color: var(--text-dim);
+}
+
+.fc-kv {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 7px 14px;
+  margin-top: 16px;
+  font-size: 12.5px;
+}
+
+.fc-kv dt {
+  color: var(--text-faint);
+  letter-spacing: 0.1em;
+}
+
+.fc-kv dd {
+  margin: 0;
+  font-family: var(--font-mono);
+  color: var(--text-hi);
+  text-align: right;
+}
+
+/* --------------------------------------------------------------------------
+   17. Utilities
+   -------------------------------------------------------------------------- */
+.fc-split {
+  display: grid;
+  gap: 18px;
+}
+
+@media (min-width: 940px) {
+  .fc-split--main {
+    grid-template-columns: minmax(0, 1fr) 332px;
+  }
+  .fc-split--map {
+    grid-template-columns: minmax(0, 1fr) 316px;
+  }
+}
+
+.fc-stack {
+  display: grid;
+  gap: 18px;
+  align-content: start;
+}
+
+.fc-rowgap {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.fc-hr {
+  height: 1px;
+  border: 0;
+  margin: 16px 0;
+  background: linear-gradient(90deg, transparent, var(--line-hi), transparent);
+}
+
+.fc-footnote {
+  margin-top: 34px;
+  text-align: center;
+  font-size: 12px;
+  color: var(--text-faint);
+  letter-spacing: 0.08em;
+}
+
+.fc-footnote a {
+  color: var(--text-dim);
+  border-bottom: 1px solid var(--line);
+}
+
+.fc-footnote a:hover {
+  color: var(--neon-amber);
+  border-color: currentColor;
+}
+
+.fc-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* Entrance choreography */
+.fc-rise {
+  animation: fc-rise 0.66s var(--ease) both;
+}
+
+@keyframes fc-rise {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+}
+
+/* --------------------------------------------------------------------------
+   18. Responsive
+   -------------------------------------------------------------------------- */
+@media (max-width: 760px) {
+  .fc-page {
+    padding: 20px 14px 80px;
+  }
+  .fc-topbar {
+    padding: 12px 14px;
+    flex-wrap: wrap;
+  }
+  .fc-nav {
+    width: 100%;
+    margin-left: 0;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+  }
+  .fc-strata {
+    flex-direction: column;
+  }
+  .fc-strata__rail {
+    width: 100%;
+    flex-direction: row;
+    align-items: baseline;
+    border-right: 0;
+    border-bottom: 1px solid color-mix(in srgb, var(--tint) 24%, transparent);
+    padding: 12px 14px;
+  }
+  .fc-strata__code {
+    font-size: 20px;
+  }
+  .fc-log__item {
+    grid-template-columns: 1fr;
+    gap: 4px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.05ms !important;
+  }
+}

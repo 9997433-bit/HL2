@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>入城登记 · 选择年代 — 浮城人生</title>
+<meta name="description" content="浮城人生 · 入城登记：选择你进入这座城市的年代 E1—E7。">
+<link rel="stylesheet" href="../css/screens.css">
+</head>
+<body>
+<div class="fc-atmos"></div>
+<div class="fc-skyline"></div>
+<div class="fc-rain"></div>
+
+<header class="fc-topbar">
+  <a class="fc-brand" href="../index.html">
+    <span class="fc-brand__mark"></span>
+    <span>浮城人生 <span class="fc-brand__en">URBAN LIFE SIM</span></span>
+  </a>
+  <nav class="fc-nav">
+    <a href="era-select.html" aria-current="page">入城登记</a>
+    <a href="origin-select.html">出身</a>
+    <a href="dashboard.html">人生仪表盘</a>
+    <a href="city-map.html">城市地图</a>
+  </nav>
+</header>
+
+<main class="fc-page fc-page--wide">
+  <section class="fc-rise" style="margin-bottom:30px">
+    <p class="fc-eyebrow">STEP 01 · 入城登记</p>
+    <h1 class="fc-title">你在<em>哪一年</em>进城</h1>
+    <p class="fc-lede">
+      城市不为谁停下。你只能选择在潮水的哪一段入水——
+      同一条街，不同的年代，会给你完全不同的价格、机会与代价。
+    </p>
+    <div class="fc-rowgap" style="margin-top:16px">
+      <span class="fc-chip">7 个年代</span>
+      <span class="fc-chip">决定起始层级与物价</span>
+      <span class="fc-chip">影响事件池与风险线</span>
+    </div>
+  </section>
+
+  <div class="fc-grid fc-grid--3" id="eraGrid" role="radiogroup" aria-label="选择年代"></div>
+
+  <div class="fc-actionbar fc-rise">
+    <div class="fc-actionbar__info">
+      <div class="fc-actionbar__label">Registered Era</div>
+      <div class="fc-actionbar__value" id="pickLabel">尚未选择年代</div>
+    </div>
+    <p class="fc-quote" id="pickQuote" style="flex:1 1 240px;min-width:0">「潮汐准时，灯牌照旧。」</p>
+    <a class="fc-btn fc-btn--primary" id="nextBtn" href="origin-select.html" aria-disabled="true">
+      下一步 · 选择出身 →
+    </a>
+  </div>
+
+  <p class="fc-footnote">
+    《浮城人生》· 现代都市人生模拟 — 原型界面 ·
+    <a href="../index.html">返回游戏入口</a>
+  </p>
+</main>
+
+<script src="../js/screens.js"></script>
+<script>
+(function () {
+  var grid = document.getElementById("eraGrid");
+  var label = document.getElementById("pickLabel");
+  var quote = document.getElementById("pickQuote");
+  var next = document.getElementById("nextBtn");
+  var esc = FC.esc;
+
+  function meter(name, value, mod) {
+    return (
+      '<div>' +
+        '<div class="fc-statline"><span>' + name + '</span><b>' + value + '</b></div>' +
+        '<div class="fc-meter ' + mod + '"><i data-w="' + value + '"></i></div>' +
+      '</div>'
+    );
+  }
+
+  grid.innerHTML = FC.ERAS.map(function (era, i) {
+    return (
+      '<button type="button" class="fc-card" role="radio" aria-checked="false" ' +
+        'data-id="' + era.id + '" style="--tint:' + era.tint + ';animation-delay:' + (i * 55) + 'ms">' +
+        '<span class="fc-card__check">✓</span>' +
+        '<span class="fc-card__glyph" aria-hidden="true">' + era.glyph + '</span>' +
+        '<div class="fc-card__head">' +
+          '<span class="fc-card__code">' + era.id + '</span>' +
+          '<h2 class="fc-card__name">' + esc(era.name) +
+            '<span class="fc-card__years">' + era.years + '</span>' +
+          '</h2>' +
+        '</div>' +
+        '<p class="fc-card__desc">' + esc(era.desc) + '</p>' +
+        '<p class="fc-card__line">' + esc(era.line) + '</p>' +
+        '<div class="fc-taglist">' +
+          era.tags.map(function (t) { return '<span class="fc-chip">' + esc(t) + '</span>'; }).join("") +
+        '</div>' +
+        '<div class="fc-card__stats">' +
+          meter("机会", era.stats.opportunity, "fc-meter--jade") +
+          meter("门槛", era.stats.threshold, "fc-meter--cyan") +
+          meter("波动", era.stats.volatility, "fc-meter--blood") +
+        '</div>' +
+        '<div class="fc-rowgap" style="margin-top:2px">' +
+          '<span class="fc-layer l' + era.start.layer + '" data-l="L' + era.start.layer + '">起始层级</span>' +
+          '<span class="fc-chip fc-chip--accent">' + era.start.money + '</span>' +
+        '</div>' +
+        '<p class="fc-card__desc" style="font-size:12px;color:var(--text-faint)">' + esc(era.start.note) + '</p>' +
+      '</button>'
+    );
+  }).join("");
+
+  // Fill the meters after paint so the widths animate in.
+  requestAnimationFrame(function () {
+    var bars = grid.querySelectorAll(".fc-meter > i");
+    for (var i = 0; i < bars.length; i++) bars[i].style.width = bars[i].dataset.w + "%";
+    var cards = grid.querySelectorAll(".fc-card");
+    for (var j = 0; j < cards.length; j++) cards[j].classList.add("fc-rise");
+  });
+
+  function select(id, persist) {
+    var era = null;
+    var cards = grid.querySelectorAll(".fc-card");
+    for (var i = 0; i < cards.length; i++) {
+      var on = cards[i].dataset.id === id;
+      cards[i].classList.toggle("is-selected", on);
+      cards[i].setAttribute("aria-checked", on ? "true" : "false");
+    }
+    for (var k = 0; k < FC.ERAS.length; k++) if (FC.ERAS[k].id === id) era = FC.ERAS[k];
+    if (!era) return;
+
+    label.textContent = era.id + " · " + era.name + "　" + era.years;
+    label.style.color = era.tint;
+    quote.textContent = "「" + era.line + "」";
+    next.removeAttribute("aria-disabled");
+    if (persist) FC.write({ eraId: era.id });
+  }
+
+  grid.addEventListener("click", function (e) {
+    var card = e.target.closest(".fc-card");
+    if (card) select(card.dataset.id, true);
+  });
+
+  var saved = FC.read().eraId;
+  if (saved) select(saved, false);
+
+  next.addEventListener("click", function (e) {
+    if (next.getAttribute("aria-disabled") === "true") {
+      e.preventDefault();
+      label.textContent = "请先选择一个年代";
+      label.style.color = "var(--bad)";
+    }
+  });
+})();
+</script>
+</body>
+</html>

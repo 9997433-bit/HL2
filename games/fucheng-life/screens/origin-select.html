@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>出身档案 · 选择起点 — 浮城人生</title>
+<meta name="description" content="浮城人生 · 出身选择：寒门、中产、体制内、城中村…… 10 种起点，10 种价格。">
+<link rel="stylesheet" href="../css/screens.css">
+</head>
+<body>
+<div class="fc-atmos"></div>
+<div class="fc-skyline"></div>
+
+<header class="fc-topbar">
+  <a class="fc-brand" href="../index.html">
+    <span class="fc-brand__mark"></span>
+    <span>浮城人生 <span class="fc-brand__en">URBAN LIFE SIM</span></span>
+  </a>
+  <nav class="fc-nav">
+    <a href="era-select.html">入城登记</a>
+    <a href="origin-select.html" aria-current="page">出身</a>
+    <a href="dashboard.html">人生仪表盘</a>
+    <a href="city-map.html">城市地图</a>
+  </nav>
+</header>
+
+<main class="fc-page fc-page--wide">
+  <section class="fc-rise" style="margin-bottom:26px">
+    <p class="fc-eyebrow">STEP 02 · 出身档案</p>
+    <h1 class="fc-title">你的<em>第一张</em>底牌</h1>
+    <p class="fc-lede">
+      出身不是命，是初始汇率。它决定你用多少时间换一块钱，
+      也决定这座城市在你敲门时，先看你的脸，还是先看你的姓。
+    </p>
+    <div class="fc-rowgap" style="margin-top:16px">
+      <span class="fc-chip" id="eraChip">年代未登记</span>
+      <span class="fc-chip">10 种起点</span>
+      <span class="fc-chip">影响起始资金 / 人脉 / 学业</span>
+    </div>
+  </section>
+
+  <div class="fc-grid fc-grid--4" id="originGrid" role="radiogroup" aria-label="选择出身"></div>
+
+  <div class="fc-actionbar fc-rise">
+    <div class="fc-actionbar__info">
+      <div class="fc-actionbar__label">Origin File</div>
+      <div class="fc-actionbar__value" id="pickLabel">尚未选择出身</div>
+    </div>
+    <p class="fc-quote" id="pickQuote" style="flex:1 1 240px;min-width:0">「人情是第二货币。」</p>
+    <a class="fc-btn fc-btn--ghost" href="era-select.html">← 改年代</a>
+    <a class="fc-btn fc-btn--primary" id="nextBtn" href="dashboard.html" aria-disabled="true">
+      开始人生 →
+    </a>
+  </div>
+
+  <p class="fc-footnote">
+    《浮城人生》· 出身档案 — 原型界面 ·
+    <a href="../index.html">返回游戏入口</a>
+  </p>
+</main>
+
+<script src="../js/screens.js"></script>
+<script>
+(function () {
+  var grid = document.getElementById("originGrid");
+  var label = document.getElementById("pickLabel");
+  var quote = document.getElementById("pickQuote");
+  var next = document.getElementById("nextBtn");
+  var eraChip = document.getElementById("eraChip");
+  var esc = FC.esc;
+
+  var save = FC.read();
+  if (save.eraId) {
+    var era = FC.era();
+    eraChip.textContent = era.id + " · " + era.name + "　" + era.years;
+    eraChip.classList.add("fc-chip--accent");
+  } else {
+    eraChip.innerHTML = '年代未登记 · <a href="era-select.html" style="color:var(--neon-amber)">去登记</a>';
+  }
+
+  var METRICS = [
+    { key: "money", name: "资本", mod: "" },
+    { key: "health", name: "体质", mod: "fc-meter--jade" },
+    { key: "social", name: "人脉", mod: "fc-meter--violet" },
+    { key: "edu", name: "学业", mod: "fc-meter--cyan" }
+  ];
+
+  var LAYER_TINT = { 1: "var(--l1)", 2: "var(--l2)", 3: "var(--l3)", 4: "var(--l4)", 5: "var(--l5)" };
+
+  grid.innerHTML = FC.ORIGINS.map(function (o, i) {
+    return (
+      '<button type="button" class="fc-card" role="radio" aria-checked="false" ' +
+        'data-id="' + o.id + '" style="--tint:' + LAYER_TINT[o.layer] + ';animation-delay:' + (i * 45) + 'ms">' +
+        '<span class="fc-card__check">✓</span>' +
+        '<span class="fc-card__glyph" aria-hidden="true">' + o.glyph + '</span>' +
+        '<div class="fc-card__head">' +
+          '<h2 class="fc-card__name">' + esc(o.name) +
+            '<span class="fc-card__years">' + o.en + '</span>' +
+          '</h2>' +
+        '</div>' +
+        '<div class="fc-rowgap">' +
+          '<span class="fc-layer l' + o.layer + '" data-l="L' + o.layer + '">起始圈层</span>' +
+        '</div>' +
+        '<p class="fc-card__desc">' + esc(o.desc) + '</p>' +
+        '<p class="fc-card__line">' + esc(o.line) + '</p>' +
+        '<div class="fc-taglist">' +
+          o.tags.map(function (t) { return '<span class="fc-chip">' + esc(t) + '</span>'; }).join("") +
+        '</div>' +
+        '<div class="fc-card__stats">' +
+          METRICS.map(function (m) {
+            return (
+              '<div>' +
+                '<div class="fc-statline"><span>' + m.name + '</span><b>' + o.mods[m.key] + '</b></div>' +
+                '<div class="fc-meter ' + m.mod + '"><i data-w="' + o.mods[m.key] + '"></i></div>' +
+              '</div>'
+            );
+          }).join("") +
+        '</div>' +
+        '<div class="fc-rowgap">' +
+          '<span class="fc-chip fc-chip--accent">起始资金 ' + o.start + '</span>' +
+        '</div>' +
+      '</button>'
+    );
+  }).join("");
+
+  requestAnimationFrame(function () {
+    var bars = grid.querySelectorAll(".fc-meter > i");
+    for (var i = 0; i < bars.length; i++) bars[i].style.width = bars[i].dataset.w + "%";
+    var cards = grid.querySelectorAll(".fc-card");
+    for (var j = 0; j < cards.length; j++) cards[j].classList.add("fc-rise");
+  });
+
+  function select(id, persist) {
+    var o = null;
+    var cards = grid.querySelectorAll(".fc-card");
+    for (var i = 0; i < cards.length; i++) {
+      var on = cards[i].dataset.id === id;
+      cards[i].classList.toggle("is-selected", on);
+      cards[i].setAttribute("aria-checked", on ? "true" : "false");
+    }
+    for (var k = 0; k < FC.ORIGINS.length; k++) if (FC.ORIGINS[k].id === id) o = FC.ORIGINS[k];
+    if (!o) return;
+
+    label.textContent = o.name + "　起始 " + o.start + "　L" + o.layer;
+    label.style.color = LAYER_TINT[o.layer];
+    quote.textContent = "「" + o.line + "」";
+    next.removeAttribute("aria-disabled");
+    if (persist) FC.write({ originId: o.id });
+  }
+
+  grid.addEventListener("click", function (e) {
+    var card = e.target.closest(".fc-card");
+    if (card) select(card.dataset.id, true);
+  });
+
+  if (save.originId) select(save.originId, false);
+
+  next.addEventListener("click", function (e) {
+    if (next.getAttribute("aria-disabled") === "true") {
+      e.preventDefault();
+      label.textContent = "请先选择一份出身档案";
+      label.style.color = "var(--bad)";
+    }
+  });
+})();
+</script>
+</body>
+</html>
