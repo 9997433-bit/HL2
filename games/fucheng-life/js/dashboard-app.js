@@ -248,7 +248,14 @@
     if (!FC.events || FC.events.isOpen()) return null;
     run.sinceModal = (run.sinceModal || 0) + 1;
     if (Math.random() >= MODAL_ODDS[Math.min(run.sinceModal, 4)]) return null;
-    var draw = { layer: layerOf(), avoid: run.recentModal || [] };
+    if (!run.done) run.done = {};
+    var draw = {
+      layer: layerOf(),
+      avoid: run.recentModal || [],
+      era: era.id,
+      months: run.months,
+      done: run.done
+    };
     var ev = FC.events.pick(draw);
     if (!ev) return null;
     if (ev.type === "redline" && (run.months < 6 || (run.lastRedline && run.months - run.lastRedline < 12))) {
@@ -257,8 +264,11 @@
       if (!ev) return null;
     }
     if (ev.type === "redline") run.lastRedline = run.months;
+    if (ev.once) run.done[ev.id] = true;
     run.sinceModal = 0;
-    run.recentModal = (run.recentModal || []).concat(ev.id).slice(-3);
+    /* Eight is roughly two years of knocks: with a deck this size a window of
+       three still let the same door repeat within the year. */
+    run.recentModal = (run.recentModal || []).concat(ev.id).slice(-8);
     return ev;
   }
 
