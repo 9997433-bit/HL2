@@ -185,6 +185,19 @@
   var saved = FC.read().run;
   var run = saved && saved.key === era.id + "/" + origin.id ? saved : freshRun();
 
+  /* Every log entry carries a sequence number so renderLog can tell what is
+     new from what is already on screen. Restored saves are renumbered on the
+     way in — a counter from a previous session means nothing to this one. */
+  var logSeq = 0;
+  for (var s = run.log.length - 1; s >= 0; s--) run.log[s].seq = ++logSeq;
+
+  function pushLog(entry) {
+    entry.seq = ++logSeq;
+    run.log.unshift(entry);
+    if (run.log.length > 60) run.log.length = 60;
+    return entry;
+  }
+
   /* O1 事件弹窗 — the city knocks on its own schedule. The odds climb with
      every quiet month and hit certainty at four, so a demo that advances
      three or four times always sees one. Older saves join the rotation. */
@@ -416,25 +429,62 @@
     FC.write({ run: run });
   }
 
-  function renderLog() {
-    $("log").innerHTML = run.log.slice(0, 24).map(function (e, i) {
-      var deltas = Object.keys(e.d).map(function (k) {
-        var v = e.d[k];
-        var nameMap = { money: "现金", health: "健康", social: "人脉", rep: "声望" };
-        return '<span class="' + (v >= 0 ? "up" : "down") + '">' +
-          nameMap[k] + " " + (v >= 0 ? "+" : "−") + Math.abs(v) + "</span>";
-      }).join("");
-      // Only the visible head of the list is staggered; below the fold the
-      // delay would just be dead time before the reader ever gets there.
-      return '<li class="fc-log__item" style="--i:' + Math.min(i, 7) + '">' +
-        '<div class="fc-log__time">' + e.t + "</div>" +
-        '<div class="fc-log__body">' +
-          '<span class="fc-log__tag" style="color:' + e.tint + '">' + esc(e.tag) + "</span>" +
-          "<p>" + esc(e.text) + "</p>" +
-          '<div class="fc-log__delta">' + deltas + "</div>" +
-        "</div></li>";
+  var STAT_NAME = { money: "现金", health: "健康", social: "人脉", rep: "声望" };
+
+  // Only the visible head of the list is staggered; below the fold the
+  // delay would just be dead time before the reader ever gets there.
+  function logItem(e, i) {
+    var deltas = Object.keys(e.d).map(function (k) {
+      var v = e.d[k];
+      return '<span class="' + (v >= 0 ? "up" : "down") + '">' +
+        STAT_NAME[k] + " " + (v >= 0 ? "+" : "−") + Math.abs(v) + "</span>";
     }).join("");
+    return '<li class="fc-log__item is-new" style="--i:' + Math.min(i, 7) + '">' +
+      '<div class="fc-log__time">' + e.t + "</div>" +
+      '<div class="fc-log__body">' +
+        '<span class="fc-log__tag" style="color:' + e.tint + '">' + esc(e.tag) + "</span>" +
+        "<p>" + esc(e.text) + "</p>" +
+        '<div class="fc-log__delta">' + deltas + "</div>" +
+      "</div></li>";
   }
+
+  /* Sequence numbers of the entries currently in the DOM, newest first. The
+     log only ever grows at the head, so anything above the highest number we
+     have painted is this month's news and is the only thing that animates. */
+  var painted = [];
+
+  function renderLog() {
+    var list = $("log");
+    var head = run.log.slice(0, 24);
+    var top = painted.length ? painted[0] : 0;
+    var fresh = [];
+    var i;
+
+    for (i = 0; i < head.length; i++) {
+      if (head[i].seq <= top) break;
+      fresh.push(head[i]);
+    }
+
+    var stale = list.children.length !== painted.length;
+    if (!painted.length || stale || fresh.length === head.length) {
+      list.innerHTML = head.map(logItem).join("");
+    } else if (fresh.length) {
+      // Inserted back to front so the newest entry ends up on top with --i 0.
+      for (i = fresh.length - 1; i >= 0; i--) {
+        list.insertAdjacentHTML("afterbegin", logItem(fresh[i], i));
+      }
+      while (list.children.length > head.length) list.removeChild(list.lastChild);
+    }
+
+    painted = head.map(function (e) { return e.seq; });
+  }
+
+  /* The slide is a one-off announcement, not a property of the entry: drop
+     the class once it has played so a later full rebuild is the only thing
+     that can ever replay it. */
+  $("log").addEventListener("animationend", function (ev) {
+    if (ev.animationName === "fc-logslide") ev.target.classList.remove("is-new");
+  });
 
   /* -------------------------------------------------------- O2 账单抽屉
      The side panel carries the same numbers all month; the drawer is the
@@ -498,7 +548,7 @@
     var wear = 0.4 + Math.max(0, (run.age - 35) * 0.05);
     run.health = Math.max(0, Math.min(100, run.health + rest - wear));
 
-    run.log.unshift({
+    pushLog({
       t: run.year + "." + (run.month < 10 ? "0" : "") + run.month,
       tag: e.tag,
       tint: e.tint,
@@ -512,7 +562,7 @@
       run.money -= fee;
       if (run.money < 0) { run.debt += -run.money; run.money = 0; }
       run.health = 26;
-      run.log.unshift({
+      pushLog({
         t: run.year + "." + (run.month < 10 ? "0" : "") + run.month,
         tag: "透支",
         tint: "var(--bad)",
@@ -520,8 +570,6 @@
         d: { money: -Math.round(fee / 100) * 100, health: 22 }
       });
     }
-
-    if (run.log.length > 60) run.log.length = 60;
 
     render(true);
     renderLog();
@@ -566,14 +614,13 @@
     return FC.events.show(ev, { moneyRef: income() }).then(function (res) {
       if (res.dismissed) return true;
       var applied = applyDeltas(res.deltas);
-      run.log.unshift({
+      pushLog({
         t: run.year + "." + (run.month < 10 ? "0" : "") + run.month,
         tag: FC.events.TYPE_LABEL[ev.type] || ev.category,
         tint: "var(--l" + ev.layerIndex + ")",
         text: "【" + ev.title + "】" + ((res.choice && res.choice.result) || ""),
         d: applied
       });
-      if (run.log.length > 60) run.log.length = 60;
       render(true);
       renderLog();
       maybeShowLedger(silent);
@@ -582,7 +629,7 @@
   }
 
   function note(text) {
-    run.log.unshift({
+    pushLog({
       t: run.year + "." + (run.month < 10 ? "0" : "") + run.month,
       tag: "系统",
       tint: "var(--text-faint)",
@@ -625,13 +672,14 @@
   });
 
   function seed() {
-    run.log = [{
+    run.log = [];
+    pushLog({
       t: run.year + "." + (run.month < 10 ? "0" : "") + run.month,
       tag: "入城",
       tint: "var(--neon-amber)",
       text: "你在" + era.name + "走出车站。城市照常运转，你只是千万进程里的一个节点。",
       d: {}
-    }];
+    });
   }
 
   if (!run.log.length) seed();

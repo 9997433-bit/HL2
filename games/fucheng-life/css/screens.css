@@ -949,6 +949,12 @@ button {
   gap: 14px;
   padding: 13px 4px 13px 0;
   border-bottom: 1px dashed rgba(140, 165, 214, 0.14);
+}
+
+/* Only entries the dashboard has just written slide in. Everything already on
+   screen is history and stays put — replaying the whole list every month made
+   the log look like it was being rewritten rather than added to. */
+.fc-log__item.is-new {
   animation: fc-logslide 0.5s var(--ease) both;
 }
 
@@ -1492,7 +1498,7 @@ button {
 }
 
 /* Log entries slide in on the same clock, a little tighter */
-.fc-log__item {
+.fc-log__item.is-new {
   animation-delay: calc(var(--i, 0) * 42ms);
 }
 
