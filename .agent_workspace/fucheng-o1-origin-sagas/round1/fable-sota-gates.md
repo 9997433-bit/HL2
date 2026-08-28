@@ -15,6 +15,7 @@
    PROGRESS.md 里写的 `state-household`、`factory-youth` **不存在**，属笔误，禁止照抄；PROGRESS.md 应同步订正。
 2. **`scripts/build-gameplay-data.js` 的 `ORIGIN_BIAS` 已有 4 个悬空 id**（`state-household`/`factory-youth`/`urban-white-collar`/`small-business`）。这是既有债务，R1 内容代理不必修，但新增的 originId 绑定必须有测试防止再犯（见 G-S1）。
 3. **现状快照**：story.json `sampleEvents` = 10（EV01–EV10，choices 硬编码在 `fc-events.js` 的 `SCRIPT` 表）；gameplay-pack 有 301 ambient + 12 通用 saga；`story-schema.test.js` 目前断言 sampleEvents **恰好 10 条**，迁移后该断言必须同步改写，否则测试与目标互相矛盾。
+4. **R1 并行落地情况（审计中途更新）**：出身链实现与测试已进分支（`15a2d6c`/`cd6a134`/`3b253c0`）——独立 `pack.originSagas` 数组、`tryStartOriginSaga` 分池触发、`origin-sagas.test.js` + `origin-saga-sim.test.js` 已绿。另有 `o1-events.test.js` 以测试先行方式落地，当前**红灯属预期**：它断言 `story.events` ≥ 50，等待 O1 内容代理交付后转绿。本文 G-S 系列已按落地设计调和口径。
 
 ---
 
@@ -88,10 +89,10 @@
 ## 2. 出身 Mini-Saga 门禁（G-S 系列）
 
 ### G-S1 · 10/10 覆盖与 originId 绑定
-- 数据经 `scripts/curated/origin-sagas.js` 进入 `build-gameplay-data.js`，产出进 `gameplay-pack.json` 的 `sagas` 数组（复用 fc-sim 单一 saga 管线），每条带 `originId` 字段。
+- 数据经 `scripts/curated/origin-sagas.js` 进入 `build-gameplay-data.js`，产出为 `gameplay-pack.json` 的**独立 `originSagas` 数组**（与随机 saga 池物理隔离，天然防串场），每条带 `originId` 字段；`run.saga` 槽位与随机链共用，但取链只走各自的池。
 - **恰好 10 条** origin saga；`originId` 与 `story.json.origins[].id` 构成**双射**（每个出身 1 条，无重复、无遗漏、无悬空 id——这正是 ORIGIN_BIAS 踩过的坑）。
-- saga `id` 建议命名 `SAGA_ORIGIN_<SLUG>`；必须与既有 12 条通用 saga id 不冲突。pack 总 sagas ≥ 22。
-- 验证：AUTO — `gameplay-pack.test.js` 扩展：`sagas.filter(s => s.originId).length === 10`，originId 集合 deepEqual story.json origins id 集合。
+- saga `id` 与既有 12 条通用 saga id 及全库其他 id 不冲突；`pack.sagas` 通用池维持 ≥ 12 不缩水。
+- 验证：AUTO — `origin-sagas.test.js`：`originSagas.length === 10`，originId 集合 deepEqual story.json origins id 集合。
 
 ### G-S2 · 链结构 3–4 步
 - 每条链 `steps.length` ∈ [3, 4]；每步必含 `title`（2–8 字）与 `text`（15–80 字）。
@@ -103,11 +104,11 @@
 - saga 步与 choice 的 `d` 键 ⊆ {money, health, social, rep, edu, debt, gap}（`applyDeltas` 支持集）；`d.money` 服从 G-E4 单位制与 ±5 域。
 - 验证：AUTO — 逐链断言含 choices 步数 ≥ 1、delta 键白名单、money 域。
 
-### G-S4 · 触发时机（确定性，可测）
-- 出身链按 `origin.storyId` 绑定，**入城后前 3 个月内必然触发第一步**——确定性调度，不走 `sagaMonthlyOdds` 随机门（随机门下 headless 无法稳定断言）。
-- 每局**至多触发一次**（沿用 `run.done["saga_" + id]` 去重）；完成或中断后不复活。
-- `tryStartRandomSaga` 的随机池**排除**所有带 `originId` 的链：既防其他出身的链串场，也防自己的链被随机重发。
-- 验证：AUTO — headless 遍历 10 个出身各起一局，断言 ≤ 3 月内 `run.saga.id` 为对应链、他链永不出现；MANUAL — §24 实玩一局验证。
+### G-S4 · 触发时机（上界确定，可测）
+- 出身链按 `origin.storyId` 绑定，**入城后第 3–18 月窗口内触发第一步**；窗口内可带随机性，但**第 18 月保底强制触发**（确定性上界，headless 推进 18 个 tick 即可稳定断言，不受 `sagaMonthlyOdds` 影响）。
+- 每局**至多触发一次**（`run.done.originSaga` 去重）；完成或中断后不复活。
+- 出身链只从 `originSagas` 池按 originId 取，`tryStartRandomSaga` 只从 `pack.sagas` 取：既防其他出身的链串场，也防自己的链被随机重发。
+- 验证：AUTO — `origin-saga-sim.test.js`：带种子重放遍历出身，断言触发月 ∈ [3, 18]、链 id 与出身对应、他链永不出现；MANUAL — §24 实玩一局验证。
 
 ### G-S5 · 全局 id 唯一
 - saga id、step 无 id 但 saga id 加入全局唯一性检查：story events、ambient、zone events、sagas 四个命名空间**合并去重**，任何冲突即失败。
@@ -154,11 +155,11 @@
 | 7 | 分层分布 L1–L4 ≥ 6、L5 ≥ 4；红线事件 ≥ 5 | AUTO | 同上 | 计数达标 |
 | 8 | 占位符/英文残留/重复文案扫描 | AUTO | 同上 | 黑名单零命中 |
 | 9 | fc-events 无 SCRIPT 硬编码、SEED 含 choices | AUTO | exports-smoke 或静态断言 | 断言通过 |
-| 10 | origin saga 恰 10 条，originId ↔ origins 双射 | AUTO | gameplay-pack.test.js（扩展） | deepEqual 通过 |
+| 10 | origin saga 恰 10 条，originId ↔ origins 双射 | AUTO | origin-sagas.test.js | deepEqual 通过 |
 | 11 | 每链 3–4 步、≥1 choices 步、delta 白名单 | AUTO | 同上 | 逐链通过 |
 | 12 | 单链 money 净值 ∈ [−8,+6] | AUTO | 同上 | 逐链通过 |
-| 13 | 全局 id 唯一（events/ambient/zones/sagas） | AUTO | 同上 | 合并 Set 无冲突 |
-| 14 | 10 出身 headless 各起一局：≤3 月触发本链、他链不串场 | AUTO | life-sim.test.js（扩展） | 10/10 通过 |
+| 13 | 全局 id 唯一（events/ambient/zones/sagas/originSagas） | AUTO | gameplay-pack.test.js（扩展） | 合并 Set 无冲突 |
+| 14 | 出身链触发月 ∈ [3,18]（18 月保底）、他链不串场 | AUTO | origin-saga-sim.test.js | 种子重放通过 |
 | 15 | 180 月 sim 无回归（不提前终局、health>0、事件多样性） | AUTO | life-sim.test.js | 原断言 + 新内容全绿 |
 | 16 | 50+ 事件 SSOT 与弹窗选择闭环（Network 只载 story.json） | MANUAL | ACCEPTANCE §21 | 勾选通过 |
 | 17 | 五层色贯穿 + 红线 3 秒冷静期（含 reduced-motion） | MANUAL | ACCEPTANCE §22 | 勾选通过 |
@@ -170,11 +171,12 @@
 
 ## 5. 测试落点说明（给实现代理的断言点，不含代码）
 
-1. **story-schema.test.js**：把「恰好 10 条 sampleEvents」改为「events ≥ 50」，保留 eras/origins/cityLayers 既有断言；追加 G-E1/E2/E3/E4/E5/E9 的 AUTO 项。若拆新文件 `o1-events.test.js`，须同步注册进 `run-fucheng-life-tests.sh`。
-2. **gameplay-pack.test.js**：sagas 下限从 10 提到 22；追加 originId 双射、链结构、money 净值、全局 id 去重断言。
-3. **life-sim.test.js**：origin fixture 的 `storyId: "urban-white-collar"` 是悬空 id，改用真实出身 id；追加 10 出身触发遍历（G-S4）与链完成断言（G-S6）。
-4. **exports-smoke.test.js**：追加「源码无 SCRIPT 表索引」与「SEED 每条含 choices」静态断言（或并入 js-syntax 检查）。
-5. **手工项**全部落在 `ACCEPTANCE.md` §21–25，见该文件本次追加内容。
+1. **o1-events.test.js**（已落地，当前红灯 = 等 50+ 事件内容）：承载 G-E1/E2/E3/E4/E5/E9 的 AUTO 项；内容交付后必须转绿。
+2. **story-schema.test.js**：迁移落地时把「恰好 10 条 sampleEvents」的断言与 `events` SSOT 调和（保留 eras/origins/cityLayers 既有断言，EV01–EV10 保号断言进入 o1-events 或本文件，二选一但不得缺失）。
+3. **origin-sagas.test.js / origin-saga-sim.test.js**（已落地、已绿）：承载 G-S1/S2/S3/S5 与 G-S4 的 AUTO 项；G-S6 的单链 money 净值域若未覆盖需补断言。
+4. **life-sim.test.js**：origin fixture 的 `storyId: "urban-white-collar"` 是悬空 id，改用真实出身 id；180 月基准断言维持。
+5. **exports-smoke.test.js**：SCRIPT 表删除后追加「源码无 SCRIPT 表索引」与「SEED 每条含 choices」静态断言（或并入 js-syntax 检查）。
+6. **手工项**全部落在 `ACCEPTANCE.md` §21–25，见该文件本次追加内容。
 
 ## 6. 签核
 
