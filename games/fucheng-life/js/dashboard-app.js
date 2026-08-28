@@ -211,7 +211,8 @@
 
   function ambientToLog(ev, applied) {
     return {
-      t: ts(), tag: ev.category || "城市", tint: "var(--l" + (parseInt(ev.layerId.replace(/\D/g, ""), 10) || 2) + ")",
+      /* 151/301 ambient 事件没写 layerId；缺省按 L2，别让整月结算炸掉 */
+      t: ts(), tag: ev.category || "城市", tint: "var(--l" + (parseInt(String(ev.layerId || "L2").replace(/\D/g, ""), 10) || 2) + ")",
       text: ev.text || ev.title, d: applied
     };
   }
