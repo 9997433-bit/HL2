@@ -1116,9 +1116,13 @@
     return FC.career.showPicker(pick).then(function (id) {
       if (!id) return false;
       FC.career.applyTrack(run, id);
+      var trackName = id;
+      ((FC.Sim.pack && FC.Sim.pack.careerTracks) || []).forEach(function (t) {
+        if (t.id === id && t.name) trackName = t.name;
+      });
       pushLog({
         t: ts(), tag: "职场", tint: "var(--neon-violet)",
-        text: "你选择了「" + id + "」轨道作为起点。", d: {}, kind: "saga"
+        text: "你选择了「" + trackName + "」轨道作为起点。", d: {}, kind: "saga"
       });
       render(true);
       renderLog();
