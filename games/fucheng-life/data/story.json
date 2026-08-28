@@ -1,0 +1,306 @@
+{
+  "eras": [
+    {
+      "id": "E1",
+      "name": "单位时代",
+      "yearAnchor": 1984,
+      "tagline": "一扇铁门，替许多人保管一生。",
+      "color": "#6F8F7A"
+    },
+    {
+      "id": "E2",
+      "name": "下海时代",
+      "yearAnchor": 1992,
+      "tagline": "潮水第一次允许普通人改写方向。",
+      "color": "#22B8A7"
+    },
+    {
+      "id": "E3",
+      "name": "地产时代",
+      "yearAnchor": 1998,
+      "tagline": "城市向上生长，钥匙开始衡量人生。",
+      "color": "#D89A4A"
+    },
+    {
+      "id": "E4",
+      "name": "互联网时代",
+      "yearAnchor": 2003,
+      "tagline": "窗口连上世界，命运开始刷新。",
+      "color": "#4E8DFF"
+    },
+    {
+      "id": "E5",
+      "name": "移动互联时代",
+      "yearAnchor": 2012,
+      "tagline": "所有人都在线，孤独也有了信号。",
+      "color": "#8B6CFF"
+    },
+    {
+      "id": "E6",
+      "name": "存量时代",
+      "yearAnchor": 2020,
+      "tagline": "电梯仍在上行，空位却越来越少。",
+      "color": "#C65C8A"
+    },
+    {
+      "id": "E7",
+      "name": "当下",
+      "yearAnchor": 2026,
+      "tagline": "城市照常运转，你要为明天续费。",
+      "color": "#26D9FF"
+    }
+  ],
+  "origins": [
+    {
+      "id": "ordinary-worker",
+      "name": "普通工薪",
+      "description": "家里没有捷径，也没有深渊。稳定工资撑起餐桌，下一代被寄望走得更远。",
+      "statModifiers": {
+        "money": 0,
+        "education": 1,
+        "connections": 0,
+        "stability": 2,
+        "resilience": 0
+      }
+    },
+    {
+      "id": "middle-class",
+      "name": "中产家庭",
+      "description": "书房、房贷与体面的餐桌同时存在。你见过选择，也很早知道失去体面的代价。",
+      "statModifiers": {
+        "money": 2,
+        "education": 2,
+        "connections": 1,
+        "stability": 1,
+        "resilience": -1
+      }
+    },
+    {
+      "id": "public-system",
+      "name": "体制内家庭",
+      "description": "秩序是家里的日常语言。门路不写在纸上，人情却总有来处与去处。",
+      "statModifiers": {
+        "money": 0,
+        "education": 1,
+        "connections": 2,
+        "stability": 3,
+        "resilience": -1
+      }
+    },
+    {
+      "id": "rural-migrant",
+      "name": "农村进城",
+      "description": "行李比户籍先抵达城市。你熟悉土地的重量，也熟悉每一张车票的价格。",
+      "statModifiers": {
+        "money": -2,
+        "education": -1,
+        "connections": -1,
+        "stability": -1,
+        "resilience": 3
+      }
+    },
+    {
+      "id": "urban-village",
+      "name": "城中村家庭",
+      "description": "握手楼挡住天际线，却挡不住消息流动。巷口每个人都认识你，也都在计算明天。",
+      "statModifiers": {
+        "money": 0,
+        "education": -1,
+        "connections": 2,
+        "stability": 0,
+        "resilience": 2
+      }
+    },
+    {
+      "id": "wealthy-merchant",
+      "name": "富商家庭",
+      "description": "你出生时，许多门已经打开。只是每一顿宴席都有座次，每一份信任都有估值。",
+      "statModifiers": {
+        "money": 3,
+        "education": 1,
+        "connections": 3,
+        "stability": 0,
+        "resilience": -2
+      }
+    },
+    {
+      "id": "humble-scholar",
+      "name": "寒门",
+      "description": "奖状贴满窄墙，分数是家里最可靠的杠杆。你不能浪费一次考试，也不能轻易生病。",
+      "statModifiers": {
+        "money": -2,
+        "education": 3,
+        "connections": -2,
+        "stability": -1,
+        "resilience": 2
+      }
+    },
+    {
+      "id": "blended-family",
+      "name": "重组家庭",
+      "description": "同一张餐桌上有不同的旧事。你很早学会辨认沉默，也擅长为自己留一把钥匙。",
+      "statModifiers": {
+        "money": -1,
+        "education": 0,
+        "connections": 0,
+        "stability": -2,
+        "resilience": 2
+      }
+    },
+    {
+      "id": "orphan",
+      "name": "孤儿",
+      "description": "档案替你记住来处，城市替你安排去处。没有人兜底，因此每一步都算数。",
+      "statModifiers": {
+        "money": -3,
+        "education": -1,
+        "connections": -2,
+        "stability": -3,
+        "resilience": 3
+      }
+    },
+    {
+      "id": "transnational",
+      "name": "跨国家庭",
+      "description": "你的童年横跨时区与语言。世界更宽，归属却常常需要重新填写。",
+      "statModifiers": {
+        "money": 2,
+        "education": 2,
+        "connections": 1,
+        "stability": -1,
+        "resilience": 1
+      }
+    }
+  ],
+  "cityLayers": [
+    {
+      "id": "L1",
+      "name": "市井层",
+      "description": "城中村、早市与外卖站挤在暖黄灯下。生活离地面最近，零钱和消息都流得很快。",
+      "unlockLevel": 1,
+      "color": "#F2B45F"
+    },
+    {
+      "id": "L2",
+      "name": "工薪层",
+      "description": "地铁穿过合租房与写字楼。打卡声整齐，蓝灰色清晨每天准时抵达。",
+      "unlockLevel": 3,
+      "color": "#6686A3"
+    },
+    {
+      "id": "L3",
+      "name": "上升通道",
+      "description": "学校、考场与校招大厅连成窄桥。青绿的希望发着光，也标着清晰的门槛。",
+      "unlockLevel": 6,
+      "color": "#43CFA7"
+    },
+    {
+      "id": "L4",
+      "name": "资本名利",
+      "description": "豪宅、会所与娱乐中心悬在金紫色夜空。这里出售稀缺，也重新定义体面。",
+      "unlockLevel": 10,
+      "color": "#B474E8"
+    },
+    {
+      "id": "L5",
+      "name": "暗流",
+      "description": "地下金融与灰色交易藏在深红紫黑之间。没有路牌，只有代价和介绍人。",
+      "unlockLevel": 15,
+      "color": "#6E1F46"
+    }
+  ],
+  "sampleEvents": [
+    {
+      "id": "EV01",
+      "title": "凌晨四点的灯",
+      "layerId": "L1",
+      "category": "生计",
+      "text": "外卖站的卷帘门升起一半。有人开始今天，有人还没结束昨天。你的手机先亮了，余额没有。"
+    },
+    {
+      "id": "EV02",
+      "title": "水表之后",
+      "layerId": "L2",
+      "category": "居住",
+      "text": "合租群里安静了三分钟，随后每个人都算出自己该付的那一份。城市把亲密切成精确的小数。"
+    },
+    {
+      "id": "EV03",
+      "title": "末班地铁",
+      "layerId": "L2",
+      "category": "职场",
+      "text": "末班车关门前，你收到一句“再改一版”。隧道没有信号，短暂替你保住了沉默。"
+    },
+    {
+      "id": "EV04",
+      "title": "考场窗外",
+      "layerId": "L3",
+      "category": "教育",
+      "text": "雨落在答题卡之外。两小时后，有些人得到一条上行通道，有些人只得到标准答案。"
+    },
+    {
+      "id": "EV05",
+      "title": "玻璃幕墙的落日",
+      "layerId": "L2",
+      "category": "职场",
+      "text": "夕阳把整栋写字楼镀成金色，工位上的人没有抬头。美景不计入本季度绩效。"
+    },
+    {
+      "id": "EV06",
+      "title": "校招手环",
+      "layerId": "L3",
+      "category": "机会",
+      "text": "大厅里发放同一种蓝色手环。有人凭它进入终面，有人把它留作来过这座城市的证明。"
+    },
+    {
+      "id": "EV07",
+      "title": "会所电梯",
+      "layerId": "L4",
+      "category": "人情",
+      "text": "电梯没有楼层按钮。侍者认得邀请人的姓氏，也认得所有不该出现在这里的人。"
+    },
+    {
+      "id": "EV08",
+      "title": "第二种货币",
+      "layerId": "L4",
+      "category": "关系",
+      "text": "饭局散后，没有人提起菜单价格。真正昂贵的部分，已经记进彼此的人情账本。"
+    },
+    {
+      "id": "EV09",
+      "title": "潮汐线下的借据",
+      "layerId": "L5",
+      "category": "风险",
+      "text": "江水准时退去，露出一张被雨泡软的借据。名字还清楚，承诺已经晕开。"
+    },
+    {
+      "id": "EV10",
+      "title": "账单日",
+      "layerId": "L1",
+      "category": "金钱",
+      "text": "闹钟还没响，扣款短信先到了。没钱的人没有秘密，账单就是他们的隐私。"
+    }
+  ],
+  "uiCopy": {
+    "taglines": [
+      "现代都市高自由度人生引擎",
+      "城市照常运转，你只是千万进程里的一个节点。",
+      "钱是氧气，人情是第二货币。",
+      "灯光、房租、关系，都有价格。",
+      "潮汐准时，账单比潮汐更准时。",
+      "在霓虹熄灭以前，为今天结账。"
+    ],
+    "loadingTips": [
+      "地铁不会等迟到的人，机会通常也不会。",
+      "固定支出会在每个账单日自动结算。",
+      "人情不是赠品，它只是暂时没有标价。",
+      "学历能打开一些门，门后仍然需要通行证。",
+      "跳槽可能抬高收入，也会重置一部分信任。",
+      "城市层级越高，入场券越贵。",
+      "注意风险红线：灰色地带从不保证退路。",
+      "健康不会立刻催款，但欠账终会到期。",
+      "潮汐每天经过城市，没有谁因此成为主角。",
+      "保存不是重来，只是记住你付过的代价。"
+    ]
+  }
+}
