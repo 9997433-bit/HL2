@@ -162,6 +162,13 @@
           amount = FC.Sim.moneyOf(d[k], incomeRef);
           run.money += amount;
           applied.money = Math.round(amount / 100) * 100;
+        } else if (k === "debt") {
+          amount = FC.Sim.moneyOf(d[k], incomeRef);
+          run.debt += amount;
+          applied.debt = Math.round(amount / 100) * 100;
+        } else if (k === "gap") {
+          run.gap = Math.max(0, (run.gap || 0) + d[k]);
+          applied.gap = d[k];
         } else if (k === "edu") {
           run.edu = clamp(run.edu + d[k], 0, 100);
           applied.edu = d[k];
@@ -185,14 +192,14 @@
     },
 
     maybePromote: function (run) {
-      if (run.career.kpi >= 72 && run.career.level < 4) {
+      if (run.career.kpi >= 82 && run.career.level < 4 && run.months > run.career.level * 18) {
         run.career.level++;
-        run.career.kpi = 52;
+        run.career.kpi = 54;
         return true;
       }
-      if (run.career.kpi < 25 && run.career.level > 0 && Math.random() < 0.35) {
+      if (run.career.kpi < 22 && run.career.level > 0 && Math.random() < 0.22) {
         run.career.level--;
-        run.career.kpi = 45;
+        run.career.kpi = 48;
         return true;
       }
       return false;
@@ -256,6 +263,31 @@
       };
     },
 
+    eventEligible: function (run, ev, era, origin) {
+      var layer = FC.Sim.layerOf(run, origin);
+      if (ev.once && run.done[ev.id]) return false;
+      if (ev.minMonths && run.months < ev.minMonths) return false;
+      if (ev.maxMonths && run.months > ev.maxMonths) return false;
+      if (ev.minAge && run.age < ev.minAge) return false;
+      if (ev.maxAge && run.age > ev.maxAge) return false;
+      if (ev.layerId && layerNum(ev.layerId) > layer + 1) return false;
+      if (ev.era && era && ev.era !== era.id) return false;
+      if ((run.recent || []).indexOf(ev.id) >= 0) return false;
+      return true;
+    },
+
+    recentWindow: function () {
+      var pack = FC.Sim.pack;
+      return (pack && pack.balance && pack.balance.recentAmbientWindow) || 18;
+    },
+
+    markAmbientSeen: function (run, ev) {
+      if (!ev) return;
+      if (ev.once) run.done[ev.id] = true;
+      var win = FC.Sim.recentWindow();
+      run.recent = (run.recent || []).concat(ev.id).slice(-win);
+    },
+
     originBiasMul: function (ev, origin) {
       var pack = FC.Sim.pack;
       if (!pack || !pack.originBias || !origin) return 1;
@@ -288,11 +320,10 @@
       var pool = [];
       var total = 0;
       pack.ambientEvents.forEach(function (ev) {
-        if (run.done[ev.id]) return;
-        if (ev.layerId && layerNum(ev.layerId) > layer + 1) return;
-        if ((run.recent || []).indexOf(ev.id) >= 0) return;
+        if (!FC.Sim.eventEligible(run, ev, era, origin)) return;
         var w = (ev.weight || 5) * FC.Sim.originBiasMul(ev, origin) * FC.Sim.eraTagMul(ev, era);
-        if (era && ev.era && ev.era !== era.id) w *= 0.3;
+        if (era && ev.eraAny && ev.era) w *= 0.15;
+        else if (era && ev.era && ev.era === era.id) w *= 1.35;
         if (run.talents.indexOf("luck") >= 0 && ev.category === "机会") w *= 1.12;
         if (run.talents.indexOf("network") >= 0 && ev.category === "人情") w *= 1.15;
         pool.push({ ev: ev, w: w });
@@ -308,7 +339,7 @@
       }
       picked = pool[Math.min(i, pool.length - 1)];
       var ev = picked.ev;
-      run.recent = (run.recent || []).concat(ev.id).slice(-6);
+      FC.Sim.markAmbientSeen(run, ev);
       return ev;
     },
 
@@ -358,12 +389,25 @@
       return { step: step, applied: applied };
     },
 
-    tryStartRandomSaga: function (run) {
-      if (run.saga || run.months < 6) return false;
+    tryStartRandomSaga: function (run, era, origin) {
+      if (run.saga) return false;
       var pack = FC.Sim.pack;
-      if (!pack || Math.random() > 0.08) return false;
-      var idx = Math.floor(Math.random() * pack.sagas.length);
-      return FC.Sim.startSaga(run, pack.sagas[idx].id);
+      var bal = (pack && pack.balance) || {};
+      var minM = bal.sagaStartMonths || 18;
+      if (run.months < minM) return false;
+      if (Math.random() > (bal.sagaMonthlyOdds || 0.045)) return false;
+      var eligible = [];
+      pack.sagas.forEach(function (s) {
+        if (run.done["saga_" + s.id]) return;
+        if (s.minMonths && run.months < s.minMonths) return;
+        if (s.minAge && run.age < s.minAge) return;
+        if (s.maxAge && run.age > s.maxAge) return;
+        eligible.push(s);
+      });
+      if (!eligible.length) return false;
+      var pick = eligible[Math.floor(Math.random() * eligible.length)];
+      run.done["saga_" + pick.id] = true;
+      return FC.Sim.startSaga(run, pick.id);
     },
 
     resetMonthAp: function (run, era) {
@@ -374,12 +418,14 @@
 
     checkEnd: function (run, origin) {
       var pack = FC.Sim.pack;
+      var bal = (pack && pack.balance) || {};
       if (run.ended) return null;
-      if (run.health <= 0) return "health";
-      if (run.money <= 0 && run.debt > FC.Sim.income(run, FC.era(), origin) * 6) return "bankruptcy";
-      if (run.rep <= 5 && run.months > 24) return "redline";
+      if (run.health <= 0 && run.months >= 24) return "health";
+      if (run.money <= 0 && run.debt > FC.Sim.income(run, FC.era(), origin) * 10 &&
+          run.months >= (bal.minMonthsBeforeBankruptcy || 48)) return "bankruptcy";
+      if (run.rep <= 5 && run.months > (bal.minMonthsBeforeRedline || 72)) return "redline";
       if (run.age >= 75) return "elder";
-      if (run.age >= 60 && run.months % 12 === 0) return "retire";
+      if (run.age >= 62 && run.months >= 240 && run.months % 12 === 0) return "retire";
       return null;
     },
 

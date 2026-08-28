@@ -12,7 +12,7 @@
 - **BitLife 式 Tab**：人生 / 职场 KPI / 关系账本 / 资产面板
 - **人生阶段**：入城期 → 爬坡期 → 承重期 → 黄昏期 → 退潮期（AP 与标签随年龄变化）
 - **终局仪式**：破产/健康/触线/退休/长寿 → 人生总结 → 选天赋印记 → 重新入城
-- **B 内容**：`data/gameplay-pack.json` — 160 条 ambient 事件、23 区域探区事件、5 条链式 Saga
+- **B 内容**：`data/gameplay-pack.json` — **301 条**手写 ambient 事件、**115 条**区域探区事件、**12 条**链式 Saga（跨月推进）
 - **出身/时代偏置**：事件池按出身档案与年代 modifier 加权
 - **C 动效**：3D 倾斜出身卡、圈层跃迁 pulse、地图→仪表盘跨层转场、终局弹窗仪式
 
@@ -90,7 +90,7 @@ games/fucheng-life/
 ├── ACCEPTANCE.md               # Round 3 的 15 项手工 QA 门禁
 ├── routes.json                 # new-game / continue 跳转表
 ├── data/
-│   └── story.json              # 年代、出身、层级、事件和共享文案唯一数据源
+│   ├── story.json              # 年代、出身、层级、事件和共享文案唯一数据源
 │   └── gameplay-pack.json      # AP 行动、ambient/区域事件、Saga、终局（由 build 脚本生成）
 ├── screens/
 │   ├── index.html              # 核心界面总览

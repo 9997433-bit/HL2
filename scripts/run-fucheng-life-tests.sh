@@ -30,6 +30,7 @@ command -v node >/dev/null 2>&1 || {
 run_test "JavaScript syntax" "$TEST_DIR/js-syntax.test.js"
 run_test "story.json schema and deterministic counts" "$TEST_DIR/story-schema.test.js"
 run_test "gameplay-pack.json content" "$TEST_DIR/gameplay-pack.test.js"
+run_test "headless life sim pacing" "$TEST_DIR/life-sim.test.js"
 run_test "static HTML link integrity" "$TEST_DIR/html-links.test.js"
 run_test "fc-events and fc-motion browser exports" "$TEST_DIR/exports-smoke.test.js"
 

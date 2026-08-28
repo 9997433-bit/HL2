@@ -221,8 +221,8 @@
     run.money += run.income;
     run.debt = Math.max(0, run.debt - Math.round(run.debt * 0.015));
     if (run.money < 0) { run.debt += -run.money; run.money = 0; }
-    var rest = run.income > 0 ? 2.1 : 0.8;
-    var wear = 0.4 + Math.max(0, (run.age - 35) * 0.05);
+    var rest = run.income > 0 ? 2.4 : 1.0;
+    var wear = 0.28 + Math.max(0, (run.age - 38) * 0.035);
     run.health = Math.max(0, Math.min(100, run.health + rest - wear));
   }
 
@@ -364,7 +364,7 @@
     if (run.month > 12) { run.month = 1; run.year++; }
     if (run.months % 12 === 0) run.age++;
 
-    FC.Sim.tryStartRandomSaga(run);
+    FC.Sim.tryStartRandomSaga(run, era, origin);
     var moves = [];
 
     var sagaChain = Promise.resolve();
@@ -420,9 +420,10 @@
 
     $("tickBtn").addEventListener("click", function () { tick(false); });
     $("tick6Btn").addEventListener("click", function () {
+      if (!window.confirm("快进会连续推进 3 个月（每月仍需先花完行动点）。确定？")) return;
       (function step(i) {
-        if (i >= 6) return;
-        tick(i < 5).then(function (hit) {
+        if (i >= 3) return;
+        tick(i < 2).then(function (hit) {
           if (!hit) step(i + 1);
           else pushLog({ t: ts(), tag: "系统", tint: "var(--text-faint)", text: "快进被一件事打断。", d: {} });
         });
