@@ -143,6 +143,7 @@
       once: !!raw.once,
       minMonths: raw.minMonths || 0,
       maxMonths: raw.maxMonths || 0,
+      requires: raw.requires || null,
       choices: raw.choices || []
     };
   }
@@ -232,7 +233,46 @@
     return true;
   }
 
-  /* opts: { layer, avoid, allowRedline, era, months, done } — all optional,
+  /* ------------------------------------------------------------ 人情账门禁
+     `requires` 读的是 run.npcs 那本账：欠了老周半天班，他才会在某个月来问；
+     还清了，这扇门就重新关上。一条规则形如
+       { npc, minBalance, maxBalance, flag, notFlag }
+     数组表示全部满足。账本读不到时一律不放行 —— 无法核账的债不该上门。 */
+  function ruleMet(npcs, rule) {
+    if (!rule) return true;
+    var id = rule.npc || rule.id;
+    var npc = null, i;
+    for (i = 0; i < npcs.length; i++) {
+      if (npcs[i] && npcs[i].id === id) { npc = npcs[i]; break; }
+    }
+    if (!npc) return false;
+    var flags = npc.flags || [];
+    var lo = rule.minBalance != null ? rule.minBalance : rule.balanceMin;
+    var hi = rule.maxBalance != null ? rule.maxBalance : rule.balanceMax;
+    if (lo != null && npc.balance < lo) return false;
+    if (hi != null && npc.balance > hi) return false;
+    var need = rule.flag == null ? [] : [].concat(rule.flag);
+    for (i = 0; i < need.length; i++) {
+      if (flags.indexOf(need[i]) < 0) return false;
+    }
+    var banned = rule.notFlag == null ? [] : [].concat(rule.notFlag);
+    for (i = 0; i < banned.length; i++) {
+      if (flags.indexOf(banned[i]) >= 0) return false;
+    }
+    return true;
+  }
+
+  function meetsNpc(npcs, requires) {
+    if (!requires) return true;
+    if (!npcs || !npcs.length) return false;
+    var rules = [].concat(requires);
+    for (var i = 0; i < rules.length; i++) {
+      if (!ruleMet(npcs, rules[i])) return false;
+    }
+    return true;
+  }
+
+  /* opts: { layer, avoid, allowRedline, era, months, done, npcs } — all optional,
      so a caller that knows nothing about the run still gets an event. */
   function pick(opts) {
     opts = opts || {};
@@ -248,8 +288,11 @@
       if (!fitsEra(deck[i], opts.era)) continue;
       if (!fitsMonths(deck[i], opts.months)) continue;
       if (deck[i].once && done && done[deck[i].id]) continue;
+      if (deck[i].requires && !meetsNpc(opts.npcs, deck[i].requires)) continue;
       var w = weightOf(deck[i], layer);
       if (deck[i].eras) w *= 2;
+      /* A debt that has come due should be heard over the ambient city. */
+      if (deck[i].requires) w *= 2.4;
       pool.push(deck[i]);
       weights.push(w);
       total += w;
@@ -552,6 +595,7 @@
     isOpen: function () { return !!current; },
     moneyOf: moneyOf,
     toPayload: toPayload,
+    meetsNpc: meetsNpc,
     STAT_LABEL: STAT_LABEL,
     TYPE_LABEL: TYPE_LABEL,
     _bucket: bucket

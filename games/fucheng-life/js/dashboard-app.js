@@ -94,6 +94,34 @@
         : "行动点已用尽，可以推进一月。";
   }
 
+  /* 人情账落地后附在日志末尾：「（人情账 · 陈姐 −2，欠着这个月的房租）」 */
+  function npcNote(ledger) {
+    if (!ledger || !ledger.length) return "";
+    return "（人情账 · " + ledger.map(function (row) {
+      var move = row.delta === 0 ? "±0" : (row.delta > 0 ? "+" : "−") + Math.abs(row.delta);
+      return row.name + " " + move + (row.note ? "，" + row.note : "");
+    }).join("；") + "）";
+  }
+
+  function renderNpcs() {
+    var list = $("relList");
+    if (!list) return;
+    if (!run.npcs) FC.Sim.migrateNpcs(run);
+    list.innerHTML = run.npcs.map(function (n) {
+      var cls = n.balance > 0 ? "up" : n.balance < 0 ? "down" : "";
+      var flag = n.flags && n.flags.length ? n.flags[n.flags.length - 1] : null;
+      var last = flag ? FC.Sim.flagLabel(flag) : n.last || "暂时两不相欠";
+      return '<li class="fc-relations__item fc-npc">' +
+        '<div class="fc-npc__head"><span class="fc-npc__name">' + esc(n.name) +
+          '<i class="fc-npc__role">' + esc(n.role) + "</i></span>" +
+          '<b class="' + cls + '">' + (n.balance > 0 ? "+" : "") + n.balance + "</b></div>" +
+        '<div class="fc-npc__bar" role="img" aria-label="人情结余 ' + n.balance + ' / 5">' +
+          '<i class="' + cls + '" style="width:' + Math.abs(n.balance) * 10 + "%;" +
+            (n.balance < 0 ? "right:50%" : "left:50%") + '"></i></div>' +
+        '<p class="fc-npc__last">' + esc(last) + "</p></li>";
+    }).join("");
+  }
+
   function renderTabsExtra() {
     var trName = "职员线";
     if (FC.Sim.pack && FC.Sim.pack.careerTracks) {
@@ -104,11 +132,7 @@
     $("careerTitle").textContent = FC.Sim.careerTitle(run) + " · " + trName;
     $("kpiVal").textContent = run.career.kpi + " / 100";
     $("kpiMeter").style.width = run.career.kpi + "%";
-    $("relList").innerHTML = run.relations.map(function (r) {
-      var cls = r.balance > 0 ? "up" : r.balance < 0 ? "down" : "";
-      return '<li class="fc-relations__item"><span>' + esc(r.name) + '</span><b class="' + cls + '">' +
-        (r.balance > 0 ? "+" : "") + r.balance + "</b></li>";
-    }).join("");
+    renderNpcs();
     $("assetKv").innerHTML =
       "<dt>房产</dt><dd>" + esc(run.assets.property || "无") + "</dd>" +
       "<dt>副业基金</dt><dd>¥" + fmt(run.assets.sideFund || 0) + "</dd>" +
@@ -268,7 +292,8 @@
       avoid: run.recentModal || [],
       era: era.id,
       months: run.months,
-      done: run.done
+      done: run.done,
+      npcs: run.npcs
     };
     var ev = FC.events.pick(draw);
     if (!ev) return null;
@@ -290,10 +315,12 @@
     return FC.events.show(ev, { moneyRef: income() }).then(function (res) {
       if (res.dismissed) return true;
       var applied = FC.Sim.applyDeltas(run, res.deltas, income());
+      var ledger = FC.Sim.applyNpcEffects(run, res.choice && res.choice.npcEffects);
       pushLog({
-        t: ts(), tag: FC.events.TYPE_LABEL[ev.type] || ev.category,
-        tint: "var(--l" + ev.layerIndex + ")",
-        text: "【" + ev.title + "】" + ((res.choice && res.choice.result) || ""), d: applied
+        t: ts(), tag: ledger.length ? ledger[0].name : (FC.events.TYPE_LABEL[ev.type] || ev.category),
+        tint: ledger.length ? "var(--neon-amber)" : "var(--l" + ev.layerIndex + ")",
+        text: "【" + ev.title + "】" + ((res.choice && res.choice.result) || "") + npcNote(ledger),
+        d: applied
       });
       render(true); renderLog(); flyMoney([applied.money], null);
       maybeShowLedger(silent);

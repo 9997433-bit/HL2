@@ -1702,6 +1702,204 @@
         { "id": "give", "label": "过给弟弟，一分不要", "cost": "现金 −−−", "d": { "money": -3, "social": 6, "rep": 2 },
           "result": "手续办得很顺，他坚持写了一张字据。那张纸你没有收，他也没有再提。" }
       ]
+    },
+    {
+      "id": "EV83",
+      "title": "陈姐的宽限",
+      "layerId": "L2",
+      "category": "居住",
+      "weight": 7,
+      "body": "房东陈姐站在楼道口算日子，说这个月的租按老规矩今天收。你卡里的余额差着小半个月。",
+      "choices": [
+        { "id": "delay", "label": "开口求三天宽限", "cost": "人情 ▲", "d": { "money": 1, "rep": -1 },
+          "npcEffects": [{ "id": "chenjie", "balance": -1, "flag": "owe_rent" }],
+          "result": "陈姐把烟掐了，说就三天。声控灯亮了两次，她一直没有往楼上走。" },
+        { "id": "borrow", "label": "刷卡凑齐按时付", "cost": "现金 −−", "d": { "money": -2, "health": -1 },
+          "npcEffects": [{ "id": "chenjie", "balance": 1, "note": "从不拖租的租客" }],
+          "result": "收据当场撕给你，字迹压得很重。这笔钱往后挪了三十天，利息替你记着。" },
+        { "id": "fixpipe", "label": "先修好她家水管", "cost": "半天", "d": { "health": -2, "social": 2 },
+          "npcEffects": [{ "id": "chenjie", "balance": 1, "flag": "handy" }],
+          "result": "阀门换了新的，她给你抹掉两百。此后厨房漏水，她第一个想到的人是你。" }
+      ]
+    },
+    {
+      "id": "EV84",
+      "title": "老周的半天",
+      "layerId": "L2",
+      "category": "职场",
+      "weight": 7,
+      "body": "你发着低烧盯排班表，老周凑过来说下午那半天他替你顶，不用还，语气随口得像在说天气。",
+      "choices": [
+        { "id": "take", "label": "让他顶，先记着", "cost": "人情 ▲▲", "d": { "health": 3, "rep": -1 },
+          "npcEffects": [{ "id": "laozhou", "balance": -2, "flag": "owe_shift" }],
+          "result": "下午你在出租屋睡到天黑。手机上只有一条消息：搞定了，别想着请客。" },
+        { "id": "treat", "label": "让他顶，晚上请饭", "cost": "现金 −", "d": { "money": -1, "health": 2 },
+          "npcEffects": [{ "id": "laozhou", "balance": -1, "note": "一顿烧烤抵了半天班" }],
+          "result": "烧烤摊上他只喝了一瓶，说这种事以后别客气。单子你抢在他前面签了。" },
+        { "id": "self", "label": "自己撑完这半天", "cost": "健康 −−", "d": { "health": -4, "rep": 2 },
+          "npcEffects": [{ "id": "laozhou", "balance": 1, "note": "看你硬撑过一次" }],
+          "result": "靠着退烧药坐到下班，报表一个数没错。老周走前拍了拍你的椅背。" }
+      ]
+    },
+    {
+      "id": "EV85",
+      "title": "阿敏落地",
+      "layerId": "L1",
+      "category": "人情",
+      "weight": 6,
+      "body": "同乡阿敏拎着编织袋出现在地铁口，说面试排在下周，先想在这边找个落脚的地方。",
+      "choices": [
+        { "id": "host", "label": "让他睡客厅", "cost": "生活 −", "d": { "health": -2, "social": 3 },
+          "npcEffects": [{ "id": "amin", "balance": 2, "flag": "hosted_amin" }],
+          "result": "客厅打了半个月地铺。他每天七点出门，走之前把折叠床靠墙立好。" },
+        { "id": "lend", "label": "借他一笔押金", "cost": "现金 −−", "d": { "money": -2, "social": 2 },
+          "npcEffects": [{ "id": "amin", "balance": 2, "flag": "lent_amin" }],
+          "result": "转账那天他发来一张合租房照片，窗外正好是你上班的那条高架。" },
+        { "id": "refer", "label": "只帮他找中介", "cost": "人情 −", "d": { "social": 1, "rep": 1 },
+          "npcEffects": [{ "id": "amin", "balance": -1, "note": "电话里客气了一句" }],
+          "result": "中介很快带他看了三套。老家的群里，这件事被说成你帮了大忙。" }
+      ]
+    },
+    {
+      "id": "EV86",
+      "title": "王总攒的局",
+      "layerId": "L3",
+      "category": "关系",
+      "weight": 6,
+      "minMonths": 6,
+      "body": "包间里坐着六个人，王总把菜单转到你面前说随便点。最后那张单子搁在转盘边上，没人去碰。",
+      "choices": [
+        { "id": "pay", "label": "抢着把单结了", "cost": "现金 −−−", "d": { "money": -3, "rep": 2 },
+          "npcEffects": [{ "id": "wangzong", "balance": 2, "flag": "paid_dinner" }],
+          "result": "你去前台签完字回来，王总只说下次算他的。桌上没有人再提这件事。" },
+        { "id": "owe", "label": "让王总结，记下", "cost": "人情 ▲▲", "d": { "social": 3, "rep": -1 },
+          "npcEffects": [{ "id": "wangzong", "balance": -2, "flag": "owe_dinner" }],
+          "result": "散场时他挥手让你先走。这一顿的分量，你在电梯里才慢慢称出来。" },
+        { "id": "leave", "label": "提前找借口退场", "cost": "人脉 −", "d": { "health": 2, "social": -2 },
+          "npcEffects": [{ "id": "wangzong", "balance": -1, "note": "记住了你走得早" }],
+          "result": "你在包间门口说家里有事。第二天群里的合影，你的位置被别人补上。" }
+      ]
+    },
+    {
+      "id": "EV87",
+      "title": "小余的电车",
+      "layerId": "L1",
+      "category": "生计",
+      "weight": 6,
+      "body": "楼下小余的电动车没电了，充电桩要排到夜里十一点。他敲门问能不能从你窗口拉一根线。",
+      "choices": [
+        { "id": "charge", "label": "把插线板递出去", "cost": "电费 −", "d": { "money": -1, "social": 2 },
+          "npcEffects": [{ "id": "xiaoyu", "balance": 2, "flag": "charged_bike" }],
+          "result": "线从三楼垂到花坛边。此后你的快递总是先送，下雨天会塞进门缝。" },
+        { "id": "refuse", "label": "说不方便，关门", "cost": "关系 −", "d": { "health": 1, "social": -2 },
+          "npcEffects": [{ "id": "xiaoyu", "balance": -1, "note": "敲门声后来没有再响" }],
+          "result": "他说了声打扰。第二天在楼道遇见，两个人都盯着各自的屏幕。" },
+        { "id": "help", "label": "陪他跑完两单", "cost": "体力 −−", "d": { "health": -3, "money": 1 },
+          "npcEffects": [{ "id": "xiaoyu", "balance": 2, "flag": "ran_route" }],
+          "result": "两单跑到十二点半，他分了一半跑腿费，硬塞进你外套的口袋。" }
+      ]
+    },
+    {
+      "id": "EV88",
+      "title": "带本子的人",
+      "layerId": "L2",
+      "category": "居住",
+      "weight": 7,
+      "requires": { "npc": "chenjie", "flag": "owe_rent" },
+      "body": "宽限的日子过完了。陈姐拿着一本卷边的账簿上门，翻到写你名字的那页，用手指压住不放。",
+      "choices": [
+        { "id": "settle", "label": "一次补齐", "cost": "现金 −−−", "d": { "money": -3, "rep": 2 },
+          "npcEffects": [{ "id": "chenjie", "balance": 2, "clearFlag": "owe_rent", "note": "那一页被划掉了" }],
+          "result": "她当着你的面在数字上画了道横线，把本子合上，说以后还是好说。" },
+        { "id": "stall", "label": "再往后拖半月", "cost": "声望 −−", "d": { "rep": -3, "health": -2 },
+          "npcEffects": [{ "id": "chenjie", "balance": -2, "flag": "blacklist" }],
+          "result": "账簿上又添了一行小字。晚上你听见她在楼下跟别人说起门牌号。" },
+        { "id": "deposit", "label": "拿押金先抵掉", "cost": "退路 −", "d": { "money": -1, "social": -2 },
+          "npcEffects": [{ "id": "chenjie", "balance": 1, "clearFlag": "owe_rent", "note": "押金抵掉了欠账" }],
+          "result": "冲抵之后账面清零，也意味着搬走那天没有东西可以退还给你。" }
+      ]
+    },
+    {
+      "id": "EV89",
+      "title": "王总的回电",
+      "layerId": "L3",
+      "category": "关系",
+      "weight": 7,
+      "requires": { "npc": "wangzong", "flag": "owe_dinner", "maxBalance": -1 },
+      "body": "隔了两个月，王总打来电话，寒暄三句就说到正题：外甥想进你们这行，让你带一带简历和门路。",
+      "choices": [
+        { "id": "help", "label": "认真带他一程", "cost": "健康 −−", "d": { "health": -3, "rep": 3 },
+          "npcEffects": [{ "id": "wangzong", "balance": 2, "clearFlag": "owe_dinner", "note": "饭局那笔两清" }],
+          "result": "简历改了四版，面试前陪他过了一遍问题。人进去了，那页也翻了过去。" },
+        { "id": "decline", "label": "客气地推掉", "cost": "人脉 −−−", "d": { "social": -4, "health": 1 },
+          "npcEffects": [{ "id": "wangzong", "balance": -2, "flag": "cold" }],
+          "result": "你说手上的项目排到年底。他笑着说理解，后来的局没有再叫过你。" },
+        { "id": "outsource", "label": "托别人去代办", "cost": "现金 −−", "d": { "money": -2, "social": 1 },
+          "npcEffects": [{ "id": "wangzong", "balance": 1, "clearFlag": "owe_dinner" }],
+          "result": "你找猎头朋友接了手，事情办成一半。中间那点差额，最后自己贴上。" }
+      ]
+    },
+    {
+      "id": "EV90",
+      "title": "老周要走了",
+      "layerId": "L2",
+      "category": "职场",
+      "weight": 7,
+      "requires": { "npc": "laozhou", "flag": "owe_shift" },
+      "body": "老周把工牌收进抽屉，说下周去另一家。他需要一份熟人背书，名字要填在推荐人那一栏里。",
+      "choices": [
+        { "id": "vouch", "label": "签下推荐人栏", "cost": "声望 −−", "d": { "rep": -2, "social": 4 },
+          "npcEffects": [{ "id": "laozhou", "balance": 2, "clearFlag": "owe_shift" }],
+          "result": "他入职第三周就转了两个单子过来。顶班那件事，谁也没有再提起。" },
+        { "id": "dodge", "label": "装作不知道", "cost": "关系 −−−", "d": { "social": -3, "health": 1 },
+          "npcEffects": [{ "id": "laozhou", "balance": -2, "flag": "drifted" }],
+          "result": "表格空着交了上去。他离职那天绕开工位，从另一侧走的电梯。" },
+        { "id": "farewell", "label": "只请散伙饭", "cost": "现金 −", "d": { "money": -1, "social": 2 },
+          "npcEffects": [{ "id": "laozhou", "balance": 1, "clearFlag": "owe_shift" }],
+          "result": "散伙饭吃到十点，谁都没提推荐人。分开时他说有事直接打电话。" }
+      ]
+    },
+    {
+      "id": "EV91",
+      "title": "阿敏的喜酒",
+      "layerId": "L1",
+      "category": "人情",
+      "weight": 6,
+      "once": true,
+      "minMonths": 12,
+      "requires": { "npc": "amin", "minBalance": 2, "notFlag": "missed_wedding" },
+      "body": "阿敏在老家办酒，日子定在下个月十六。请柬拍成照片发过来，末尾补了一句一定要到场。",
+      "choices": [
+        { "id": "attend", "label": "请假回去喝酒", "cost": "现金 −−", "d": { "money": -2, "social": 3 },
+          "npcEffects": [{ "id": "amin", "balance": 1, "flag": "gave_gift" }],
+          "result": "坐了七小时高铁，一到门口就被拉去当伴郎。礼金的数目他记了很多年。" },
+        { "id": "gift", "label": "只把礼金转去", "cost": "人情 −", "d": { "money": -1, "social": -2 },
+          "npcEffects": [{ "id": "amin", "balance": -2, "flag": "missed_wedding" }],
+          "result": "转账附言写了四个字。席上有人替你解释工作忙，他点头，没有接话。" },
+        { "id": "video", "label": "视频里敬一杯", "cost": "折中", "d": { "money": -1, "social": 1 },
+          "npcEffects": [{ "id": "amin", "balance": 1, "note": "隔着屏幕敬了一杯" }],
+          "result": "手机架在主桌旁边，你举着一次性杯子。信号断了两回，酒还是敬完。" }
+      ]
+    },
+    {
+      "id": "EV92",
+      "title": "代收那箱货",
+      "layerId": "L1",
+      "category": "生计",
+      "weight": 6,
+      "requires": { "npc": "xiaoyu", "minBalance": 1 },
+      "body": "小余替你签收的那箱东西，搁在门口被人拎走了。监控只照到一个背影，物业说很难再查。",
+      "choices": [
+        { "id": "claim", "label": "让他照价赔", "cost": "关系 −−−", "d": { "money": 1, "social": -3 },
+          "npcEffects": [{ "id": "xiaoyu", "balance": -2, "flag": "fell_out" }],
+          "result": "他分三次把钱转清，备注一次比一次短。再遇见时先低头看手机。" },
+        { "id": "drop", "label": "算了，不追这箱", "cost": "现金 −−", "d": { "money": -2, "social": 2 },
+          "npcEffects": [{ "id": "xiaoyu", "balance": 2, "flag": "trusted" }],
+          "result": "你说别放在心上。一周后他把备用钥匙托付给你，说家里没别人。" },
+        { "id": "together", "label": "一起找物业", "cost": "半天", "d": { "health": -1, "rep": 1 },
+          "npcEffects": [{ "id": "xiaoyu", "balance": 1, "note": "陪你查了一下午监控" }],
+          "result": "录像看了一下午，最后调出半张模糊侧脸。东西没回来，人倒是熟了。" }
+      ]
     }
   ],
   "uiCopy": {

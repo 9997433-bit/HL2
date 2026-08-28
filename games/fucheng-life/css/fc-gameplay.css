@@ -138,6 +138,54 @@
 .fc-relations__item b.up { color: var(--ok); }
 .fc-relations__item b.down { color: var(--bad); }
 
+/* 人情账本条目：姓名 + 结余条（中线两侧生长）+ 最近一笔账 */
+.fc-npc { display: block; padding: 12px 0; }
+.fc-npc__head { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+.fc-npc__name { color: var(--text-hi); font-weight: 600; }
+
+.fc-npc__role {
+  margin-left: 8px;
+  font-style: normal;
+  font-size: 11px;
+  letter-spacing: .08em;
+  color: var(--text-faint);
+}
+
+.fc-npc__head b { font-family: var(--font-mono, monospace); }
+
+.fc-npc__bar {
+  position: relative;
+  height: 6px;
+  margin: 8px 0 6px;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.07);
+  overflow: hidden;
+}
+
+.fc-npc__bar::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: rgba(255, 255, 255, 0.28);
+}
+
+.fc-npc__bar i {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.2);
+  transition: width .3s ease;
+}
+
+.fc-npc__bar i.up { background: var(--ok); }
+.fc-npc__bar i.down { background: var(--bad); }
+
+.fc-npc__last { margin: 0; font-size: 12px; color: var(--text-faint); }
+
 .fc-ending {
   position: fixed;
   inset: 0;

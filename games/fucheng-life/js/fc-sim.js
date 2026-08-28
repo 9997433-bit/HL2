@@ -9,6 +9,10 @@
     return Math.max(lo, Math.min(hi, n));
   }
 
+  function round1(n) {
+    return Math.round(n * 10) / 10;
+  }
+
   function pickTrack(origin) {
     if (!origin) return "staff";
     if (origin.mods.edu >= 75) return "tech";
@@ -17,11 +21,125 @@
     return "staff";
   }
 
+  /* 人情账本：balance 记的是结余而不是好感 —— 正数是对方欠你，负数是你欠对方。
+     让别人替你结账、替你顶班，账面就往下走，直到某个月对方来收。 */
+  var NPCS = [
+    { id: "laozhou", name: "老周", role: "同事", balance: 1 },
+    { id: "chenjie", name: "陈姐", role: "房东", balance: -1 },
+    { id: "amin", name: "阿敏", role: "同乡", balance: 1 },
+    { id: "wangzong", name: "王总", role: "饭局人脉", balance: 0 },
+    { id: "xiaoyu", name: "小余", role: "邻里", balance: 0 }
+  ];
+
+  /* 旧档的 relations[] 只有三个泛称，按角色把余额接到具名 NPC 上。 */
+  var LEGACY_NPC = { chenjie: "landlord", laozhou: "colleague", amin: "family" };
+
+  var FLAG_LABEL = {
+    owe_rent: "欠着这个月的房租",
+    owe_shift: "欠老周半天班",
+    owe_dinner: "欠一顿饭局",
+    hosted_amin: "借住过你的客厅",
+    lent_amin: "借出去的钱还没回来",
+    charged_bike: "在你家充过电",
+    ran_route: "替他跑过两单",
+    handy: "帮她修过水管",
+    paid_dinner: "那顿饭是你签的单",
+    blacklist: "被记在催缴名单上",
+    cold: "局上不再有你的位置",
+    drifted: "工位之间隔了一层玻璃",
+    fell_out: "为一箱货翻过脸",
+    trusted: "把备用钥匙交给了你",
+    gave_gift: "红包随得体面",
+    missed_wedding: "婚礼那天你没到场"
+  };
+
+  function isArray(v) {
+    return Object.prototype.toString.call(v) === "[object Array]";
+  }
+
+  function toList(v) {
+    if (v == null) return [];
+    return isArray(v) ? v : [v];
+  }
+
   FC.Sim = {
     pack: null,
+    NPCS: NPCS,
+    FLAG_LABEL: FLAG_LABEL,
 
     install: function (pack) {
       FC.Sim.pack = pack || FC.gameplay || null;
+    },
+
+    freshNpcs: function () {
+      return NPCS.map(function (meta) {
+        return {
+          id: meta.id, name: meta.name, role: meta.role,
+          balance: meta.balance, flags: [], last: null
+        };
+      });
+    },
+
+    npcById: function (run, id) {
+      var found = null;
+      (run && run.npcs ? run.npcs : []).forEach(function (n) {
+        if (n.id === id) found = n;
+      });
+      return found;
+    },
+
+    flagLabel: function (flag) {
+      return FLAG_LABEL[flag] || flag;
+    },
+
+    /** effects: { id, balance, flag, clearFlag, note } 或它们的数组。 */
+    applyNpcEffects: function (run, effects) {
+      var out = [];
+      if (!run || !effects) return out;
+      if (!run.npcs) run.npcs = FC.Sim.freshNpcs();
+      toList(effects).forEach(function (eff) {
+        if (!eff) return;
+        var npc = FC.Sim.npcById(run, eff.id || eff.npc);
+        if (!npc) return;
+        if (!npc.flags) npc.flags = [];
+        var before = npc.balance;
+        if (typeof eff.balance === "number") {
+          npc.balance = clamp(npc.balance + eff.balance, -5, 5);
+        }
+        var added = [];
+        toList(eff.flag).concat(toList(eff.flags)).forEach(function (flag) {
+          if (!flag || npc.flags.indexOf(flag) >= 0) return;
+          npc.flags.push(flag);
+          added.push(flag);
+        });
+        var cleared = [];
+        toList(eff.clearFlag).concat(toList(eff.clearFlags)).forEach(function (flag) {
+          var at = npc.flags.indexOf(flag);
+          if (at < 0) return;
+          npc.flags.splice(at, 1);
+          cleared.push(flag);
+        });
+        var delta = npc.balance - before;
+        var note = eff.note ||
+          (added.length ? FC.Sim.flagLabel(added[added.length - 1]) : null) ||
+          (cleared.length ? "这笔账清了" : null) ||
+          (delta > 0 ? "对方欠你一笔" : delta < 0 ? "你欠对方一笔" : null);
+        if (note) npc.last = note;
+        out.push({
+          id: npc.id, name: npc.name, balance: npc.balance,
+          delta: delta, added: added, cleared: cleared, note: note
+        });
+      });
+      return out;
+    },
+
+    /** requires: { npc, minBalance, maxBalance, flag, notFlag }，或它们的数组（全部满足）。
+        判定唯一实现在 fc-events.js（pick 才是消费方）；抽卡器缺席时按「无法核账即不放行」处理。 */
+    npcRequiresMet: function (run, requires) {
+      if (FC.events && FC.events.meetsNpc) {
+        return FC.events.meetsNpc(run && run.npcs, requires);
+      }
+      return !requires;
     },
 
     freshRun: function (era, origin) {
@@ -29,7 +147,7 @@
       var track = pickTrack(origin);
       return {
         key: era.id + "/" + origin.id,
-        version: 2,
+        version: 3,
         year: era.startYear || era.yearAnchor || 2021,
         month: 3,
         age: 22,
@@ -47,11 +165,8 @@
         apMax: 3,
         apSpent: [],
         career: { track: track, level: 0, kpi: 48, title: null },
-        relations: [
-          { id: "landlord", name: "房东", balance: -1 },
-          { id: "family", name: "家人", balance: 0 },
-          { id: "colleague", name: "同事", balance: 1 }
-        ],
+        contract: null,
+        npcs: FC.Sim.freshNpcs(),
         assets: { property: null, vehicle: null, sideFund: 0 },
         saga: null,
         done: {},
@@ -71,17 +186,184 @@
 
     migrate: function (run, era, origin) {
       if (!run) return FC.Sim.freshRun(era, origin);
-      if (run.version >= 2 && run.career) return run;
-      var fresh = FC.Sim.freshRun(era, origin);
-      var keys = ["year", "month", "age", "months", "money", "health", "social", "rep", "debt",
-        "income", "gap", "sinceModal", "done", "recent", "recentModal", "log"];
-      keys.forEach(function (k) {
-        if (run[k] != null) fresh[k] = run[k];
+      var out = run;
+      if (!(run.version >= 2 && run.career)) {
+        var fresh = FC.Sim.freshRun(era, origin);
+        var keys = ["year", "month", "age", "months", "money", "health", "social", "rep", "debt",
+          "income", "gap", "sinceModal", "done", "recent", "recentModal", "log", "relations"];
+        keys.forEach(function (k) {
+          if (run[k] != null) fresh[k] = run[k];
+        });
+        fresh.ap = 3;
+        fresh.apMax = 3;
+        out = fresh;
+      }
+      return FC.Sim.migrateContract(FC.Sim.migrateNpcs(out));
+    },
+
+    /** v2→v3：老档没有合约槽位，补一个空的。还在头三个月的存档照样会收到选择弹窗。 */
+    migrateContract: function (run) {
+      if (run.contract === undefined) run.contract = null;
+      run.version = 3;
+      return run;
+    },
+
+    /** v2→v3：泛称 relations[] 变成五个有名有姓的人，余额跟着搬过来。 */
+    migrateNpcs: function (run) {
+      var legacy = {};
+      (run.relations || []).forEach(function (r) {
+        if (r && r.id) legacy[r.id] = r;
       });
-      fresh.version = 2;
-      fresh.ap = 3;
-      fresh.apMax = 3;
-      return fresh;
+      var saved = {};
+      (run.npcs || []).forEach(function (n) {
+        if (n && n.id) saved[n.id] = n;
+      });
+      run.npcs = NPCS.map(function (meta) {
+        var cur = saved[meta.id];
+        var old = legacy[LEGACY_NPC[meta.id]];
+        var balance = cur && typeof cur.balance === "number" ? cur.balance
+          : old && typeof old.balance === "number" ? old.balance
+            : meta.balance;
+        return {
+          id: meta.id,
+          name: meta.name,
+          role: meta.role,
+          balance: clamp(Math.round(balance), -5, 5),
+          flags: (cur && isArray(cur.flags) ? cur.flags : []).slice(),
+          last: (cur && cur.last) || null
+        };
+      });
+      delete run.relations;
+      run.version = 3;
+      return run;
+    },
+
+    /* ------------------------------------------------------ 中期人生合约
+       入城后第 1–3 月签一张，整局只签一张：落户 / 首付 / 升职。
+       进度统一归一到 0–100，这样一根进度条能画三种完全不同的人生目标；
+       原始口径（积分 / 首付线 / 职级+KPI）留在 goal 与 points 里给 UI 读。 */
+
+    contracts: function () {
+      return (FC.Sim.pack && FC.Sim.pack.contracts) || [];
+    },
+
+    contractDef: function (id) {
+      var found = null;
+      FC.Sim.contracts().forEach(function (c) {
+        if (c.id === id) found = c;
+      });
+      return found;
+    },
+
+    /** 首付线按签约当月的收入折算：写死一个 ¥ 数字的话，1984 年永远签不下，
+        2026 年第一年就签完了。同一张合约要在七个时代都值同样多的力气。 */
+    contractGoal: function (def, run, era, origin) {
+      if (!def) return 100;
+      if (def.id !== "home") return def.goal || 100;
+      var inc = 0;
+      try { inc = FC.Sim.income(run, era, origin) || 0; } catch (e) { inc = 0; }
+      var scale = def.goalMonthsOfIncome || 30;
+      var raw = Math.round(inc * scale / 1000) * 1000;
+      return Math.max(def.goalMin || 60000, Math.min(def.goalMax || 800000, raw));
+    },
+
+    selectContract: function (run, id, era, origin) {
+      var def = FC.Sim.contractDef(id);
+      if (!run || !def || run.contract) return false;
+      run.contract = {
+        id: def.id,
+        progress: 0,
+        target: 100,
+        goal: FC.Sim.contractGoal(def, run, era, origin),
+        points: 0,
+        deadlineMonths: def.deadline,
+        chosenMonth: run.months || 0,
+        deadlineMonth: (run.months || 0) + def.deadline,
+        status: "active"
+      };
+      FC.Sim.refreshContract(run);
+      return run.contract;
+    },
+
+    contractMonthsLeft: function (run) {
+      var c = run && run.contract;
+      if (!c) return 0;
+      return c.deadlineMonth - (run.months || 0);
+    },
+
+    /** 纯读：算出 0–100 的进度，不写 run。 */
+    contractProgress: function (run) {
+      var c = run && run.contract;
+      if (!c) return 0;
+      if (c.id === "home") {
+        var cash = (run.money || 0) + ((run.assets && run.assets.sideFund) || 0);
+        return round1(clamp(cash / Math.max(1, c.goal) * 100, 0, 100));
+      }
+      if (c.id === "promote") {
+        var lv = (run.career && run.career.level) || 0;
+        var kpi = (run.career && run.career.kpi) || 0;
+        return round1(Math.min(1, lv / 2) * 55 + Math.min(1, kpi / 70) * 45);
+      }
+      /* 落户：学历分打底，加分项（进修行动、居住年限、合约事件）补足差额。 */
+      return round1(clamp((run.edu || 0) + (c.points || 0), 0, 100));
+    },
+
+    refreshContract: function (run) {
+      var c = run && run.contract;
+      if (!c) return 0;
+      c.progress = FC.Sim.contractProgress(run);
+      return c.progress;
+    },
+
+    /** 落户加分项的唯一入账口（进修行动、学历事件、合约专属事件）。 */
+    creditContract: function (run, points) {
+      var c = run && run.contract;
+      if (!c || c.status !== "active" || c.id !== "hukou" || !points) return 0;
+      var before = c.points || 0;
+      c.points = round1(Math.max(0, before + points));
+      FC.Sim.refreshContract(run);
+      return round1(c.points - before);
+    },
+
+    /** 结算一次：重算进度，然后看是否达成或到期。返回状态迁移，没有迁移则 null。 */
+    updateContract: function (run, era, origin) {
+      var c = run && run.contract;
+      if (!c || c.status !== "active") return null;
+      FC.Sim.refreshContract(run);
+      var def = FC.Sim.contractDef(c.id);
+      if (c.progress >= c.target) {
+        c.status = "won";
+        c.settledMonth = run.months || 0;
+        return { status: "won", kind: "won", def: def, contract: c };
+      }
+      if (FC.Sim.contractMonthsLeft(run) <= 0) {
+        c.status = "failed";
+        c.settledMonth = run.months || 0;
+        return { status: "failed", kind: "failed", def: def, contract: c };
+      }
+      return null;
+    },
+
+    /** 每月推进：先累计居住年限分，再结算。dashboard 的 finishMonth 调它。 */
+    tickContract: function (run, era, origin) {
+      var c = run && run.contract;
+      if (!c || c.status !== "active") return null;
+      if (c.id === "hukou") {
+        FC.Sim.creditContract(run, 0.3 + (run.edu || 0) / 100 * 0.9);
+      }
+      return FC.Sim.updateContract(run, era, origin);
+    },
+
+    /** fc-events.pick 的合约门禁上下文。 */
+    contractCtx: function (run) {
+      var c = run && run.contract;
+      if (!c) return null;
+      return {
+        id: c.id,
+        status: c.status,
+        progress: Math.round(FC.Sim.contractProgress(run)),
+        monthsLeft: FC.Sim.contractMonthsLeft(run)
+      };
     },
 
     stage: function (run) {
@@ -243,9 +525,10 @@
         }
       }
       if (actionId === "network") {
-        run.relations.forEach(function (r) {
-          if (r.id === "colleague") r.balance = clamp(r.balance + 2, -10, 10);
-        });
+        FC.Sim.applyNpcEffects(run, [
+          { id: "laozhou", balance: 1, note: "一起吃过工作日的午饭" },
+          { id: "wangzong", balance: 1, note: "在群里说得上话了" }
+        ]);
       }
 
       var extra = null;

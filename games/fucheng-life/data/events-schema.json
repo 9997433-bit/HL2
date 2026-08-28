@@ -76,6 +76,13 @@
           "minimum": 1,
           "description": "入城月数上限（如仅入城初期的事件）。"
         },
+        "requires": {
+          "oneOf": [
+            { "$ref": "#/definitions/npcRequirement" },
+            { "type": "array", "minItems": 1, "items": { "$ref": "#/definitions/npcRequirement" } }
+          ],
+          "description": "人情账门禁（R4-A）：读 run.npcs，全部规则满足才入池，入池后权重 ×2.4。账本读不到时一律不入池。"
+        },
         "choices": {
           "type": "array",
           "minItems": 2,
@@ -127,6 +134,13 @@
           "description": "代价标注展示串（现金 −− / 人情 ▲）。风险选项固定用「风险 ▲」。"
         },
         "d": { "$ref": "#/definitions/deltas" },
+        "npcEffects": {
+          "oneOf": [
+            { "$ref": "#/definitions/npcEffect" },
+            { "type": "array", "minItems": 1, "items": { "$ref": "#/definitions/npcEffect" } }
+          ],
+          "description": "人情账落账（R4-A）：由 FC.Sim.applyNpcEffects 结算，进日志时 tag 换成 NPC 姓名。"
+        },
         "result": {
           "type": "string",
           "minLength": 16,
@@ -143,6 +157,58 @@
           "maxItems": 3,
           "items": { "$ref": "#/definitions/previewDot" },
           "description": "显式覆盖后果预览点；一般不写，交给 FC.events._bucket 自动分档。"
+        }
+      }
+    },
+    "npcRequirement": {
+      "type": "object",
+      "required": ["npc"],
+      "additionalProperties": false,
+      "properties": {
+        "npc": {
+          "type": "string",
+          "enum": ["laozhou", "chenjie", "amin", "wangzong", "xiaoyu"],
+          "description": "具名 NPC id：老周 / 陈姐 / 阿敏 / 王总 / 小余。"
+        },
+        "minBalance": { "type": "integer", "minimum": -5, "maximum": 5 },
+        "maxBalance": { "type": "integer", "minimum": -5, "maximum": 5 },
+        "flag": {
+          "oneOf": [{ "type": "string" }, { "type": "array", "items": { "type": "string" } }],
+          "description": "必须已挂在该 NPC 名下的账目标记（全部满足）。"
+        },
+        "notFlag": {
+          "oneOf": [{ "type": "string" }, { "type": "array", "items": { "type": "string" } }],
+          "description": "只要挂了其中任意一个就不入池。"
+        }
+      }
+    },
+    "npcEffect": {
+      "type": "object",
+      "required": ["id"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "enum": ["laozhou", "chenjie", "amin", "wangzong", "xiaoyu"]
+        },
+        "balance": {
+          "type": "integer",
+          "minimum": -5,
+          "maximum": 5,
+          "description": "人情结余增量，clamp 到 −5..+5。正数 = 对方欠你，负数 = 你欠对方。"
+        },
+        "flag": {
+          "oneOf": [{ "type": "string" }, { "type": "array", "items": { "type": "string" } }],
+          "description": "记一笔账（owe_rent / owe_shift / owe_dinner …），后续事件用 requires 读它。"
+        },
+        "clearFlag": {
+          "oneOf": [{ "type": "string" }, { "type": "array", "items": { "type": "string" } }],
+          "description": "销账。链式事件靠它把门重新关上。"
+        },
+        "note": {
+          "type": "string",
+          "maxLength": 16,
+          "description": "关系 Tab「最近一笔账」的展示串；缺省由 flag / 余额方向推出。"
         }
       }
     },

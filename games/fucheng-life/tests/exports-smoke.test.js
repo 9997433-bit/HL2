@@ -64,12 +64,25 @@ function assertFunctions(object, names, label) {
   }
 }
 
+/* An event gated on the relationship ledger needs a run whose ledger satisfies
+   it, otherwise isolating it says nothing about the gate under test. */
+function npcsSatisfying(requires) {
+  return [].concat(requires).map((rule) => ({
+    id: rule.npc,
+    name: rule.npc,
+    role: "同事",
+    balance: rule.minBalance ?? rule.maxBalance ?? 0,
+    flags: rule.flag === undefined ? [] : [].concat(rule.flag)
+  }));
+}
+
 function optionsForOnly(event, deck) {
   return {
     layer: Number(event.layerId.slice(1)),
     avoid: deck.filter((candidate) => candidate.id !== event.id).map((candidate) => candidate.id),
     era: Array.isArray(event.eras) ? event.eras[0] : story.eras[0].id,
-    months: event.minMonths === undefined ? 0 : event.minMonths
+    months: event.minMonths === undefined ? 0 : event.minMonths,
+    npcs: event.requires ? npcsSatisfying(event.requires) : undefined
   };
 }
 
@@ -77,6 +90,7 @@ function assertPickFilters(deck) {
   const eraEvents = story.events.filter((event) => Array.isArray(event.eras) && event.eras.length);
   const minMonthEvents = story.events.filter((event) => event.minMonths > 0);
   const onceEvents = story.events.filter((event) => event.once === true);
+  const requiresEvents = story.events.filter((event) => event.requires);
   const storyEraIds = story.eras.map((era) => era.id);
 
   /* R2-A authors the gated events and lands the picker implementation in
@@ -104,6 +118,15 @@ function assertPickFilters(deck) {
       `pick must exclude ${event.id} before minMonths ${event.minMonths}`);
   }
 
+  for (const event of requiresEvents) {
+    const options = optionsForOnly(event, deck);
+    const picked = context.FC.events.pick(options);
+    assert.equal(picked && picked.id, event.id,
+      `pick must admit ${event.id} once its NPC requirement is met`);
+    assert.equal(context.FC.events.pick({ ...options, npcs: undefined }), null,
+      `pick must exclude ${event.id} while its NPC requirement is unmet`);
+  }
+
   for (const event of onceEvents) {
     const options = optionsForOnly(event, deck);
     const picked = context.FC.events.pick({ ...options, done: {} });
@@ -116,7 +139,8 @@ function assertPickFilters(deck) {
   return {
     eras: eraEvents.length,
     minMonths: minMonthEvents.length,
-    once: onceEvents.length
+    once: onceEvents.length,
+    requires: requiresEvents.length
   };
 }
 
@@ -207,7 +231,7 @@ async function main() {
   const gatedCount = Object.values(pickCoverage).reduce((total, count) => total + count, 0);
   console.log(gatedCount
     ? `Pick filter smoke: ${pickCoverage.eras} era, ${pickCoverage.minMonths} minMonths, ` +
-      `and ${pickCoverage.once} once fixtures passed.`
+      `${pickCoverage.once} once, and ${pickCoverage.requires} NPC-gated fixtures passed.`
     : "Pick filter smoke: skipped gracefully; R2-A gated fixtures have not landed.");
 
   await assertOfflineMirror();
