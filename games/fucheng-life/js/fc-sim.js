@@ -812,7 +812,7 @@
           if (run.goal.id === "rise") {
             return {
               actionId: "work",
-              reason: "主目标「升到 L3」：上班抬声望与现金。",
+              reason: "主目标「" + (run.goal.name || "向上爬一层") + "」：上班抬声望与现金。",
               urgency: "mid"
             };
           }
@@ -1154,8 +1154,8 @@
         blurb: "把债务清零，别让账单替你决定下个月。"
       },
       {
-        id: "rise", name: "升到 L3",
-        blurb: "挤进上升通道。钱与声望都要够门禁。"
+        id: "rise", name: "向上爬一层",
+        blurb: "比入城时再高一层。起点越高，门禁越狠。"
       },
       {
         id: "downpay", name: "攒够首付",
@@ -1184,15 +1184,22 @@
       if (!run || !def || !(run.challengeMonths > 0)) return false;
       var inc = FC.Sim.income(run, era, origin) || 3000;
       var downpayGoal = Math.max(60000, Math.round(inc * 24 / 1000) * 1000);
+      var startLayer = (origin && origin.layer) || FC.Sim.layerOf(run, origin) || 2;
+      var targetLayer = Math.min(4, Math.max(startLayer + 1, 3));
       run.goal = {
         id: def.id,
         name: def.name,
         pickedAt: run.months || 0,
         startDebt: Math.max(0, run.debt || 0),
         startMoney: Math.max(0, run.money || 0),
+        startLayer: startLayer,
+        targetLayer: targetLayer,
         downpayGoal: downpayGoal,
         doneMonth: null
       };
+      if (id === "rise") {
+        run.goal.name = "升到 L" + targetLayer;
+      }
       return true;
     },
 
@@ -1216,9 +1223,14 @@
         }
       } else if (id === "rise") {
         var layer = FC.Sim.layerOf(run, origin);
-        if (layer >= 3) pct = 100;
-        else if (layer === 2) pct = 35 + clamp((run.rep || 0) / 100 * 40, 0, 40);
-        else pct = 10 + clamp((run.rep || 0) / 100 * 20, 0, 20);
+        var target = run.goal.targetLayer || 3;
+        var start = run.goal.startLayer || 2;
+        if (layer >= target) pct = 100;
+        else if (layer > start) {
+          pct = 55 + clamp((run.rep || 0) / 100 * 30, 0, 30);
+        } else {
+          pct = 15 + clamp((run.rep || 0) / 100 * 35, 0, 35);
+        }
       } else if (id === "downpay") {
         var cash = (run.money || 0) + ((run.assets && run.assets.sideFund) || 0);
         var need = Math.max(1, run.goal.downpayGoal || 80000);

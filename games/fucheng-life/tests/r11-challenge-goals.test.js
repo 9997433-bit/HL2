@@ -55,15 +55,27 @@ assert.equal(Sim.needsChallengeGoal(run), true, "new challenge run needs a goal"
 
 assert.ok(Sim.pickChallengeGoal(run, "rise", era, origin), "pick rise goal");
 assert.equal(run.goal.id, "rise");
+assert.equal(run.goal.targetLayer, 3, "L2 origin should target L3");
 assert.equal(Sim.needsChallengeGoal(run), false);
 
 let pct = Sim.goalProgress(run, era, origin);
-assert.ok(pct >= 30 && pct < 100, "L2 start should be mid progress toward L3, got " + pct);
+assert.ok(pct >= 10 && pct < 100, "L2 start should be mid progress toward L3, got " + pct);
 
 run.rep = 90;
 run.money = 500000;
 pct = Sim.goalProgress(run, era, origin);
 assert.equal(pct, 100, "high rep/money should reach L3 goal");
+
+const highOrigin = {
+  id: "O09", name: "体制", layer: 3,
+  mods: { money: 70, health: 70, social: 60, edu: 70 },
+  start: "¥ 50000"
+};
+const highRun = Sim.freshRun(era, highOrigin);
+Sim.pickChallengeGoal(highRun, "rise", era, highOrigin);
+assert.equal(highRun.goal.targetLayer, 4, "L3 origin should target L4");
+assert.ok(Sim.goalProgress(highRun, era, highOrigin) < 100,
+  "L3 start must not instantly complete rise-to-L4");
 
 const scored = Sim.scoreChallenge(run, era, origin);
 assert.ok(scored.score >= 70, "completed goal should score well");
