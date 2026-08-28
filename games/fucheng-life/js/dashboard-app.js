@@ -534,6 +534,14 @@
     }
   }
 
+  /* 选轨卡被补弹逻辑推到下次进门时，玩家不该只能等：工具区留一个手动入口，
+     选完就自己收起来。 */
+  function renderCareerPickBtn() {
+    var btn = $("careerPickBtn");
+    if (!btn) return;
+    btn.hidden = !(FC.career && FC.career.needsPick(run));
+  }
+
   /* 自动行动永远不替玩家去探区：探区是唯一带地点选择的行动，替玩家点掉
      等于替他花了 zoneQueue，而且高风险地点的余波要他自己认。 */
   var AUTO_SKIP = { explore: 1 };
@@ -816,6 +824,7 @@
 
     renderActions();
     renderContract();
+    renderCareerPickBtn();
     renderGoalHud();
     renderLocationChip();
     renderTabsExtra();
@@ -1745,6 +1754,11 @@
       $("guideBtn").addEventListener("click", function () {
         if (FC.guide.isOpen && FC.guide.isOpen()) return;
         FC.guide.show({ force: true });
+      });
+    }
+    if ($("careerPickBtn")) {
+      $("careerPickBtn").addEventListener("click", function () {
+        maybeOfferCareerTrack();
       });
     }
 
