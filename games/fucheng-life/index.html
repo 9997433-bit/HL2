@@ -2,93 +2,285 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>浮城人生 · URBAN LIFE SIMULATOR</title>
-<meta name="description" content="浮城人生 — 现代都市高自由度人生模拟原型界面：年代登记、出身档案、人生仪表盘、五层城市地图。">
-<link rel="stylesheet" href="css/screens.css">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#05070f">
+<meta name="description" content="《浮城人生》URBAN LIFE SIMULATOR — 现代都市高自由度人生模拟。城市照常运转，你只是千万进程里的一个节点。">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>《浮城人生》· URBAN LIFE SIMULATOR</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 44 44'%3E%3Crect width='44' height='44' rx='11' fill='%2305070f'/%3E%3Cg fill='%233ff0ff'%3E%3Crect x='9' y='21' width='4.4' height='12'/%3E%3Crect x='16.2' y='14' width='4' height='19'/%3E%3Crect x='23.4' y='18.5' width='4.2' height='14.5' fill='%23ff3fa4'/%3E%3Crect x='30.6' y='11' width='4.4' height='22'/%3E%3C/g%3E%3Crect x='7' y='35.6' width='30' height='1.6' rx='.8' fill='%23ffc861'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="css/main.css">
 </head>
-<body>
-<div class="fc-atmos"></div>
-<div class="fc-skyline"></div>
-<div class="fc-rain"></div>
+<body data-quality="high" data-boot="pending">
 
-<header class="fc-topbar">
-  <span class="fc-brand">
-    <span class="fc-brand__mark"></span>
-    <span>浮城人生 <span class="fc-brand__en">URBAN LIFE SIM</span></span>
-  </span>
-  <nav class="fc-nav">
-    <a href="screens/era-select.html">入城登记</a>
-    <a href="screens/origin-select.html">出身</a>
-    <a href="screens/dashboard.html">人生仪表盘</a>
-    <a href="screens/city-map.html">城市地图</a>
-  </nav>
+<!-- ── 都市夜景 ─────────────────────────────────────────── -->
+<canvas id="cityCanvas" aria-hidden="true"></canvas>
+<div class="grade" aria-hidden="true"></div>
+<div class="scanlines" aria-hidden="true"></div>
+<div class="vignette" aria-hidden="true"></div>
+
+<noscript>
+  <div class="noscript">请开启 JavaScript 以体验《浮城人生》的完整都市夜景。</div>
+</noscript>
+
+<!-- ── 顶栏 ─────────────────────────────────────────────── -->
+<header class="topbar">
+  <a class="brand" href="#" aria-label="浮城人生 首页">
+    <span class="brand__mark" aria-hidden="true">
+      <svg viewBox="0 0 44 44" role="presentation" focusable="false">
+        <defs>
+          <linearGradient id="markStroke" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#3ff0ff"/>
+            <stop offset="55%" stop-color="#a97bff"/>
+            <stop offset="100%" stop-color="#ff3fa4"/>
+          </linearGradient>
+        </defs>
+        <rect x="2.5" y="2.5" width="39" height="39" rx="11"
+              fill="none" stroke="url(#markStroke)" stroke-width="1.6"/>
+        <path d="M9 32.5h4.4V21.5H9zM16.2 32.5h4V14.5h-4zM23.4 32.5h4.2V19h-4.2zM30.6 32.5H35V11.5h-4.4z"
+              fill="url(#markStroke)" opacity=".9"/>
+        <path d="M7 36.5h30" stroke="#ffc861" stroke-width="1.2" stroke-linecap="round" opacity=".75"/>
+      </svg>
+    </span>
+    <span class="brand__text">
+      <b>浮城</b>
+      <i>FUCHENG&nbsp;·&nbsp;URBAN&nbsp;LIFE</i>
+    </span>
+  </a>
+
+  <div class="statusbar">
+    <div class="chip chip--time">
+      <span class="chip__dot" aria-hidden="true"></span>
+      <span class="chip__label">城市时间</span>
+      <span class="chip__value" id="cityClock">23:47</span>
+    </div>
+    <div class="chip chip--weather">
+      <span class="chip__label">天气</span>
+      <span class="chip__value" id="cityWeather">小雨 · 12°C</span>
+    </div>
+    <button class="chip chip--btn" id="btnQuickSettings" type="button" aria-label="打开设置">
+      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <circle cx="12" cy="12" r="3.2" fill="none" stroke="currentColor" stroke-width="1.6"/>
+        <path d="M12 2.8v2.6M12 18.6v2.6M21.2 12h-2.6M5.4 12H2.8M18.5 5.5l-1.8 1.8M7.3 16.7l-1.8 1.8M18.5 18.5l-1.8-1.8M7.3 7.3L5.5 5.5"
+              stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+      </svg>
+    </button>
+  </div>
 </header>
 
-<main class="fc-page">
-  <section class="fc-rise" style="margin-bottom:34px">
-    <p class="fc-eyebrow">URBAN LIFE SIMULATOR · 原型界面</p>
-    <h1 class="fc-title">浮城<em>人生</em></h1>
-    <p class="fc-lede">
-      现代都市高自由度人生引擎。城市照常运转，你只是千万进程里的一个节点——
-      运行需要钱，灯光、房租、关系都有价格。
+<!-- ── 五层城市剖面 ─────────────────────────────────────── -->
+<aside class="strata" aria-label="五层城市剖面">
+  <span class="strata__axis" aria-hidden="true"></span>
+  <ul class="strata__list">
+    <li class="strata__item" data-layer="L5" style="--tier:#b3245e">
+      <span class="strata__id">L5</span><span class="strata__name">暗流</span>
+    </li>
+    <li class="strata__item" data-layer="L4" style="--tier:#c58bff">
+      <span class="strata__id">L4</span><span class="strata__name">资本名利</span>
+    </li>
+    <li class="strata__item" data-layer="L3" style="--tier:#34e0a1">
+      <span class="strata__id">L3</span><span class="strata__name">上升通道</span>
+    </li>
+    <li class="strata__item" data-layer="L2" style="--tier:#7d9ac0">
+      <span class="strata__id">L2</span><span class="strata__name">工薪层</span>
+    </li>
+    <li class="strata__item" data-layer="L1" style="--tier:#ffb347">
+      <span class="strata__id">L1</span><span class="strata__name">市井层</span>
+    </li>
+  </ul>
+</aside>
+
+<!-- ── 主舞台 ───────────────────────────────────────────── -->
+<main class="stage">
+  <section class="hero">
+    <p class="hero__eyebrow">
+      <span class="hero__eyebrowLine" aria-hidden="true"></span>
+      现代都市 · 高自由度人生引擎
     </p>
-    <p class="fc-quote" style="margin-top:14px">「没钱的人没有秘密。账单就是他们的隐私。」</p>
-    <div class="fc-rowgap" style="margin-top:20px">
-      <a class="fc-btn fc-btn--primary" href="screens/era-select.html">进入城市 · 开始登记 →</a>
-      <a class="fc-btn" href="screens/city-map.html">先看看这座城</a>
-    </div>
+
+    <h1 class="title" aria-label="浮城人生">
+      <span class="title__brace" aria-hidden="true">《</span><span
+        class="title__word" data-text="浮城人生">浮城人生<span
+          class="title__shine" aria-hidden="true">浮城人生</span></span><span
+        class="title__brace" aria-hidden="true">》</span>
+    </h1>
+
+    <p class="subtitle">
+      <span class="subtitle__rule" aria-hidden="true"></span>
+      <span class="subtitle__text">URBAN LIFE SIMULATOR</span>
+      <span class="subtitle__rule" aria-hidden="true"></span>
+    </p>
+
+    <p class="tagline">城市照常运转，你只是千万进程里的一个节点。<br>
+      <em>运行需要钱——灯光、房租、关系，都有价格。</em></p>
+
+    <nav class="menu" aria-label="主菜单">
+      <button class="mbtn mbtn--primary" type="button" data-action="new-game">
+        <span class="mbtn__glow" aria-hidden="true"></span>
+        <span class="mbtn__icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" focusable="false">
+            <path d="M3.5 20.5V8.2l6.6-4.4 6.6 4.4v12.3" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+            <path d="M16.7 20.5V11l3.8 2.4v7.1M1.8 20.5h20.4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            <path d="M6.6 10.6h2.2M11.4 10.6h2.2M6.6 14.2h2.2M11.4 14.2h2.2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+        </span>
+        <span class="mbtn__body">
+          <b class="mbtn__label">入城登记</b>
+          <i class="mbtn__meta">REGISTER ENTRY · 选择年代 E1–E7 与出身</i>
+        </span>
+        <span class="mbtn__arrow" aria-hidden="true">→</span>
+      </button>
+
+      <button class="mbtn mbtn--ghost" type="button" data-action="continue" id="btnContinue">
+        <span class="mbtn__glow" aria-hidden="true"></span>
+        <span class="mbtn__icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" focusable="false">
+            <circle cx="12" cy="12" r="8.6" fill="none" stroke="currentColor" stroke-width="1.5"/>
+            <path d="M12 6.9V12l3.4 2.1" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+        </span>
+        <span class="mbtn__body">
+          <b class="mbtn__label">继续人生</b>
+          <i class="mbtn__meta" id="continueMeta">CONTINUE · 读取上次存档</i>
+        </span>
+        <span class="mbtn__arrow" aria-hidden="true">→</span>
+      </button>
+
+      <button class="mbtn mbtn--ghost" type="button" data-action="settings">
+        <span class="mbtn__glow" aria-hidden="true"></span>
+        <span class="mbtn__icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" focusable="false">
+            <path d="M4.5 7.5h15M4.5 16.5h15" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            <circle cx="9.5" cy="7.5" r="2.4" fill="none" stroke="currentColor" stroke-width="1.5"/>
+            <circle cx="15" cy="16.5" r="2.4" fill="none" stroke="currentColor" stroke-width="1.5"/>
+          </svg>
+        </span>
+        <span class="mbtn__body">
+          <b class="mbtn__label">设置</b>
+          <i class="mbtn__meta">SETTINGS · 画质 / 雨幕 / 音效</i>
+        </span>
+        <span class="mbtn__arrow" aria-hidden="true">→</span>
+      </button>
+    </nav>
+
+    <p class="hero__hint" id="heroHint">世界不围绕你运行 · 账单比闹钟准时</p>
   </section>
-
-  <h2 class="fc-sectiontitle">核心界面 <span>CORE SCREENS</span></h2>
-  <div class="fc-grid fc-grid--3">
-
-    <a class="fc-card fc-rise" href="screens/era-select.html" style="--tint:var(--neon-amber)">
-      <span class="fc-card__glyph" aria-hidden="true">代</span>
-      <div class="fc-card__head">
-        <span class="fc-card__code">01</span>
-        <h3 class="fc-card__name">入城登记<span class="fc-card__years">ERA SELECT · E1—E7</span></h3>
-      </div>
-      <p class="fc-card__desc">从单位时代到当前时代，七个年代卡片。同一条街，不同的价格、机会与代价。</p>
-      <p class="fc-card__line">潮汐准时，灯牌照旧。</p>
-    </a>
-
-    <a class="fc-card fc-rise" href="screens/origin-select.html" style="--tint:var(--l3)">
-      <span class="fc-card__glyph" aria-hidden="true">身</span>
-      <div class="fc-card__head">
-        <span class="fc-card__code">02</span>
-        <h3 class="fc-card__name">出身档案<span class="fc-card__years">ORIGIN SELECT · 10 TYPES</span></h3>
-      </div>
-      <p class="fc-card__desc">寒门、中产、体制内、城中村、富商…… 10 种起点，各自的初始汇率。</p>
-      <p class="fc-card__line">出身不是命，是初始汇率。</p>
-    </a>
-
-    <a class="fc-card fc-rise" href="screens/dashboard.html" style="--tint:var(--neon-violet)">
-      <span class="fc-card__glyph" aria-hidden="true">生</span>
-      <div class="fc-card__head">
-        <span class="fc-card__code">03</span>
-        <h3 class="fc-card__name">人生仪表盘<span class="fc-card__years">LIFE DASHBOARD</span></h3>
-      </div>
-      <p class="fc-card__desc">金钱、健康、人脉、声望、年龄、圈层与事件日志。可按月推进的 Mock 生命周期。</p>
-      <p class="fc-card__line">账单比闹钟准时。</p>
-    </a>
-
-    <a class="fc-card fc-rise" href="screens/city-map.html" style="--tint:var(--l5)">
-      <span class="fc-card__glyph" aria-hidden="true">城</span>
-      <div class="fc-card__head">
-        <span class="fc-card__code">04</span>
-        <h3 class="fc-card__name">城市地图<span class="fc-card__years">CITY SECTION · L1—L5</span></h3>
-      </div>
-      <p class="fc-card__desc">市井层 / 工薪层 / 上升通道 / 资本名利 / 暗流。可交互的五层剖面与地点详情。</p>
-      <p class="fc-card__line">同一片雨，落在五个高度上。</p>
-    </a>
-
-  </div>
-
-  <p class="fc-footnote">
-    原型界面 · Mock 数据驱动 · 无后端 ·
-    <a href="../../index.html">返回原型总目录</a>
-  </p>
 </main>
+
+<!-- ── 底栏 ─────────────────────────────────────────────── -->
+<footer class="footer">
+  <ol class="eras" aria-label="七个时代">
+    <li class="era" data-era="E1"><b>E1</b><span>单位时代</span></li>
+    <li class="era" data-era="E2"><b>E2</b><span>下海</span></li>
+    <li class="era" data-era="E3"><b>E3</b><span>地产</span></li>
+    <li class="era" data-era="E4"><b>E4</b><span>互联网</span></li>
+    <li class="era" data-era="E5"><b>E5</b><span>移动互联</span></li>
+    <li class="era" data-era="E6"><b>E6</b><span>存量</span></li>
+    <li class="era is-now" data-era="E7"><b>E7</b><span>当前</span></li>
+  </ol>
+
+  <p class="epigraph" id="epigraph" aria-live="polite">
+    <span class="epigraph__quote">「没钱的人没有秘密。账单就是他们的隐私。」</span>
+  </p>
+
+  <p class="colophon">v0.1 · Round 1 Shell &nbsp;·&nbsp; 玩法原创 · 非商业演示</p>
+</footer>
+
+<!-- ── 设置面板 ─────────────────────────────────────────── -->
+<div class="modal" id="settingsModal" role="dialog" aria-modal="true" aria-labelledby="settingsTitle" hidden>
+  <div class="modal__scrim" data-close></div>
+  <div class="modal__panel" role="document">
+    <header class="modal__head">
+      <h2 id="settingsTitle">设置 <i>SETTINGS</i></h2>
+      <button class="modal__close" type="button" data-close aria-label="关闭设置">
+        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          <path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+        </svg>
+      </button>
+    </header>
+
+    <div class="modal__body">
+      <section class="field">
+        <div class="field__head"><b>画质</b><i>QUALITY</i></div>
+        <div class="segmented" role="radiogroup" aria-label="画质">
+          <button type="button" role="radio" data-quality-set="high" aria-checked="true">华丽</button>
+          <button type="button" role="radio" data-quality-set="medium" aria-checked="false">均衡</button>
+          <button type="button" role="radio" data-quality-set="low" aria-checked="false">省电</button>
+        </div>
+        <p class="field__note">低端设备会自动降级，保证 60fps 优先。</p>
+      </section>
+
+      <section class="field">
+        <div class="field__head"><b>雨幕</b><i>RAIN</i></div>
+        <label class="switch">
+          <input type="checkbox" id="setRain" checked>
+          <span class="switch__track" aria-hidden="true"><span class="switch__thumb"></span></span>
+          <span class="switch__text">雨夜反光与雨丝</span>
+        </label>
+      </section>
+
+      <section class="field">
+        <div class="field__head"><b>霓虹辉光</b><i>NEON BLOOM</i></div>
+        <label class="switch">
+          <input type="checkbox" id="setBloom" checked>
+          <span class="switch__track" aria-hidden="true"><span class="switch__thumb"></span></span>
+          <span class="switch__text">灯牌泛光与倒影</span>
+        </label>
+      </section>
+
+      <section class="field">
+        <div class="field__head"><b>环境音</b><i>AMBIENCE</i></div>
+        <label class="switch">
+          <input type="checkbox" id="setAudio">
+          <span class="switch__track" aria-hidden="true"><span class="switch__thumb"></span></span>
+          <span class="switch__text">雨声与城市底噪</span>
+        </label>
+        <label class="slider">
+          <span class="slider__label">音量</span>
+          <input type="range" id="setVolume" min="0" max="100" step="1" value="45" aria-label="音量">
+          <output for="setVolume" id="volumeOut">45</output>
+        </label>
+      </section>
+
+      <section class="field">
+        <div class="field__head"><b>减弱动效</b><i>REDUCED MOTION</i></div>
+        <label class="switch">
+          <input type="checkbox" id="setCalm">
+          <span class="switch__track" aria-hidden="true"><span class="switch__thumb"></span></span>
+          <span class="switch__text">关闭视差与闪烁，适合久看</span>
+        </label>
+      </section>
+    </div>
+
+    <footer class="modal__foot">
+      <button class="tbtn" type="button" id="btnResetSettings">恢复默认</button>
+      <button class="tbtn tbtn--solid" type="button" data-close>完成</button>
+    </footer>
+  </div>
+</div>
+
+<!-- ── 提示条 ───────────────────────────────────────────── -->
+<div class="toast" id="toast" role="status" aria-live="polite" hidden>
+  <span class="toast__bar" aria-hidden="true"></span>
+  <span class="toast__text"></span>
+</div>
+
+<!-- ── 启动序列 ─────────────────────────────────────────── -->
+<div class="boot" id="boot">
+  <div class="boot__inner">
+    <div class="boot__seal" aria-hidden="true">浮</div>
+    <p class="boot__title">FUCHENG&nbsp;OS&nbsp;·&nbsp;浮城系统</p>
+    <ul class="boot__log">
+      <li>校验户籍数据库</li>
+      <li>加载五层城市剖面 L1–L5</li>
+      <li>同步账单日历与潮汐时刻</li>
+      <li>点亮霓虹渲染管线</li>
+    </ul>
+    <div class="boot__bar" aria-hidden="true"><span></span></div>
+    <p class="boot__skip">点击任意处跳过</p>
+  </div>
+</div>
+
+<script src="js/app.js" defer></script>
 </body>
 </html>

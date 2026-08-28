@@ -1,0 +1,5 @@
+{
+  "$schema": "主菜单跳转表 — 后续界面落地后把相对路径填进来即可，留空则显示占位提示",
+  "new-game": "screens/era-select.html",
+  "continue": "screens/dashboard.html"
+}
