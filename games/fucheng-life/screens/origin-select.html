@@ -10,6 +10,7 @@
 <link rel="stylesheet" href="../css/fc-tokens.css">
 <link rel="stylesheet" href="../css/screens.css">
 <link rel="stylesheet" href="../css/fc-ui.css">
+<link rel="stylesheet" href="../css/fc-gameplay.css">
 </head>
 <body>
 <div class="fc-atmos"></div>
@@ -47,6 +48,18 @@
     <div class="fc-panel fc-rise">正在读取出身档案……</div>
   </div>
 
+  <section class="fc-alloc fc-rise" id="allocPanel" hidden>
+    <div class="fc-alloc__head">
+      <div>
+        <p class="fc-eyebrow" style="margin-bottom:6px">STEP 02b · 属性分配</p>
+        <h2 class="fc-sectiontitle" style="margin:0">人生重开 · 8 点自由分配</h2>
+      </div>
+      <span class="fc-alloc__pool">剩余 <span id="allocLeft">8</span> 点</span>
+    </div>
+    <p class="fc-quote" style="margin-bottom:14px">每点 +4 体质/人脉/学业。出身已定，这点自由是你带进城的行李。</p>
+    <div id="allocRows"></div>
+  </section>
+
   <div class="fc-actionbar fc-rise">
     <div class="fc-actionbar__info">
       <div class="fc-actionbar__label">Origin File</div>
@@ -75,7 +88,46 @@
   var quote = document.getElementById("pickQuote");
   var next = document.getElementById("nextBtn");
   var eraChip = document.getElementById("eraChip");
+  var allocPanel = document.getElementById("allocPanel");
+  var allocLeft = document.getElementById("allocLeft");
+  var allocRows = document.getElementById("allocRows");
   var esc = FC.esc;
+  var ALLOC_TOTAL = 8;
+  var alloc = { health: 0, social: 0, edu: 0 };
+  var pickedId = null;
+
+  function renderAllocRows() {
+    var stats = [
+      { key: "health", name: "体质", mod: "fc-meter--jade" },
+      { key: "social", name: "人脉", mod: "fc-meter--violet" },
+      { key: "edu", name: "学业", mod: "fc-meter--cyan" }
+    ];
+    var left = ALLOC_TOTAL - alloc.health - alloc.social - alloc.edu;
+    allocLeft.textContent = left;
+    allocRows.innerHTML = stats.map(function (s) {
+      return '<div class="fc-alloc__row" data-key="' + s.key + '">' +
+        "<span>" + s.name + "</span>" +
+        '<div class="fc-meter ' + s.mod + '"><i style="width:' + (alloc[s.key] * 25) + '%"></i></div>' +
+        '<div><button type="button" class="fc-alloc__btn" data-d="-1" aria-label="减少">−</button>' +
+        '<span class="fc-mono" style="display:inline-block;width:2em;text-align:center">' + alloc[s.key] + "</span>" +
+        '<button type="button" class="fc-alloc__btn" data-d="1" aria-label="增加">+</button></div></div>';
+    }).join("");
+    next.setAttribute("aria-disabled", left > 0 || !pickedId ? "true" : "false");
+  }
+
+  allocRows.addEventListener("click", function (e) {
+    var btn = e.target.closest("[data-d]");
+    if (!btn) return;
+    var row = btn.closest(".fc-alloc__row");
+    var key = row.dataset.key;
+    var d = parseInt(btn.dataset.d, 10);
+    var left = ALLOC_TOTAL - alloc.health - alloc.social - alloc.edu;
+    if (d > 0 && (left <= 0 || alloc[key] >= 4)) return;
+    if (d < 0 && alloc[key] <= 0) return;
+    alloc[key] += d;
+    FC.write({ originAlloc: alloc });
+    renderAllocRows();
+  });
 
   function init() {
   grid.removeAttribute("aria-busy");
@@ -139,7 +191,18 @@
     for (var i = 0; i < bars.length; i++) bars[i].style.width = bars[i].dataset.w + "%";
     // Ten files dealt 60ms apart — the whole grid is settled inside a second.
     FCMotion.stagger(grid.querySelectorAll(".fc-card"));
+    if (FCMotion.bindTilt) FCMotion.bindTilt(grid, ".fc-card");
   });
+
+  function loadAlloc() {
+    var save = FC.read();
+    if (save.originAlloc) {
+      alloc.health = save.originAlloc.health || 0;
+      alloc.social = save.originAlloc.social || 0;
+      alloc.edu = save.originAlloc.edu || 0;
+    }
+    renderAllocRows();
+  }
 
   function select(id, persist) {
     var o = null;
@@ -155,6 +218,9 @@
     label.textContent = o.name + "　起始 " + o.start + "　L" + o.layer;
     label.style.color = LAYER_TINT[o.layer];
     quote.textContent = "「" + o.line + "」";
+    pickedId = id;
+    allocPanel.hidden = false;
+    loadAlloc();
     next.removeAttribute("aria-disabled");
     if (persist) FC.write({ originId: o.id });
   }
@@ -167,10 +233,13 @@
   if (save.originId) select(save.originId, false);
 
   next.addEventListener("click", function (e) {
-    if (next.getAttribute("aria-disabled") === "true") {
+    var left = ALLOC_TOTAL - alloc.health - alloc.social - alloc.edu;
+    if (next.getAttribute("aria-disabled") === "true" || !pickedId || left > 0) {
       e.preventDefault();
-      label.textContent = "请先选择一份出身档案";
+      label.textContent = left > 0 ? "请先分配完 8 点属性" : "请先选择一份出身档案";
       label.style.color = "var(--bad)";
+    } else {
+      FC.write({ originAlloc: alloc });
     }
   });
   }

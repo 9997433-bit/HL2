@@ -233,19 +233,22 @@
     return wipe;
   }
 
-  function leaveTo(href, dir) {
+  function leaveTo(href, dir, opts) {
+    opts = opts || {};
     if (reduced()) {
       global.location.href = href;
       return;
     }
     try {
       global.sessionStorage.setItem(FLAG, dir);
+      if (opts.layerAscend) global.sessionStorage.setItem(FLAG + ".layer", "1");
     } catch (e) {
       /* private mode — the arriving page simply skips its reveal */
     }
 
     var el = mountWipe();
     el.setAttribute("data-dir", dir);
+    el.classList.toggle("is-layer-ascend", !!opts.layerAscend);
     el.classList.remove("is-in", "is-covered");
     el.classList.add("is-active", "is-out");
 
@@ -261,9 +264,12 @@
 
   function revealOnArrival() {
     var dir = "";
+    var layerAscend = false;
     try {
       dir = global.sessionStorage.getItem(FLAG) || "";
+      layerAscend = global.sessionStorage.getItem(FLAG + ".layer") === "1";
       global.sessionStorage.removeItem(FLAG);
+      global.sessionStorage.removeItem(FLAG + ".layer");
     } catch (e) {
       dir = "";
     }
@@ -271,6 +277,7 @@
 
     var el = mountWipe();
     el.setAttribute("data-dir", dir);
+    el.classList.toggle("is-layer-ascend", layerAscend);
     el.classList.add("is-active", "is-covered");
     requestAnimationFrame(function () {
       el.classList.remove("is-covered");
@@ -336,12 +343,48 @@
   if (doc.readyState === "loading") doc.addEventListener("DOMContentLoaded", init);
   else init();
 
+  /* ----------------------------------------------------------- 3D tilt */
+
+  function bindTilt(root, selector) {
+    if (!root || reduced()) return;
+    var sel = selector || ".fc-card";
+    var cards = root.querySelectorAll(sel);
+    for (var i = 0; i < cards.length; i++) {
+      (function (card) {
+        card.classList.add("fc-tilt");
+        card.addEventListener("pointermove", function (e) {
+          var r = card.getBoundingClientRect();
+          var x = (e.clientX - r.left) / r.width - 0.5;
+          var y = (e.clientY - r.top) / r.height - 0.5;
+          card.style.transform =
+            "perspective(900px) rotateY(" + (x * 10).toFixed(2) + "deg) rotateX(" +
+            (-y * 10).toFixed(2) + "deg) translateZ(8px)";
+        });
+        card.addEventListener("pointerleave", function () {
+          card.style.transform = card.classList.contains("is-selected") ? "translateZ(6px)" : "";
+        });
+      })(cards[i]);
+    }
+  }
+
+  /* ------------------------------------------------------- layer pulse */
+
+  function layerPulse(el, layerIndex) {
+    if (!el || reduced()) return;
+    el.classList.remove("fc-layer-pulse");
+    void el.offsetWidth;
+    el.classList.add("fc-layer-pulse");
+    el.style.setProperty("--tint", "var(--l" + layerIndex + ")");
+  }
+
   global.FCMotion = {
     reduced: reduced,
     countUp: countUp,
     moneyFloat: moneyFloat,
     stagger: stagger,
     leaveTo: leaveTo,
+    bindTilt: bindTilt,
+    layerPulse: layerPulse,
     format: function (n, decimals) {
       return format(Number(n) || 0, decimals || 0);
     }

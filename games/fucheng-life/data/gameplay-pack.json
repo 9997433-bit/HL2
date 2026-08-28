@@ -1,0 +1,3394 @@
+{
+  "version": 1,
+  "actions": [
+    {
+      "id": "work",
+      "name": "上班",
+      "icon": "⌁",
+      "ap": 1,
+      "d": {
+        "money": 1,
+        "health": -3,
+        "rep": 2
+      },
+      "text": "打卡、开会、改一版。城市按小时计费。"
+    },
+    {
+      "id": "overtime",
+      "name": "加班",
+      "icon": "◐",
+      "ap": 1,
+      "d": {
+        "money": 2,
+        "health": -6,
+        "rep": 4
+      },
+      "text": "灯亮到深夜。绩效表上多一格，体检报告多一个箭头。"
+    },
+    {
+      "id": "study",
+      "name": "进修",
+      "icon": "✎",
+      "ap": 1,
+      "d": {
+        "money": -1,
+        "rep": 5,
+        "health": -2
+      },
+      "edu": 8,
+      "text": "证书班的座位永远靠窗。学费是另一种房租。"
+    },
+    {
+      "id": "network",
+      "name": "饭局",
+      "icon": "◎",
+      "ap": 1,
+      "d": {
+        "money": -1,
+        "social": 8,
+        "rep": 2
+      },
+      "text": "桌上没人递名片——都认识彼此，只有你需要介绍。"
+    },
+    {
+      "id": "side",
+      "name": "副业",
+      "icon": "⚡",
+      "ap": 1,
+      "d": {
+        "money": 2,
+        "health": -4,
+        "rep": 1
+      },
+      "text": "深夜私活尾款到账。屏幕亮一下，又暗下去。"
+    },
+    {
+      "id": "rest",
+      "name": "休息",
+      "icon": "☾",
+      "ap": 1,
+      "d": {
+        "health": 8,
+        "money": -1
+      },
+      "text": "什么都没发生。这也很贵。"
+    },
+    {
+      "id": "explore",
+      "name": "探区",
+      "icon": "⌖",
+      "ap": 1,
+      "zone": true,
+      "text": "你在地图上选一处，城市会回你一句报价。"
+    },
+    {
+      "id": "invest",
+      "name": "理财",
+      "icon": "¥",
+      "ap": 2,
+      "d": {
+        "money": 3,
+        "rep": -2
+      },
+      "minLayer": 3,
+      "text": "数字在 App 里跳动。涨跌都不问你的睡眠。"
+    }
+  ],
+  "ambientEvents": [
+    {
+      "id": "GP001",
+      "title": "职场 · L1",
+      "layerId": "L1",
+      "category": "职场",
+      "text": "季度 KPI 出榜，你在中段。主管说「再顶一顶」，没说顶到哪。",
+      "weight": 6,
+      "eraAny": true,
+      "d": {
+        "rep": 3,
+        "health": -3
+      },
+      "variant": 0
+    },
+    {
+      "id": "GP002",
+      "title": "职场 · L1",
+      "layerId": "L1",
+      "category": "职场",
+      "text": "工位旁的空椅换过三个人。HR 说「组织优化」，不说优化谁。",
+      "weight": 6,
+      "eraAny": true,
+      "d": {
+        "rep": 3,
+        "health": -3
+      },
+      "variant": 1
+    },
+    {
+      "id": "GP003",
+      "title": "职场 · L1",
+      "layerId": "L1",
+      "category": "职场",
+      "text": "项目上线前夜，群消息比心跳还密。",
+      "weight": 6,
+      "eraAny": true,
+      "d": {
+        "rep": 3,
+        "health": -3
+      },
+      "variant": 2
+    },
+    {
+      "id": "GP004",
+      "title": "职场 · L1",
+      "layerId": "L1",
+      "category": "职场",
+      "text": "年终奖系数公布。有人微笑，有人去楼梯间。",
+      "weight": 6,
+      "eraAny": true,
+      "d": {
+        "rep": 3,
+        "health": -3
+      },
+      "variant": 3
+    },
+    {
+      "id": "GP005",
+      "title": "金钱 · L1",
+      "layerId": "L1",
+      "category": "金钱",
+      "text": "房东在群里发续租通知，涨 300。他加了个笑脸。",
+      "weight": 6,
+      "eraAny": true,
+      "d": {
+        "money": -1
+      },
+      "variant": 0
+    },
+    {
+      "id": "GP006",
+      "title": "金钱 · L1",
+      "layerId": "L1",
+      "category": "金钱",
+      "text": "信用卡分期提醒：本月最低还款已扣。",
+      "weight": 6,
+      "eraAny": true,
+      "d": {
+        "money": -1
+      },
+      "variant": 1
+    },
+    {
+      "id": "GP007",
+      "title": "金钱 · L1",
+      "layerId": "L1",
+      "category": "金钱",
+      "text": "工资到账，三秒后分散给五张账单。",
+      "weight": 6,
+      "eraAny": true,
+      "d": {
+        "money": -1
+      },
+      "variant": 2
+    },
+    {
+      "id": "GP008",
+      "title": "金钱 · L1",
+      "layerId": "L1",
+      "category": "金钱",
+      "text": "便利店关东煮买一送一。这是本周最顺的十分钟。",
+      "weight": 6,
+      "eraAny": true,
+      "d": {
+        "money": -1
+      },
+      "variant": 3
+    },
+    {
+      "id": "GP009",
+      "title": "人情 · L1",
+      "layerId": "L1",
+      "category": "人情",
+      "text": "老同学婚宴，红包 800。人情账本上你这一栏终于不欠着。",
+      "weight": 6,
+      "eraAny": true,
+      "d": {
+        "social": 5,
+        "money": -1
+      },
+      "variant": 0
+    },
+    {
+      "id": "GP010",
+      "title": "人情 · L1",
+      "layerId": "L1",
+      "category": "人情",
+      "text": "同事请你帮忙背锅。拒绝需要勇气，答应需要更久。",
+      "weight": 6,
+      "eraAny": true,
+      "d": {
+        "social": 5,
+        "money": -1
+      },
+      "variant": 1
+    },
+    {
+      "id": "GP011",
+      "title": "人情 · L1",
+      "layerId": "L1",
+      "category": "人情",
+      "text": "老乡开口借钱，说三个月就还。你答应了，没写借条。",
+      "weight": 6,
+      "eraAny": true,
+      "d": {
+        "social": 5,
+        "money": -1
+      },
+      "variant": 2
+    },
+    {
+      "id": "GP012",
+      "title": "人情 · L1",
+      "layerId": "L1",
+      "category": "人情",
+      "text": "饭局散后没人提菜单价格。昂贵部分记进彼此账本。",
+      "weight": 6,
+      "eraAny": true,
+      "d": {
+        "social": 5,
+        "money": -1
+      },
+      "variant": 3
+    },
+    {
+      "id": "GP013",
+      "title": "机会 · L1",
+      "layerId": "L1",
+      "category": "机会",
+      "text": "猎头私信：涨 18%，代价是每周飞一次。",
+      "weight": 6,
+      "eraAny": true,
+      "d": {
+        "rep": 4,
+        "money": 1
+      },
+      "variant": 0
+    },
+    {
+      "id": "GP014",
+      "title": "机会 · L1",
+      "layerId": "L1",
+      "category": "机会",
+      "text": "校招大厅发蓝色手环。有人凭它进终面，有人留作证明。",
+      "weight": 6,
+      "eraAny": true,
+      "d": {
+        "rep": 4,
+        "money": 1
+      },
+      "variant": 1
+    },
+    {
+      "id": "GP015",
+      "title": "机会 · L1",
+      "layerId": "L1",
+      "category": "机会",
+      "text": "孵化器免费工位，有偿梦想。隔壁团队上月还在，这月是新的。",
+      "weight": 6,
+      "eraAny": true,
+      "d": {
+        "rep": 4,
+        "money": 1
+      },
+      "variant": 2
+    },
+    {
+      "id": "GP016",
+      "title": "机会 · L1",
+      "layerId": "L1",
+      "category": "机会",
+      "text": "拍卖行落槌很轻。买下的是一次被看见的机会。",
+      "weight": 6,
+      "eraAny": true,
+      "d": {
+        "rep": 4,
+        "money": 1
+      },
+      "variant": 3
+    },
+    {
+      "id": "GP017",
+      "title": "风险 · L1",
+      "layerId": "L1",
+      "category": "风险",
+      "text": "熟人介绍「稳赚」周转，年化写在纸巾上。红线在灯下若隐若现。",
+      "weight": 2,
+      "eraAny": true,
+      "d": {
+        "money": 3,
+        "rep": -6
+      },
+      "variant": 0
+    },
+    {
+      "id": "GP018",
+      "title": "风险 · L1",
+      "layerId": "L1",
+      "category": "风险",
+      "text": "地下钱庄利息按天算。没有合同，只有名字。",
+      "weight": 2,
+      "eraAny": true,
+      "d": {
+        "money": 3,
+        "rep": -6
+      },
+      "variant": 1
+    },
+    {
+      "id": "GP019",
+      "title": "风险 · L1",
+      "layerId": "L1",
+      "category": "风险",
+      "text": "灰色中介报价随需求浮动。他从不问你为什么。",
+      "weight": 2,
+      "eraAny": true,
+      "d": {
+        "money": 3,
+        "rep": -6
+      },
+      "variant": 2
+    },
+    {
+      "id": "GP020",
+      "title": "风险 · L1",
+      "layerId": "L1",
+      "category": "风险",
+      "text": "夜场后巷的人情不记账，记仇。",
+      "weight": 2,
+      "eraAny": true,
+      "d": {
+        "money": 3,
+        "rep": -6
+      },
+      "variant": 3
+    },
+    {
+      "id": "GP021",
+      "title": "健康 · L1",
+      "layerId": "L1",
+      "category": "健康",
+      "text": "体检报告两个箭头向上。医生说少熬夜，你打开了电脑。",
+      "weight": 6,
+      "eraAny": true,
+      "d": {
+        "health": -5
+      },
+      "variant": 0
+    },
+    {
+      "id": "GP022",
+      "title": "健康 · L1",
+      "layerId": "L1",
+      "category": "健康",
+      "text": "地铁延误十一分钟。车厢里没人说话。",
+      "weight": 6,
+      "eraAny": true,
+      "d": {
+        "health": -5
+      },
+      "variant": 1
+    },
+    {
+      "id": "GP023",
+      "title": "健康 · L1",
+      "layerId": "L1",
+      "category": "健康",
+      "text": "连续加班后你在工位上失去意识。醒来天花板是白的。",
+      "weight": 6,
+      "eraAny": true,
+      "d": {
+        "health": -5
+      },
+      "variant": 2
+    },
+    {
+      "id": "GP024",
+      "title": "健康 · L1",
+      "layerId": "L1",
+      "category": "健康",
+      "text": "外卖吃腻了，胃记住了每一家的包装颜色。",
+      "weight": 6,
+      "eraAny": true,
+      "d": {
+        "health": -5
+      },
+      "variant": 3
+    },
+    {
+      "id": "GP025",
+      "title": "居住 · L1",
+      "layerId": "L1",
+      "category": "居住",
+      "text": "合租室友搬走，押金退得很干净。空房间比预想大。",
+      "weight": 6,
+      "eraAny": true,
+      "d": {
+        "money": -1,
+        "health": 2
+      },
+      "variant": 0
+    },
+    {
+      "id": "GP026",
+      "title": "居住 · L1",
+      "layerId": "L1",
+      "category": "居住",
+      "text": "水表之后，群里算出各自该付的小数。",
+      "weight": 6,
+      "eraAny": true,
+      "d": {
+        "money": -1,
+        "health": 2
+      },
+      "variant": 1
+    },
+    {
+      "id": "GP027",
+      "title": "居住 · L1",
+      "layerId": "L1",
+      "category": "居住",
+      "text": "城中村握手楼之间只有一线天。灯牌亮到凌晨三点。",
+      "weight": 6,
+      "eraAny": true,
+      "d": {
+        "money": -1,
+        "health": 2
+      },
+      "variant": 2
+    },
+    {
+      "id": "GP028",
+      "title": "居住 · L1",
+      "layerId": "L1",
+      "category": "居住",
+      "text": "物业费比很多人的房租还高。美景不计入绩效。",
+      "weight": 6,
+      "eraAny": true,
+      "d": {
+        "money": -1,
+        "health": 2
+      },
+      "variant": 3
+    },
+    {
+      "id": "GP029",
+      "title": "教育 · L1",
+      "layerId": "L1",
+      "category": "教育",
+      "text": "雨落在答题卡之外。两小时后有人得到上行通道。",
+      "weight": 6,
+      "eraAny": true,
+      "d": {
+        "rep": 5,
+        "money": -1
+      },
+      "variant": 0
+    },
+    {
+      "id": "GP030",
+      "title": "教育 · L1",
+      "layerId": "L1",
+      "category": "教育",
+      "text": "夜校教室的灯到十一点才熄。走廊排名榜每月更新。",
+      "weight": 6,
+      "eraAny": true,
+      "d": {
+        "rep": 5,
+        "money": -1
+      },
+      "variant": 1
+    },
+    {
+      "id": "GP031",
+      "title": "教育 · L1",
+      "layerId": "L1",
+      "category": "教育",
+      "text": "证书到手。简历多一行，睡眠少一截。",
+      "weight": 6,
+      "eraAny": true,
+      "d": {
+        "rep": 5,
+        "money": -1
+      },
+      "variant": 2
+    },
+    {
+      "id": "GP032",
+      "title": "教育 · L1",
+      "layerId": "L1",
+      "category": "教育",
+      "text": "考场外的家长比考生更安静。",
+      "weight": 6,
+      "eraAny": true,
+      "d": {
+        "rep": 5,
+        "money": -1
+      },
+      "variant": 3
+    },
+    {
+      "id": "GP033",
+      "title": "职场 · L2",
+      "layerId": "L2",
+      "category": "职场",
+      "text": "季度 KPI 出榜，你在中段。主管说「再顶一顶」，没说顶到哪。",
+      "weight": 6,
+      "eraAny": true,
+      "d": {
+        "rep": 3,
+        "health": -3
+      },
+      "variant": 0
+    },
+    {
+      "id": "GP034",
+      "title": "职场 · L2",
+      "layerId": "L2",
+      "category": "职场",
+      "text": "工位旁的空椅换过三个人。HR 说「组织优化」，不说优化谁。",
+      "weight": 6,
+      "eraAny": true,
+      "d": {
+        "rep": 3,
+        "health": -3
+      },
+      "variant": 1
+    },
+    {
+      "id": "GP035",
+      "title": "职场 · L2",
+      "layerId": "L2",
+      "category": "职场",
+      "text": "项目上线前夜，群消息比心跳还密。",
+      "weight": 6,
+      "eraAny": true,
+      "d": {
+        "rep": 3,
+        "health": -3
+      },
+      "variant": 2
+    },
+    {
+      "id": "GP036",
+      "title": "职场 · L2",
+      "layerId": "L2",
+      "category": "职场",
+      "text": "年终奖系数公布。有人微笑，有人去楼梯间。",
+      "weight": 6,
+      "eraAny": true,
+      "d": {
+        "rep": 3,
+        "health": -3
+      },
+      "variant": 3
+    },
+    {
+      "id": "GP037",
+      "title": "金钱 · L2",
+      "layerId": "L2",
+      "category": "金钱",
+      "text": "房东在群里发续租通知，涨 300。他加了个笑脸。",
+      "weight": 6,
+      "eraAny": true,
+      "d": {
+        "money": -1
+      },
+      "variant": 0
+    },
+    {
+      "id": "GP038",
+      "title": "金钱 · L2",
+      "layerId": "L2",
+      "category": "金钱",
+      "text": "信用卡分期提醒：本月最低还款已扣。",
+      "weight": 6,
+      "eraAny": true,
+      "d": {
+        "money": -1
+      },
+      "variant": 1
+    },
+    {
+      "id": "GP039",
+      "title": "金钱 · L2",
+      "layerId": "L2",
+      "category": "金钱",
+      "text": "工资到账，三秒后分散给五张账单。",
+      "weight": 6,
+      "eraAny": true,
+      "d": {
+        "money": -1
+      },
+      "variant": 2
+    },
+    {
+      "id": "GP040",
+      "title": "金钱 · L2",
+      "layerId": "L2",
+      "category": "金钱",
+      "text": "便利店关东煮买一送一。这是本周最顺的十分钟。",
+      "weight": 6,
+      "eraAny": true,
+      "d": {
+        "money": -1
+      },
+      "variant": 3
+    },
+    {
+      "id": "GP041",
+      "title": "人情 · L2",
+      "layerId": "L2",
+      "category": "人情",
+      "text": "老同学婚宴，红包 800。人情账本上你这一栏终于不欠着。",
+      "weight": 6,
+      "eraAny": true,
+      "d": {
+        "social": 5,
+        "money": -1
+      },
+      "variant": 0
+    },
+    {
+      "id": "GP042",
+      "title": "人情 · L2",
+      "layerId": "L2",
+      "category": "人情",
+      "text": "同事请你帮忙背锅。拒绝需要勇气，答应需要更久。",
+      "weight": 6,
+      "eraAny": true,
+      "d": {
+        "social": 5,
+        "money": -1
+      },
+      "variant": 1
+    },
+    {
+      "id": "GP043",
+      "title": "人情 · L2",
+      "layerId": "L2",
+      "category": "人情",
+      "text": "老乡开口借钱，说三个月就还。你答应了，没写借条。",
+      "weight": 6,
+      "eraAny": true,
+      "d": {
+        "social": 5,
+        "money": -1
+      },
+      "variant": 2
+    },
+    {
+      "id": "GP044",
+      "title": "人情 · L2",
+      "layerId": "L2",
+      "category": "人情",
+      "text": "饭局散后没人提菜单价格。昂贵部分记进彼此账本。",
+      "weight": 6,
+      "eraAny": true,
+      "d": {
+        "social": 5,
+        "money": -1
+      },
+      "variant": 3
+    },
+    {
+      "id": "GP045",
+      "title": "机会 · L2",
+      "layerId": "L2",
+      "category": "机会",
+      "text": "猎头私信：涨 18%，代价是每周飞一次。",
+      "weight": 6,
+      "eraAny": true,
+      "d": {
+        "rep": 4,
+        "money": 1
+      },
+      "variant": 0
+    },
+    {
+      "id": "GP046",
+      "title": "机会 · L2",
+      "layerId": "L2",
+      "category": "机会",
+      "text": "校招大厅发蓝色手环。有人凭它进终面，有人留作证明。",
+      "weight": 6,
+      "eraAny": true,
+      "d": {
+        "rep": 4,
+        "money": 1
+      },
+      "variant": 1
+    },
+    {
+      "id": "GP047",
+      "title": "机会 · L2",
+      "layerId": "L2",
+      "category": "机会",
+      "text": "孵化器免费工位，有偿梦想。隔壁团队上月还在，这月是新的。",
+      "weight": 6,
+      "eraAny": true,
+      "d": {
+        "rep": 4,
+        "money": 1
+      },
+      "variant": 2
+    },
+    {
+      "id": "GP048",
+      "title": "机会 · L2",
+      "layerId": "L2",
+      "category": "机会",
+      "text": "拍卖行落槌很轻。买下的是一次被看见的机会。",
+      "weight": 6,
+      "eraAny": true,
+      "d": {
+        "rep": 4,
+        "money": 1
+      },
+      "variant": 3
+    },
+    {
+      "id": "GP049",
+      "title": "风险 · L2",
+      "layerId": "L2",
+      "category": "风险",
+      "text": "熟人介绍「稳赚」周转，年化写在纸巾上。红线在灯下若隐若现。",
+      "weight": 2,
+      "eraAny": true,
+      "d": {
+        "money": 3,
+        "rep": -6
+      },
+      "variant": 0
+    },
+    {
+      "id": "GP050",
+      "title": "风险 · L2",
+      "layerId": "L2",
+      "category": "风险",
+      "text": "地下钱庄利息按天算。没有合同，只有名字。",
+      "weight": 2,
+      "eraAny": true,
+      "d": {
+        "money": 3,
+        "rep": -6
+      },
+      "variant": 1
+    },
+    {
+      "id": "GP051",
+      "title": "风险 · L2",
+      "layerId": "L2",
+      "category": "风险",
+      "text": "灰色中介报价随需求浮动。他从不问你为什么。",
+      "weight": 2,
+      "eraAny": true,
+      "d": {
+        "money": 3,
+        "rep": -6
+      },
+      "variant": 2
+    },
+    {
+      "id": "GP052",
+      "title": "风险 · L2",
+      "layerId": "L2",
+      "category": "风险",
+      "text": "夜场后巷的人情不记账，记仇。",
+      "weight": 2,
+      "eraAny": true,
+      "d": {
+        "money": 3,
+        "rep": -6
+      },
+      "variant": 3
+    },
+    {
+      "id": "GP053",
+      "title": "健康 · L2",
+      "layerId": "L2",
+      "category": "健康",
+      "text": "体检报告两个箭头向上。医生说少熬夜，你打开了电脑。",
+      "weight": 6,
+      "eraAny": true,
+      "d": {
+        "health": -5
+      },
+      "variant": 0
+    },
+    {
+      "id": "GP054",
+      "title": "健康 · L2",
+      "layerId": "L2",
+      "category": "健康",
+      "text": "地铁延误十一分钟。车厢里没人说话。",
+      "weight": 6,
+      "eraAny": true,
+      "d": {
+        "health": -5
+      },
+      "variant": 1
+    },
+    {
+      "id": "GP055",
+      "title": "健康 · L2",
+      "layerId": "L2",
+      "category": "健康",
+      "text": "连续加班后你在工位上失去意识。醒来天花板是白的。",
+      "weight": 6,
+      "eraAny": true,
+      "d": {
+        "health": -5
+      },
+      "variant": 2
+    },
+    {
+      "id": "GP056",
+      "title": "健康 · L2",
+      "layerId": "L2",
+      "category": "健康",
+      "text": "外卖吃腻了，胃记住了每一家的包装颜色。",
+      "weight": 6,
+      "eraAny": true,
+      "d": {
+        "health": -5
+      },
+      "variant": 3
+    },
+    {
+      "id": "GP057",
+      "title": "居住 · L2",
+      "layerId": "L2",
+      "category": "居住",
+      "text": "合租室友搬走，押金退得很干净。空房间比预想大。",
+      "weight": 6,
+      "eraAny": true,
+      "d": {
+        "money": -1,
+        "health": 2
+      },
+      "variant": 0
+    },
+    {
+      "id": "GP058",
+      "title": "居住 · L2",
+      "layerId": "L2",
+      "category": "居住",
+      "text": "水表之后，群里算出各自该付的小数。",
+      "weight": 6,
+      "eraAny": true,
+      "d": {
+        "money": -1,
+        "health": 2
+      },
+      "variant": 1
+    },
+    {
+      "id": "GP059",
+      "title": "居住 · L2",
+      "layerId": "L2",
+      "category": "居住",
+      "text": "城中村握手楼之间只有一线天。灯牌亮到凌晨三点。",
+      "weight": 6,
+      "eraAny": true,
+      "d": {
+        "money": -1,
+        "health": 2
+      },
+      "variant": 2
+    },
+    {
+      "id": "GP060",
+      "title": "居住 · L2",
+      "layerId": "L2",
+      "category": "居住",
+      "text": "物业费比很多人的房租还高。美景不计入绩效。",
+      "weight": 6,
+      "eraAny": true,
+      "d": {
+        "money": -1,
+        "health": 2
+      },
+      "variant": 3
+    },
+    {
+      "id": "GP061",
+      "title": "教育 · L2",
+      "layerId": "L2",
+      "category": "教育",
+      "text": "雨落在答题卡之外。两小时后有人得到上行通道。",
+      "weight": 6,
+      "eraAny": true,
+      "d": {
+        "rep": 5,
+        "money": -1
+      },
+      "variant": 0
+    },
+    {
+      "id": "GP062",
+      "title": "教育 · L2",
+      "layerId": "L2",
+      "category": "教育",
+      "text": "夜校教室的灯到十一点才熄。走廊排名榜每月更新。",
+      "weight": 6,
+      "eraAny": true,
+      "d": {
+        "rep": 5,
+        "money": -1
+      },
+      "variant": 1
+    },
+    {
+      "id": "GP063",
+      "title": "教育 · L2",
+      "layerId": "L2",
+      "category": "教育",
+      "text": "证书到手。简历多一行，睡眠少一截。",
+      "weight": 6,
+      "eraAny": true,
+      "d": {
+        "rep": 5,
+        "money": -1
+      },
+      "variant": 2
+    },
+    {
+      "id": "GP064",
+      "title": "教育 · L2",
+      "layerId": "L2",
+      "category": "教育",
+      "text": "考场外的家长比考生更安静。",
+      "weight": 6,
+      "eraAny": true,
+      "d": {
+        "rep": 5,
+        "money": -1
+      },
+      "variant": 3
+    },
+    {
+      "id": "GP065",
+      "title": "职场 · L3",
+      "layerId": "L3",
+      "category": "职场",
+      "text": "季度 KPI 出榜，你在中段。主管说「再顶一顶」，没说顶到哪。",
+      "weight": 6,
+      "eraAny": true,
+      "d": {
+        "rep": 3,
+        "health": -3
+      },
+      "variant": 0
+    },
+    {
+      "id": "GP066",
+      "title": "职场 · L3",
+      "layerId": "L3",
+      "category": "职场",
+      "text": "工位旁的空椅换过三个人。HR 说「组织优化」，不说优化谁。",
+      "weight": 6,
+      "eraAny": true,
+      "d": {
+        "rep": 3,
+        "health": -3
+      },
+      "variant": 1
+    },
+    {
+      "id": "GP067",
+      "title": "职场 · L3",
+      "layerId": "L3",
+      "category": "职场",
+      "text": "项目上线前夜，群消息比心跳还密。",
+      "weight": 6,
+      "eraAny": true,
+      "d": {
+        "rep": 3,
+        "health": -3
+      },
+      "variant": 2
+    },
+    {
+      "id": "GP068",
+      "title": "职场 · L3",
+      "layerId": "L3",
+      "category": "职场",
+      "text": "年终奖系数公布。有人微笑，有人去楼梯间。",
+      "weight": 6,
+      "eraAny": true,
+      "d": {
+        "rep": 3,
+        "health": -3
+      },
+      "variant": 3
+    },
+    {
+      "id": "GP069",
+      "title": "金钱 · L3",
+      "layerId": "L3",
+      "category": "金钱",
+      "text": "房东在群里发续租通知，涨 300。他加了个笑脸。",
+      "weight": 6,
+      "eraAny": true,
+      "d": {
+        "money": -1
+      },
+      "variant": 0
+    },
+    {
+      "id": "GP070",
+      "title": "金钱 · L3",
+      "layerId": "L3",
+      "category": "金钱",
+      "text": "信用卡分期提醒：本月最低还款已扣。",
+      "weight": 6,
+      "eraAny": true,
+      "d": {
+        "money": -1
+      },
+      "variant": 1
+    },
+    {
+      "id": "GP071",
+      "title": "金钱 · L3",
+      "layerId": "L3",
+      "category": "金钱",
+      "text": "工资到账，三秒后分散给五张账单。",
+      "weight": 6,
+      "eraAny": true,
+      "d": {
+        "money": -1
+      },
+      "variant": 2
+    },
+    {
+      "id": "GP072",
+      "title": "金钱 · L3",
+      "layerId": "L3",
+      "category": "金钱",
+      "text": "便利店关东煮买一送一。这是本周最顺的十分钟。",
+      "weight": 6,
+      "eraAny": true,
+      "d": {
+        "money": -1
+      },
+      "variant": 3
+    },
+    {
+      "id": "GP073",
+      "title": "人情 · L3",
+      "layerId": "L3",
+      "category": "人情",
+      "text": "老同学婚宴，红包 800。人情账本上你这一栏终于不欠着。",
+      "weight": 6,
+      "eraAny": true,
+      "d": {
+        "social": 5,
+        "money": -1
+      },
+      "variant": 0
+    },
+    {
+      "id": "GP074",
+      "title": "人情 · L3",
+      "layerId": "L3",
+      "category": "人情",
+      "text": "同事请你帮忙背锅。拒绝需要勇气，答应需要更久。",
+      "weight": 6,
+      "eraAny": true,
+      "d": {
+        "social": 5,
+        "money": -1
+      },
+      "variant": 1
+    },
+    {
+      "id": "GP075",
+      "title": "人情 · L3",
+      "layerId": "L3",
+      "category": "人情",
+      "text": "老乡开口借钱，说三个月就还。你答应了，没写借条。",
+      "weight": 6,
+      "eraAny": true,
+      "d": {
+        "social": 5,
+        "money": -1
+      },
+      "variant": 2
+    },
+    {
+      "id": "GP076",
+      "title": "人情 · L3",
+      "layerId": "L3",
+      "category": "人情",
+      "text": "饭局散后没人提菜单价格。昂贵部分记进彼此账本。",
+      "weight": 6,
+      "eraAny": true,
+      "d": {
+        "social": 5,
+        "money": -1
+      },
+      "variant": 3
+    },
+    {
+      "id": "GP077",
+      "title": "机会 · L3",
+      "layerId": "L3",
+      "category": "机会",
+      "text": "猎头私信：涨 18%，代价是每周飞一次。",
+      "weight": 6,
+      "eraAny": true,
+      "d": {
+        "rep": 4,
+        "money": 1
+      },
+      "variant": 0
+    },
+    {
+      "id": "GP078",
+      "title": "机会 · L3",
+      "layerId": "L3",
+      "category": "机会",
+      "text": "校招大厅发蓝色手环。有人凭它进终面，有人留作证明。",
+      "weight": 6,
+      "eraAny": true,
+      "d": {
+        "rep": 4,
+        "money": 1
+      },
+      "variant": 1
+    },
+    {
+      "id": "GP079",
+      "title": "机会 · L3",
+      "layerId": "L3",
+      "category": "机会",
+      "text": "孵化器免费工位，有偿梦想。隔壁团队上月还在，这月是新的。",
+      "weight": 6,
+      "eraAny": true,
+      "d": {
+        "rep": 4,
+        "money": 1
+      },
+      "variant": 2
+    },
+    {
+      "id": "GP080",
+      "title": "机会 · L3",
+      "layerId": "L3",
+      "category": "机会",
+      "text": "拍卖行落槌很轻。买下的是一次被看见的机会。",
+      "weight": 6,
+      "eraAny": true,
+      "d": {
+        "rep": 4,
+        "money": 1
+      },
+      "variant": 3
+    },
+    {
+      "id": "GP081",
+      "title": "风险 · L3",
+      "layerId": "L3",
+      "category": "风险",
+      "text": "熟人介绍「稳赚」周转，年化写在纸巾上。红线在灯下若隐若现。",
+      "weight": 2,
+      "eraAny": true,
+      "d": {
+        "money": 3,
+        "rep": -6
+      },
+      "variant": 0
+    },
+    {
+      "id": "GP082",
+      "title": "风险 · L3",
+      "layerId": "L3",
+      "category": "风险",
+      "text": "地下钱庄利息按天算。没有合同，只有名字。",
+      "weight": 2,
+      "eraAny": true,
+      "d": {
+        "money": 3,
+        "rep": -6
+      },
+      "variant": 1
+    },
+    {
+      "id": "GP083",
+      "title": "风险 · L3",
+      "layerId": "L3",
+      "category": "风险",
+      "text": "灰色中介报价随需求浮动。他从不问你为什么。",
+      "weight": 2,
+      "eraAny": true,
+      "d": {
+        "money": 3,
+        "rep": -6
+      },
+      "variant": 2
+    },
+    {
+      "id": "GP084",
+      "title": "风险 · L3",
+      "layerId": "L3",
+      "category": "风险",
+      "text": "夜场后巷的人情不记账，记仇。",
+      "weight": 2,
+      "eraAny": true,
+      "d": {
+        "money": 3,
+        "rep": -6
+      },
+      "variant": 3
+    },
+    {
+      "id": "GP085",
+      "title": "健康 · L3",
+      "layerId": "L3",
+      "category": "健康",
+      "text": "体检报告两个箭头向上。医生说少熬夜，你打开了电脑。",
+      "weight": 6,
+      "eraAny": true,
+      "d": {
+        "health": -5
+      },
+      "variant": 0
+    },
+    {
+      "id": "GP086",
+      "title": "健康 · L3",
+      "layerId": "L3",
+      "category": "健康",
+      "text": "地铁延误十一分钟。车厢里没人说话。",
+      "weight": 6,
+      "eraAny": true,
+      "d": {
+        "health": -5
+      },
+      "variant": 1
+    },
+    {
+      "id": "GP087",
+      "title": "健康 · L3",
+      "layerId": "L3",
+      "category": "健康",
+      "text": "连续加班后你在工位上失去意识。醒来天花板是白的。",
+      "weight": 6,
+      "eraAny": true,
+      "d": {
+        "health": -5
+      },
+      "variant": 2
+    },
+    {
+      "id": "GP088",
+      "title": "健康 · L3",
+      "layerId": "L3",
+      "category": "健康",
+      "text": "外卖吃腻了，胃记住了每一家的包装颜色。",
+      "weight": 6,
+      "eraAny": true,
+      "d": {
+        "health": -5
+      },
+      "variant": 3
+    },
+    {
+      "id": "GP089",
+      "title": "居住 · L3",
+      "layerId": "L3",
+      "category": "居住",
+      "text": "合租室友搬走，押金退得很干净。空房间比预想大。",
+      "weight": 6,
+      "eraAny": true,
+      "d": {
+        "money": -1,
+        "health": 2
+      },
+      "variant": 0
+    },
+    {
+      "id": "GP090",
+      "title": "居住 · L3",
+      "layerId": "L3",
+      "category": "居住",
+      "text": "水表之后，群里算出各自该付的小数。",
+      "weight": 6,
+      "eraAny": true,
+      "d": {
+        "money": -1,
+        "health": 2
+      },
+      "variant": 1
+    },
+    {
+      "id": "GP091",
+      "title": "居住 · L3",
+      "layerId": "L3",
+      "category": "居住",
+      "text": "城中村握手楼之间只有一线天。灯牌亮到凌晨三点。",
+      "weight": 6,
+      "eraAny": true,
+      "d": {
+        "money": -1,
+        "health": 2
+      },
+      "variant": 2
+    },
+    {
+      "id": "GP092",
+      "title": "居住 · L3",
+      "layerId": "L3",
+      "category": "居住",
+      "text": "物业费比很多人的房租还高。美景不计入绩效。",
+      "weight": 6,
+      "eraAny": true,
+      "d": {
+        "money": -1,
+        "health": 2
+      },
+      "variant": 3
+    },
+    {
+      "id": "GP093",
+      "title": "教育 · L3",
+      "layerId": "L3",
+      "category": "教育",
+      "text": "雨落在答题卡之外。两小时后有人得到上行通道。",
+      "weight": 6,
+      "eraAny": true,
+      "d": {
+        "rep": 5,
+        "money": -1
+      },
+      "variant": 0
+    },
+    {
+      "id": "GP094",
+      "title": "教育 · L3",
+      "layerId": "L3",
+      "category": "教育",
+      "text": "夜校教室的灯到十一点才熄。走廊排名榜每月更新。",
+      "weight": 6,
+      "eraAny": true,
+      "d": {
+        "rep": 5,
+        "money": -1
+      },
+      "variant": 1
+    },
+    {
+      "id": "GP095",
+      "title": "教育 · L3",
+      "layerId": "L3",
+      "category": "教育",
+      "text": "证书到手。简历多一行，睡眠少一截。",
+      "weight": 6,
+      "eraAny": true,
+      "d": {
+        "rep": 5,
+        "money": -1
+      },
+      "variant": 2
+    },
+    {
+      "id": "GP096",
+      "title": "教育 · L3",
+      "layerId": "L3",
+      "category": "教育",
+      "text": "考场外的家长比考生更安静。",
+      "weight": 6,
+      "eraAny": true,
+      "d": {
+        "rep": 5,
+        "money": -1
+      },
+      "variant": 3
+    },
+    {
+      "id": "GP097",
+      "title": "职场 · L4",
+      "layerId": "L4",
+      "category": "职场",
+      "text": "季度 KPI 出榜，你在中段。主管说「再顶一顶」，没说顶到哪。",
+      "weight": 6,
+      "eraAny": true,
+      "d": {
+        "rep": 3,
+        "health": -3
+      },
+      "variant": 0
+    },
+    {
+      "id": "GP098",
+      "title": "职场 · L4",
+      "layerId": "L4",
+      "category": "职场",
+      "text": "工位旁的空椅换过三个人。HR 说「组织优化」，不说优化谁。",
+      "weight": 6,
+      "eraAny": true,
+      "d": {
+        "rep": 3,
+        "health": -3
+      },
+      "variant": 1
+    },
+    {
+      "id": "GP099",
+      "title": "职场 · L4",
+      "layerId": "L4",
+      "category": "职场",
+      "text": "项目上线前夜，群消息比心跳还密。",
+      "weight": 6,
+      "eraAny": true,
+      "d": {
+        "rep": 3,
+        "health": -3
+      },
+      "variant": 2
+    },
+    {
+      "id": "GP100",
+      "title": "职场 · L4",
+      "layerId": "L4",
+      "category": "职场",
+      "text": "年终奖系数公布。有人微笑，有人去楼梯间。",
+      "weight": 6,
+      "eraAny": true,
+      "d": {
+        "rep": 3,
+        "health": -3
+      },
+      "variant": 3
+    },
+    {
+      "id": "GP101",
+      "title": "金钱 · L4",
+      "layerId": "L4",
+      "category": "金钱",
+      "text": "房东在群里发续租通知，涨 300。他加了个笑脸。",
+      "weight": 6,
+      "eraAny": true,
+      "d": {
+        "money": -1
+      },
+      "variant": 0
+    },
+    {
+      "id": "GP102",
+      "title": "金钱 · L4",
+      "layerId": "L4",
+      "category": "金钱",
+      "text": "信用卡分期提醒：本月最低还款已扣。",
+      "weight": 6,
+      "eraAny": true,
+      "d": {
+        "money": -1
+      },
+      "variant": 1
+    },
+    {
+      "id": "GP103",
+      "title": "金钱 · L4",
+      "layerId": "L4",
+      "category": "金钱",
+      "text": "工资到账，三秒后分散给五张账单。",
+      "weight": 6,
+      "eraAny": true,
+      "d": {
+        "money": -1
+      },
+      "variant": 2
+    },
+    {
+      "id": "GP104",
+      "title": "金钱 · L4",
+      "layerId": "L4",
+      "category": "金钱",
+      "text": "便利店关东煮买一送一。这是本周最顺的十分钟。",
+      "weight": 6,
+      "eraAny": true,
+      "d": {
+        "money": -1
+      },
+      "variant": 3
+    },
+    {
+      "id": "GP105",
+      "title": "人情 · L4",
+      "layerId": "L4",
+      "category": "人情",
+      "text": "老同学婚宴，红包 800。人情账本上你这一栏终于不欠着。",
+      "weight": 6,
+      "eraAny": true,
+      "d": {
+        "social": 5,
+        "money": -1
+      },
+      "variant": 0
+    },
+    {
+      "id": "GP106",
+      "title": "人情 · L4",
+      "layerId": "L4",
+      "category": "人情",
+      "text": "同事请你帮忙背锅。拒绝需要勇气，答应需要更久。",
+      "weight": 6,
+      "eraAny": true,
+      "d": {
+        "social": 5,
+        "money": -1
+      },
+      "variant": 1
+    },
+    {
+      "id": "GP107",
+      "title": "人情 · L4",
+      "layerId": "L4",
+      "category": "人情",
+      "text": "老乡开口借钱，说三个月就还。你答应了，没写借条。",
+      "weight": 6,
+      "eraAny": true,
+      "d": {
+        "social": 5,
+        "money": -1
+      },
+      "variant": 2
+    },
+    {
+      "id": "GP108",
+      "title": "人情 · L4",
+      "layerId": "L4",
+      "category": "人情",
+      "text": "饭局散后没人提菜单价格。昂贵部分记进彼此账本。",
+      "weight": 6,
+      "eraAny": true,
+      "d": {
+        "social": 5,
+        "money": -1
+      },
+      "variant": 3
+    },
+    {
+      "id": "GP109",
+      "title": "机会 · L4",
+      "layerId": "L4",
+      "category": "机会",
+      "text": "猎头私信：涨 18%，代价是每周飞一次。",
+      "weight": 6,
+      "eraAny": true,
+      "d": {
+        "rep": 4,
+        "money": 1
+      },
+      "variant": 0
+    },
+    {
+      "id": "GP110",
+      "title": "机会 · L4",
+      "layerId": "L4",
+      "category": "机会",
+      "text": "校招大厅发蓝色手环。有人凭它进终面，有人留作证明。",
+      "weight": 6,
+      "eraAny": true,
+      "d": {
+        "rep": 4,
+        "money": 1
+      },
+      "variant": 1
+    },
+    {
+      "id": "GP111",
+      "title": "机会 · L4",
+      "layerId": "L4",
+      "category": "机会",
+      "text": "孵化器免费工位，有偿梦想。隔壁团队上月还在，这月是新的。",
+      "weight": 6,
+      "eraAny": true,
+      "d": {
+        "rep": 4,
+        "money": 1
+      },
+      "variant": 2
+    },
+    {
+      "id": "GP112",
+      "title": "机会 · L4",
+      "layerId": "L4",
+      "category": "机会",
+      "text": "拍卖行落槌很轻。买下的是一次被看见的机会。",
+      "weight": 6,
+      "eraAny": true,
+      "d": {
+        "rep": 4,
+        "money": 1
+      },
+      "variant": 3
+    },
+    {
+      "id": "GP113",
+      "title": "风险 · L4",
+      "layerId": "L4",
+      "category": "风险",
+      "text": "熟人介绍「稳赚」周转，年化写在纸巾上。红线在灯下若隐若现。",
+      "weight": 2,
+      "eraAny": true,
+      "d": {
+        "money": 3,
+        "rep": -6
+      },
+      "variant": 0
+    },
+    {
+      "id": "GP114",
+      "title": "风险 · L4",
+      "layerId": "L4",
+      "category": "风险",
+      "text": "地下钱庄利息按天算。没有合同，只有名字。",
+      "weight": 2,
+      "eraAny": true,
+      "d": {
+        "money": 3,
+        "rep": -6
+      },
+      "variant": 1
+    },
+    {
+      "id": "GP115",
+      "title": "风险 · L4",
+      "layerId": "L4",
+      "category": "风险",
+      "text": "灰色中介报价随需求浮动。他从不问你为什么。",
+      "weight": 2,
+      "eraAny": true,
+      "d": {
+        "money": 3,
+        "rep": -6
+      },
+      "variant": 2
+    },
+    {
+      "id": "GP116",
+      "title": "风险 · L4",
+      "layerId": "L4",
+      "category": "风险",
+      "text": "夜场后巷的人情不记账，记仇。",
+      "weight": 2,
+      "eraAny": true,
+      "d": {
+        "money": 3,
+        "rep": -6
+      },
+      "variant": 3
+    },
+    {
+      "id": "GP117",
+      "title": "健康 · L4",
+      "layerId": "L4",
+      "category": "健康",
+      "text": "体检报告两个箭头向上。医生说少熬夜，你打开了电脑。",
+      "weight": 6,
+      "eraAny": true,
+      "d": {
+        "health": -5
+      },
+      "variant": 0
+    },
+    {
+      "id": "GP118",
+      "title": "健康 · L4",
+      "layerId": "L4",
+      "category": "健康",
+      "text": "地铁延误十一分钟。车厢里没人说话。",
+      "weight": 6,
+      "eraAny": true,
+      "d": {
+        "health": -5
+      },
+      "variant": 1
+    },
+    {
+      "id": "GP119",
+      "title": "健康 · L4",
+      "layerId": "L4",
+      "category": "健康",
+      "text": "连续加班后你在工位上失去意识。醒来天花板是白的。",
+      "weight": 6,
+      "eraAny": true,
+      "d": {
+        "health": -5
+      },
+      "variant": 2
+    },
+    {
+      "id": "GP120",
+      "title": "健康 · L4",
+      "layerId": "L4",
+      "category": "健康",
+      "text": "外卖吃腻了，胃记住了每一家的包装颜色。",
+      "weight": 6,
+      "eraAny": true,
+      "d": {
+        "health": -5
+      },
+      "variant": 3
+    },
+    {
+      "id": "GP121",
+      "title": "居住 · L4",
+      "layerId": "L4",
+      "category": "居住",
+      "text": "合租室友搬走，押金退得很干净。空房间比预想大。",
+      "weight": 6,
+      "eraAny": true,
+      "d": {
+        "money": -1,
+        "health": 2
+      },
+      "variant": 0
+    },
+    {
+      "id": "GP122",
+      "title": "居住 · L4",
+      "layerId": "L4",
+      "category": "居住",
+      "text": "水表之后，群里算出各自该付的小数。",
+      "weight": 6,
+      "eraAny": true,
+      "d": {
+        "money": -1,
+        "health": 2
+      },
+      "variant": 1
+    },
+    {
+      "id": "GP123",
+      "title": "居住 · L4",
+      "layerId": "L4",
+      "category": "居住",
+      "text": "城中村握手楼之间只有一线天。灯牌亮到凌晨三点。",
+      "weight": 6,
+      "eraAny": true,
+      "d": {
+        "money": -1,
+        "health": 2
+      },
+      "variant": 2
+    },
+    {
+      "id": "GP124",
+      "title": "居住 · L4",
+      "layerId": "L4",
+      "category": "居住",
+      "text": "物业费比很多人的房租还高。美景不计入绩效。",
+      "weight": 6,
+      "eraAny": true,
+      "d": {
+        "money": -1,
+        "health": 2
+      },
+      "variant": 3
+    },
+    {
+      "id": "GP125",
+      "title": "教育 · L4",
+      "layerId": "L4",
+      "category": "教育",
+      "text": "雨落在答题卡之外。两小时后有人得到上行通道。",
+      "weight": 6,
+      "eraAny": true,
+      "d": {
+        "rep": 5,
+        "money": -1
+      },
+      "variant": 0
+    },
+    {
+      "id": "GP126",
+      "title": "教育 · L4",
+      "layerId": "L4",
+      "category": "教育",
+      "text": "夜校教室的灯到十一点才熄。走廊排名榜每月更新。",
+      "weight": 6,
+      "eraAny": true,
+      "d": {
+        "rep": 5,
+        "money": -1
+      },
+      "variant": 1
+    },
+    {
+      "id": "GP127",
+      "title": "教育 · L4",
+      "layerId": "L4",
+      "category": "教育",
+      "text": "证书到手。简历多一行，睡眠少一截。",
+      "weight": 6,
+      "eraAny": true,
+      "d": {
+        "rep": 5,
+        "money": -1
+      },
+      "variant": 2
+    },
+    {
+      "id": "GP128",
+      "title": "教育 · L4",
+      "layerId": "L4",
+      "category": "教育",
+      "text": "考场外的家长比考生更安静。",
+      "weight": 6,
+      "eraAny": true,
+      "d": {
+        "rep": 5,
+        "money": -1
+      },
+      "variant": 3
+    },
+    {
+      "id": "GP129",
+      "title": "职场 · L5",
+      "layerId": "L5",
+      "category": "职场",
+      "text": "季度 KPI 出榜，你在中段。主管说「再顶一顶」，没说顶到哪。",
+      "weight": 6,
+      "eraAny": true,
+      "d": {
+        "rep": 3,
+        "health": -3
+      },
+      "variant": 0
+    },
+    {
+      "id": "GP130",
+      "title": "职场 · L5",
+      "layerId": "L5",
+      "category": "职场",
+      "text": "工位旁的空椅换过三个人。HR 说「组织优化」，不说优化谁。",
+      "weight": 6,
+      "eraAny": true,
+      "d": {
+        "rep": 3,
+        "health": -3
+      },
+      "variant": 1
+    },
+    {
+      "id": "GP131",
+      "title": "职场 · L5",
+      "layerId": "L5",
+      "category": "职场",
+      "text": "项目上线前夜，群消息比心跳还密。",
+      "weight": 6,
+      "eraAny": true,
+      "d": {
+        "rep": 3,
+        "health": -3
+      },
+      "variant": 2
+    },
+    {
+      "id": "GP132",
+      "title": "职场 · L5",
+      "layerId": "L5",
+      "category": "职场",
+      "text": "年终奖系数公布。有人微笑，有人去楼梯间。",
+      "weight": 6,
+      "eraAny": true,
+      "d": {
+        "rep": 3,
+        "health": -3
+      },
+      "variant": 3
+    },
+    {
+      "id": "GP133",
+      "title": "金钱 · L5",
+      "layerId": "L5",
+      "category": "金钱",
+      "text": "房东在群里发续租通知，涨 300。他加了个笑脸。",
+      "weight": 6,
+      "eraAny": true,
+      "d": {
+        "money": -1
+      },
+      "variant": 0
+    },
+    {
+      "id": "GP134",
+      "title": "金钱 · L5",
+      "layerId": "L5",
+      "category": "金钱",
+      "text": "信用卡分期提醒：本月最低还款已扣。",
+      "weight": 6,
+      "eraAny": true,
+      "d": {
+        "money": -1
+      },
+      "variant": 1
+    },
+    {
+      "id": "GP135",
+      "title": "金钱 · L5",
+      "layerId": "L5",
+      "category": "金钱",
+      "text": "工资到账，三秒后分散给五张账单。",
+      "weight": 6,
+      "eraAny": true,
+      "d": {
+        "money": -1
+      },
+      "variant": 2
+    },
+    {
+      "id": "GP136",
+      "title": "金钱 · L5",
+      "layerId": "L5",
+      "category": "金钱",
+      "text": "便利店关东煮买一送一。这是本周最顺的十分钟。",
+      "weight": 6,
+      "eraAny": true,
+      "d": {
+        "money": -1
+      },
+      "variant": 3
+    },
+    {
+      "id": "GP137",
+      "title": "人情 · L5",
+      "layerId": "L5",
+      "category": "人情",
+      "text": "老同学婚宴，红包 800。人情账本上你这一栏终于不欠着。",
+      "weight": 6,
+      "eraAny": true,
+      "d": {
+        "social": 5,
+        "money": -1
+      },
+      "variant": 0
+    },
+    {
+      "id": "GP138",
+      "title": "人情 · L5",
+      "layerId": "L5",
+      "category": "人情",
+      "text": "同事请你帮忙背锅。拒绝需要勇气，答应需要更久。",
+      "weight": 6,
+      "eraAny": true,
+      "d": {
+        "social": 5,
+        "money": -1
+      },
+      "variant": 1
+    },
+    {
+      "id": "GP139",
+      "title": "人情 · L5",
+      "layerId": "L5",
+      "category": "人情",
+      "text": "老乡开口借钱，说三个月就还。你答应了，没写借条。",
+      "weight": 6,
+      "eraAny": true,
+      "d": {
+        "social": 5,
+        "money": -1
+      },
+      "variant": 2
+    },
+    {
+      "id": "GP140",
+      "title": "人情 · L5",
+      "layerId": "L5",
+      "category": "人情",
+      "text": "饭局散后没人提菜单价格。昂贵部分记进彼此账本。",
+      "weight": 6,
+      "eraAny": true,
+      "d": {
+        "social": 5,
+        "money": -1
+      },
+      "variant": 3
+    },
+    {
+      "id": "GP141",
+      "title": "机会 · L5",
+      "layerId": "L5",
+      "category": "机会",
+      "text": "猎头私信：涨 18%，代价是每周飞一次。",
+      "weight": 6,
+      "eraAny": true,
+      "d": {
+        "rep": 4,
+        "money": 1
+      },
+      "variant": 0
+    },
+    {
+      "id": "GP142",
+      "title": "机会 · L5",
+      "layerId": "L5",
+      "category": "机会",
+      "text": "校招大厅发蓝色手环。有人凭它进终面，有人留作证明。",
+      "weight": 6,
+      "eraAny": true,
+      "d": {
+        "rep": 4,
+        "money": 1
+      },
+      "variant": 1
+    },
+    {
+      "id": "GP143",
+      "title": "机会 · L5",
+      "layerId": "L5",
+      "category": "机会",
+      "text": "孵化器免费工位，有偿梦想。隔壁团队上月还在，这月是新的。",
+      "weight": 6,
+      "eraAny": true,
+      "d": {
+        "rep": 4,
+        "money": 1
+      },
+      "variant": 2
+    },
+    {
+      "id": "GP144",
+      "title": "机会 · L5",
+      "layerId": "L5",
+      "category": "机会",
+      "text": "拍卖行落槌很轻。买下的是一次被看见的机会。",
+      "weight": 6,
+      "eraAny": true,
+      "d": {
+        "rep": 4,
+        "money": 1
+      },
+      "variant": 3
+    },
+    {
+      "id": "GP145",
+      "title": "风险 · L5",
+      "layerId": "L5",
+      "category": "风险",
+      "text": "熟人介绍「稳赚」周转，年化写在纸巾上。红线在灯下若隐若现。",
+      "weight": 2,
+      "eraAny": true,
+      "d": {
+        "money": 3,
+        "rep": -6
+      },
+      "variant": 0
+    },
+    {
+      "id": "GP146",
+      "title": "风险 · L5",
+      "layerId": "L5",
+      "category": "风险",
+      "text": "地下钱庄利息按天算。没有合同，只有名字。",
+      "weight": 2,
+      "eraAny": true,
+      "d": {
+        "money": 3,
+        "rep": -6
+      },
+      "variant": 1
+    },
+    {
+      "id": "GP147",
+      "title": "风险 · L5",
+      "layerId": "L5",
+      "category": "风险",
+      "text": "灰色中介报价随需求浮动。他从不问你为什么。",
+      "weight": 2,
+      "eraAny": true,
+      "d": {
+        "money": 3,
+        "rep": -6
+      },
+      "variant": 2
+    },
+    {
+      "id": "GP148",
+      "title": "风险 · L5",
+      "layerId": "L5",
+      "category": "风险",
+      "text": "夜场后巷的人情不记账，记仇。",
+      "weight": 2,
+      "eraAny": true,
+      "d": {
+        "money": 3,
+        "rep": -6
+      },
+      "variant": 3
+    },
+    {
+      "id": "GP149",
+      "title": "健康 · L5",
+      "layerId": "L5",
+      "category": "健康",
+      "text": "体检报告两个箭头向上。医生说少熬夜，你打开了电脑。",
+      "weight": 6,
+      "eraAny": true,
+      "d": {
+        "health": -5
+      },
+      "variant": 0
+    },
+    {
+      "id": "GP150",
+      "title": "健康 · L5",
+      "layerId": "L5",
+      "category": "健康",
+      "text": "地铁延误十一分钟。车厢里没人说话。",
+      "weight": 6,
+      "eraAny": true,
+      "d": {
+        "health": -5
+      },
+      "variant": 1
+    },
+    {
+      "id": "GP151",
+      "title": "健康 · L5",
+      "layerId": "L5",
+      "category": "健康",
+      "text": "连续加班后你在工位上失去意识。醒来天花板是白的。",
+      "weight": 6,
+      "eraAny": true,
+      "d": {
+        "health": -5
+      },
+      "variant": 2
+    },
+    {
+      "id": "GP152",
+      "title": "健康 · L5",
+      "layerId": "L5",
+      "category": "健康",
+      "text": "外卖吃腻了，胃记住了每一家的包装颜色。",
+      "weight": 6,
+      "eraAny": true,
+      "d": {
+        "health": -5
+      },
+      "variant": 3
+    },
+    {
+      "id": "GP153",
+      "title": "居住 · L5",
+      "layerId": "L5",
+      "category": "居住",
+      "text": "合租室友搬走，押金退得很干净。空房间比预想大。",
+      "weight": 6,
+      "eraAny": true,
+      "d": {
+        "money": -1,
+        "health": 2
+      },
+      "variant": 0
+    },
+    {
+      "id": "GP154",
+      "title": "居住 · L5",
+      "layerId": "L5",
+      "category": "居住",
+      "text": "水表之后，群里算出各自该付的小数。",
+      "weight": 6,
+      "eraAny": true,
+      "d": {
+        "money": -1,
+        "health": 2
+      },
+      "variant": 1
+    },
+    {
+      "id": "GP155",
+      "title": "居住 · L5",
+      "layerId": "L5",
+      "category": "居住",
+      "text": "城中村握手楼之间只有一线天。灯牌亮到凌晨三点。",
+      "weight": 6,
+      "eraAny": true,
+      "d": {
+        "money": -1,
+        "health": 2
+      },
+      "variant": 2
+    },
+    {
+      "id": "GP156",
+      "title": "居住 · L5",
+      "layerId": "L5",
+      "category": "居住",
+      "text": "物业费比很多人的房租还高。美景不计入绩效。",
+      "weight": 6,
+      "eraAny": true,
+      "d": {
+        "money": -1,
+        "health": 2
+      },
+      "variant": 3
+    },
+    {
+      "id": "GP157",
+      "title": "教育 · L5",
+      "layerId": "L5",
+      "category": "教育",
+      "text": "雨落在答题卡之外。两小时后有人得到上行通道。",
+      "weight": 6,
+      "eraAny": true,
+      "d": {
+        "rep": 5,
+        "money": -1
+      },
+      "variant": 0
+    },
+    {
+      "id": "GP158",
+      "title": "教育 · L5",
+      "layerId": "L5",
+      "category": "教育",
+      "text": "夜校教室的灯到十一点才熄。走廊排名榜每月更新。",
+      "weight": 6,
+      "eraAny": true,
+      "d": {
+        "rep": 5,
+        "money": -1
+      },
+      "variant": 1
+    },
+    {
+      "id": "GP159",
+      "title": "教育 · L5",
+      "layerId": "L5",
+      "category": "教育",
+      "text": "证书到手。简历多一行，睡眠少一截。",
+      "weight": 6,
+      "eraAny": true,
+      "d": {
+        "rep": 5,
+        "money": -1
+      },
+      "variant": 2
+    },
+    {
+      "id": "GP160",
+      "title": "教育 · L5",
+      "layerId": "L5",
+      "category": "教育",
+      "text": "考场外的家长比考生更安静。",
+      "weight": 6,
+      "eraAny": true,
+      "d": {
+        "rep": 5,
+        "money": -1
+      },
+      "variant": 3
+    }
+  ],
+  "zoneEvents": {
+    "village": [
+      {
+        "id": "Z_village_1",
+        "title": "城中村 · 见闻",
+        "text": "你在城中村站了一会儿。城市照常运转。",
+        "category": "机会",
+        "layerId": "L1",
+        "weight": 5,
+        "d": {
+          "social": 3,
+          "money": -1
+        }
+      },
+      {
+        "id": "Z_village_2",
+        "title": "城中村 · 代价",
+        "text": "城中村有自己的价格表。你今天付了一页。",
+        "category": "金钱",
+        "layerId": "L1",
+        "weight": 3,
+        "d": {
+          "money": -1,
+          "rep": 2,
+          "health": -2
+        }
+      }
+    ],
+    "market": [
+      {
+        "id": "Z_market_1",
+        "title": "早市 · 见闻",
+        "text": "你在早市站了一会儿。城市照常运转。",
+        "category": "机会",
+        "layerId": "L1",
+        "weight": 5,
+        "d": {
+          "social": 3,
+          "money": -1
+        }
+      },
+      {
+        "id": "Z_market_2",
+        "title": "早市 · 代价",
+        "text": "早市有自己的价格表。你今天付了一页。",
+        "category": "金钱",
+        "layerId": "L1",
+        "weight": 3,
+        "d": {
+          "money": -1,
+          "rep": 2,
+          "health": -2
+        }
+      }
+    ],
+    "delivery": [
+      {
+        "id": "Z_delivery_1",
+        "title": "外卖站 · 见闻",
+        "text": "你在外卖站站了一会儿。城市照常运转。",
+        "category": "机会",
+        "layerId": "L1",
+        "weight": 5,
+        "d": {
+          "social": 3,
+          "money": -1
+        }
+      },
+      {
+        "id": "Z_delivery_2",
+        "title": "外卖站 · 代价",
+        "text": "外卖站有自己的价格表。你今天付了一页。",
+        "category": "金钱",
+        "layerId": "L1",
+        "weight": 3,
+        "d": {
+          "money": -1,
+          "rep": 2,
+          "health": -2
+        }
+      }
+    ],
+    "nightfood": [
+      {
+        "id": "Z_nightfood_1",
+        "title": "大排档 · 见闻",
+        "text": "你在大排档站了一会儿。城市照常运转。",
+        "category": "机会",
+        "layerId": "L1",
+        "weight": 5,
+        "d": {
+          "social": 3,
+          "money": -1
+        }
+      },
+      {
+        "id": "Z_nightfood_2",
+        "title": "大排档 · 代价",
+        "text": "大排档有自己的价格表。你今天付了一页。",
+        "category": "金钱",
+        "layerId": "L1",
+        "weight": 3,
+        "d": {
+          "money": -1,
+          "rep": 2,
+          "health": -2
+        }
+      }
+    ],
+    "labor": [
+      {
+        "id": "Z_labor_1",
+        "title": "劳务市场 · 见闻",
+        "text": "你在劳务市场站了一会儿。城市照常运转。",
+        "category": "机会",
+        "layerId": "L1",
+        "weight": 5,
+        "d": {
+          "social": 3,
+          "money": -1
+        }
+      },
+      {
+        "id": "Z_labor_2",
+        "title": "劳务市场 · 代价",
+        "text": "劳务市场有自己的价格表。你今天付了一页。",
+        "category": "金钱",
+        "layerId": "L1",
+        "weight": 3,
+        "d": {
+          "money": -1,
+          "rep": 2,
+          "health": -2
+        }
+      }
+    ],
+    "office": [
+      {
+        "id": "Z_office_1",
+        "title": "写字楼 · 见闻",
+        "text": "你在写字楼站了一会儿。城市照常运转。",
+        "category": "机会",
+        "layerId": "L2",
+        "weight": 5,
+        "d": {
+          "social": 3,
+          "money": -1
+        }
+      },
+      {
+        "id": "Z_office_2",
+        "title": "写字楼 · 代价",
+        "text": "写字楼有自己的价格表。你今天付了一页。",
+        "category": "金钱",
+        "layerId": "L2",
+        "weight": 3,
+        "d": {
+          "money": -1,
+          "rep": 2,
+          "health": 0
+        }
+      }
+    ],
+    "rent": [
+      {
+        "id": "Z_rent_1",
+        "title": "合租房 · 见闻",
+        "text": "你在合租房站了一会儿。城市照常运转。",
+        "category": "机会",
+        "layerId": "L2",
+        "weight": 5,
+        "d": {
+          "social": 3,
+          "money": -1
+        }
+      },
+      {
+        "id": "Z_rent_2",
+        "title": "合租房 · 代价",
+        "text": "合租房有自己的价格表。你今天付了一页。",
+        "category": "金钱",
+        "layerId": "L2",
+        "weight": 3,
+        "d": {
+          "money": -1,
+          "rep": 2,
+          "health": 0
+        }
+      }
+    ],
+    "metro": [
+      {
+        "id": "Z_metro_1",
+        "title": "地铁 · 见闻",
+        "text": "你在地铁站了一会儿。城市照常运转。",
+        "category": "机会",
+        "layerId": "L2",
+        "weight": 5,
+        "d": {
+          "social": 3,
+          "money": -1
+        }
+      },
+      {
+        "id": "Z_metro_2",
+        "title": "地铁 · 代价",
+        "text": "地铁有自己的价格表。你今天付了一页。",
+        "category": "金钱",
+        "layerId": "L2",
+        "weight": 3,
+        "d": {
+          "money": -1,
+          "rep": 2,
+          "health": 0
+        }
+      }
+    ],
+    "mall": [
+      {
+        "id": "Z_mall_1",
+        "title": "商圈 · 见闻",
+        "text": "你在商圈站了一会儿。城市照常运转。",
+        "category": "机会",
+        "layerId": "L2",
+        "weight": 5,
+        "d": {
+          "social": 3,
+          "money": -1
+        }
+      },
+      {
+        "id": "Z_mall_2",
+        "title": "商圈 · 代价",
+        "text": "商圈有自己的价格表。你今天付了一页。",
+        "category": "金钱",
+        "layerId": "L2",
+        "weight": 3,
+        "d": {
+          "money": -1,
+          "rep": 2,
+          "health": 0
+        }
+      }
+    ],
+    "bank": [
+      {
+        "id": "Z_bank_1",
+        "title": "银行 · 见闻",
+        "text": "你在银行站了一会儿。城市照常运转。",
+        "category": "机会",
+        "layerId": "L2",
+        "weight": 5,
+        "d": {
+          "social": 3,
+          "money": -1
+        }
+      },
+      {
+        "id": "Z_bank_2",
+        "title": "银行 · 代价",
+        "text": "银行有自己的价格表。你今天付了一页。",
+        "category": "金钱",
+        "layerId": "L2",
+        "weight": 3,
+        "d": {
+          "money": -1,
+          "rep": 2,
+          "health": 0
+        }
+      }
+    ],
+    "school": [
+      {
+        "id": "Z_school_1",
+        "title": "重点中学 · 见闻",
+        "text": "你在重点中学站了一会儿。城市照常运转。",
+        "category": "机会",
+        "layerId": "L3",
+        "weight": 5,
+        "d": {
+          "social": 3,
+          "money": -1
+        }
+      },
+      {
+        "id": "Z_school_2",
+        "title": "重点中学 · 代价",
+        "text": "重点中学有自己的价格表。你今天付了一页。",
+        "category": "金钱",
+        "layerId": "L3",
+        "weight": 3,
+        "d": {
+          "money": -1,
+          "rep": 2,
+          "health": 0
+        }
+      }
+    ],
+    "exam": [
+      {
+        "id": "Z_exam_1",
+        "title": "考场 · 见闻",
+        "text": "你在考场站了一会儿。城市照常运转。",
+        "category": "机会",
+        "layerId": "L3",
+        "weight": 5,
+        "d": {
+          "social": 3,
+          "money": -1
+        }
+      },
+      {
+        "id": "Z_exam_2",
+        "title": "考场 · 代价",
+        "text": "考场有自己的价格表。你今天付了一页。",
+        "category": "金钱",
+        "layerId": "L3",
+        "weight": 3,
+        "d": {
+          "money": -1,
+          "rep": 2,
+          "health": 0
+        }
+      }
+    ],
+    "jobfair": [
+      {
+        "id": "Z_jobfair_1",
+        "title": "校招 · 见闻",
+        "text": "你在校招站了一会儿。城市照常运转。",
+        "category": "机会",
+        "layerId": "L3",
+        "weight": 5,
+        "d": {
+          "social": 3,
+          "money": -1
+        }
+      },
+      {
+        "id": "Z_jobfair_2",
+        "title": "校招 · 代价",
+        "text": "校招有自己的价格表。你今天付了一页。",
+        "category": "金钱",
+        "layerId": "L3",
+        "weight": 3,
+        "d": {
+          "money": -1,
+          "rep": 2,
+          "health": 0
+        }
+      }
+    ],
+    "nightclass": [
+      {
+        "id": "Z_nightclass_1",
+        "title": "夜校 · 见闻",
+        "text": "你在夜校站了一会儿。城市照常运转。",
+        "category": "机会",
+        "layerId": "L3",
+        "weight": 5,
+        "d": {
+          "social": 3,
+          "money": -1
+        }
+      },
+      {
+        "id": "Z_nightclass_2",
+        "title": "夜校 · 代价",
+        "text": "夜校有自己的价格表。你今天付了一页。",
+        "category": "金钱",
+        "layerId": "L3",
+        "weight": 3,
+        "d": {
+          "money": -1,
+          "rep": 2,
+          "health": 0
+        }
+      }
+    ],
+    "incubator": [
+      {
+        "id": "Z_incubator_1",
+        "title": "孵化器 · 见闻",
+        "text": "你在孵化器站了一会儿。城市照常运转。",
+        "category": "机会",
+        "layerId": "L3",
+        "weight": 5,
+        "d": {
+          "social": 3,
+          "money": -1
+        }
+      },
+      {
+        "id": "Z_incubator_2",
+        "title": "孵化器 · 代价",
+        "text": "孵化器有自己的价格表。你今天付了一页。",
+        "category": "金钱",
+        "layerId": "L3",
+        "weight": 3,
+        "d": {
+          "money": -1,
+          "rep": 2,
+          "health": 0
+        }
+      }
+    ],
+    "club": [
+      {
+        "id": "Z_club_1",
+        "title": "CBD会所 · 见闻",
+        "text": "你在CBD会所站了一会儿。城市照常运转。",
+        "category": "机会",
+        "layerId": "L4",
+        "weight": 5,
+        "d": {
+          "social": 3,
+          "money": -1
+        }
+      },
+      {
+        "id": "Z_club_2",
+        "title": "CBD会所 · 代价",
+        "text": "CBD会所有自己的价格表。你今天付了一页。",
+        "category": "金钱",
+        "layerId": "L4",
+        "weight": 3,
+        "d": {
+          "money": -1,
+          "rep": 2,
+          "health": 0
+        }
+      }
+    ],
+    "mansion": [
+      {
+        "id": "Z_mansion_1",
+        "title": "江景豪宅 · 见闻",
+        "text": "你在江景豪宅站了一会儿。城市照常运转。",
+        "category": "机会",
+        "layerId": "L4",
+        "weight": 5,
+        "d": {
+          "social": 3,
+          "money": -1
+        }
+      },
+      {
+        "id": "Z_mansion_2",
+        "title": "江景豪宅 · 代价",
+        "text": "江景豪宅有自己的价格表。你今天付了一页。",
+        "category": "金钱",
+        "layerId": "L4",
+        "weight": 3,
+        "d": {
+          "money": -1,
+          "rep": 2,
+          "health": 0
+        }
+      }
+    ],
+    "fund": [
+      {
+        "id": "Z_fund_1",
+        "title": "私募 · 见闻",
+        "text": "你在私募站了一会儿。城市照常运转。",
+        "category": "机会",
+        "layerId": "L4",
+        "weight": 5,
+        "d": {
+          "social": 3,
+          "money": -1
+        }
+      },
+      {
+        "id": "Z_fund_2",
+        "title": "私募 · 代价",
+        "text": "私募有自己的价格表。你今天付了一页。",
+        "category": "金钱",
+        "layerId": "L4",
+        "weight": 3,
+        "d": {
+          "money": -1,
+          "rep": 2,
+          "health": 0
+        }
+      }
+    ],
+    "auction": [
+      {
+        "id": "Z_auction_1",
+        "title": "拍卖行 · 见闻",
+        "text": "你在拍卖行站了一会儿。城市照常运转。",
+        "category": "机会",
+        "layerId": "L4",
+        "weight": 5,
+        "d": {
+          "social": 3,
+          "money": -1
+        }
+      },
+      {
+        "id": "Z_auction_2",
+        "title": "拍卖行 · 代价",
+        "text": "拍卖行有自己的价格表。你今天付了一页。",
+        "category": "金钱",
+        "layerId": "L4",
+        "weight": 3,
+        "d": {
+          "money": -1,
+          "rep": 2,
+          "health": 0
+        }
+      }
+    ],
+    "loan": [
+      {
+        "id": "Z_loan_1",
+        "title": "地下钱庄 · 见闻",
+        "text": "你在地下钱庄站了一会儿。城市照常运转。",
+        "category": "风险",
+        "layerId": "L5",
+        "weight": 5,
+        "d": {
+          "money": 2,
+          "rep": -3
+        }
+      },
+      {
+        "id": "Z_loan_2",
+        "title": "地下钱庄 · 代价",
+        "text": "地下钱庄有自己的价格表。你今天付了一页。",
+        "category": "金钱",
+        "layerId": "L5",
+        "weight": 3,
+        "d": {
+          "money": -1,
+          "rep": 2,
+          "health": 0
+        }
+      }
+    ],
+    "broker": [
+      {
+        "id": "Z_broker_1",
+        "title": "灰色中介 · 见闻",
+        "text": "你在灰色中介站了一会儿。城市照常运转。",
+        "category": "风险",
+        "layerId": "L5",
+        "weight": 5,
+        "d": {
+          "money": 2,
+          "rep": -3
+        }
+      },
+      {
+        "id": "Z_broker_2",
+        "title": "灰色中介 · 代价",
+        "text": "灰色中介有自己的价格表。你今天付了一页。",
+        "category": "金钱",
+        "layerId": "L5",
+        "weight": 3,
+        "d": {
+          "money": -1,
+          "rep": 2,
+          "health": 0
+        }
+      }
+    ],
+    "alley": [
+      {
+        "id": "Z_alley_1",
+        "title": "夜场后巷 · 见闻",
+        "text": "你在夜场后巷站了一会儿。城市照常运转。",
+        "category": "风险",
+        "layerId": "L5",
+        "weight": 5,
+        "d": {
+          "money": 2,
+          "rep": -3
+        }
+      },
+      {
+        "id": "Z_alley_2",
+        "title": "夜场后巷 · 代价",
+        "text": "夜场后巷有自己的价格表。你今天付了一页。",
+        "category": "金钱",
+        "layerId": "L5",
+        "weight": 3,
+        "d": {
+          "money": -1,
+          "rep": 2,
+          "health": 0
+        }
+      }
+    ],
+    "factory": [
+      {
+        "id": "Z_factory_1",
+        "title": "废弃厂区 · 见闻",
+        "text": "你在废弃厂区站了一会儿。城市照常运转。",
+        "category": "风险",
+        "layerId": "L5",
+        "weight": 5,
+        "d": {
+          "money": 2,
+          "rep": -3
+        }
+      },
+      {
+        "id": "Z_factory_2",
+        "title": "废弃厂区 · 代价",
+        "text": "废弃厂区有自己的价格表。你今天付了一页。",
+        "category": "金钱",
+        "layerId": "L5",
+        "weight": 3,
+        "d": {
+          "money": -1,
+          "rep": 2,
+          "health": 0
+        }
+      }
+    ]
+  },
+  "sagas": [
+    {
+      "id": "SAGA_METRO",
+      "title": "迟到链",
+      "steps": [
+        {
+          "title": "地铁延误",
+          "text": "早高峰停了十一分钟。你打卡时队伍已经很长。",
+          "d": {
+            "rep": -2,
+            "health": -2
+          }
+        },
+        {
+          "title": "主管约谈",
+          "text": "「本月考勤要注意。」办公室空调很冷。",
+          "choices": [
+            {
+              "text": "解释并道歉",
+              "d": {
+                "rep": 1,
+                "social": -1
+              }
+            },
+            {
+              "text": "沉默点头",
+              "d": {
+                "rep": -1,
+                "health": -2
+              }
+            }
+          ]
+        },
+        {
+          "title": "KPI 余波",
+          "text": "季度名单中段有你。再顶一顶，还是换岗？",
+          "choices": [
+            {
+              "text": "加班补进度",
+              "d": {
+                "money": 1,
+                "health": -6,
+                "rep": 3
+              }
+            },
+            {
+              "text": "申请调组",
+              "d": {
+                "social": 2,
+                "rep": -2
+              }
+            }
+          ]
+        },
+        {
+          "title": "尾声",
+          "text": "地铁恢复了。你学会把闹钟提前十五分钟。",
+          "d": {
+            "rep": 2
+          }
+        }
+      ]
+    },
+    {
+      "id": "SAGA_HOME",
+      "title": "首付链",
+      "steps": [
+        {
+          "title": "看房",
+          "text": "小两居，首付要掏空所有卡。签字的手很稳，心跳不稳。",
+          "d": {
+            "money": -3
+          }
+        },
+        {
+          "title": "按揭",
+          "text": "银行表格三份，笔拴着链子。利率比你想象的高一点。",
+          "choices": [
+            {
+              "text": "签长期",
+              "d": {
+                "money": -2,
+                "rep": 4
+              }
+            },
+            {
+              "text": "再等等",
+              "d": {
+                "rep": -1,
+                "social": 1
+              }
+            }
+          ]
+        },
+        {
+          "title": "搬家",
+          "text": "空房间有油漆味。窗外是另一片天际线。",
+          "d": {
+            "health": 3,
+            "money": -1
+          }
+        },
+        {
+          "title": "月供第一年",
+          "text": "账单日比生日记得更牢。你成了有地址的人。",
+          "d": {
+            "rep": 5,
+            "health": -2
+          }
+        }
+      ]
+    },
+    {
+      "id": "SAGA_POACH",
+      "title": "跳槽链",
+      "steps": [
+        {
+          "title": "猎头来电",
+          "text": "涨 18%，代价是每周飞一次。你要了三天考虑期。",
+          "d": {
+            "social": 2
+          }
+        },
+        {
+          "title": "现公司挽留",
+          "text": "HR 谈话，提到股权和「感情」。",
+          "choices": [
+            {
+              "text": "留下",
+              "d": {
+                "rep": 3,
+                "money": 1
+              }
+            },
+            {
+              "text": "离开",
+              "d": {
+                "money": 2,
+                "social": -3,
+                "rep": 4
+              }
+            }
+          ]
+        },
+        {
+          "title": "新工位",
+          "text": "名片还没印好，项目已经压下来。",
+          "d": {
+            "health": -4,
+            "rep": 2
+          }
+        },
+        {
+          "title": "复盘",
+          "text": "跳槽没有对错，只有价码。",
+          "d": {
+            "rep": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "SAGA_SIDE",
+      "title": "副业链",
+      "steps": [
+        {
+          "title": "私活邀约",
+          "text": "朋友介绍一份周末外包。报价不高，但够交两月房租。",
+          "d": {
+            "money": 1
+          }
+        },
+        {
+          "title": "时间冲突",
+          "text": "主业项目也要加班。你只能选一边。",
+          "choices": [
+            {
+              "text": "保主业",
+              "d": {
+                "rep": 4,
+                "money": -1
+              }
+            },
+            {
+              "text": "接私活",
+              "d": {
+                "money": 3,
+                "health": -5,
+                "rep": -2
+              }
+            }
+          ]
+        },
+        {
+          "title": "尾款",
+          "text": "甲方拖款三周。你在群里催了两次，对方已读不回。",
+          "d": {
+            "social": -2,
+            "health": -3
+          }
+        },
+        {
+          "title": "收束",
+          "text": "钱到了。你学会把合同写清楚——下次。",
+          "d": {
+            "rep": 2,
+            "money": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "SAGA_FAMILY",
+      "title": "家链",
+      "steps": [
+        {
+          "title": "来电",
+          "text": "家里说需要一笔钱。数额不大，但语气很急。",
+          "d": {
+            "social": -1
+          }
+        },
+        {
+          "title": "抉择",
+          "text": "你看着余额，又看日历上的还款日。",
+          "choices": [
+            {
+              "text": "立刻转",
+              "d": {
+                "money": -2,
+                "social": 6
+              }
+            },
+            {
+              "text": "分期帮",
+              "d": {
+                "money": -1,
+                "social": 3,
+                "rep": 1
+              }
+            },
+            {
+              "text": "这次不行",
+              "d": {
+                "social": -4,
+                "health": -2
+              }
+            }
+          ]
+        },
+        {
+          "title": "回音",
+          "text": "电话那头沉默了几秒。城市噪音填满了空白。",
+          "d": {
+            "health": -2
+          }
+        },
+        {
+          "title": "余波",
+          "text": "亲情没有 KPI，但有利息—— emotional 的那种。",
+          "d": {
+            "social": 1
+          }
+        }
+      ]
+    }
+  ],
+  "careerTracks": [
+    {
+      "id": "staff",
+      "name": "职员线",
+      "levels": [
+        "实习生",
+        "专员",
+        "主管",
+        "总监",
+        "副总裁"
+      ]
+    },
+    {
+      "id": "tech",
+      "name": "技术线",
+      "levels": [
+        "码农",
+        "工程师",
+        "架构师",
+        "专家",
+        "首席"
+      ]
+    },
+    {
+      "id": "sales",
+      "name": "业务线",
+      "levels": [
+        "跟单",
+        "销售",
+        "大客户经理",
+        "区域负责人",
+        "合伙人"
+      ]
+    },
+    {
+      "id": "gig",
+      "name": "零工线",
+      "levels": [
+        "日结",
+        "骑手",
+        "个体户",
+        "小老板",
+        "连锁"
+      ]
+    }
+  ],
+  "lifeStages": [
+    {
+      "id": "arrival",
+      "minAge": 22,
+      "maxAge": 27,
+      "label": "入城期",
+      "apBonus": 0
+    },
+    {
+      "id": "climb",
+      "minAge": 28,
+      "maxAge": 35,
+      "label": "爬坡期",
+      "apBonus": 0
+    },
+    {
+      "id": "weight",
+      "minAge": 36,
+      "maxAge": 45,
+      "label": "承重期",
+      "apBonus": -1
+    },
+    {
+      "id": "twilight",
+      "minAge": 46,
+      "maxAge": 59,
+      "label": "黄昏期",
+      "apBonus": 0
+    },
+    {
+      "id": "retire",
+      "minAge": 60,
+      "maxAge": 99,
+      "label": "退潮期",
+      "apBonus": 1
+    }
+  ],
+  "endings": {
+    "bankruptcy": {
+      "title": "氧气耗尽",
+      "summary": "账单比人更准时。城市继续运转。"
+    },
+    "health": {
+      "title": "身体先离场",
+      "summary": "工位空出来，下一个人已经排队。"
+    },
+    "redline": {
+      "title": "触线",
+      "summary": "有些门打开后就关不上。档案里多一个记号。"
+    },
+    "retire": {
+      "title": "退潮",
+      "summary": "你终于有时间看江。潮汐仍然准时。"
+    },
+    "elder": {
+      "title": "长夜",
+      "summary": "霓虹沉默。你在这座城市留下了足迹与账单。"
+    }
+  },
+  "originBias": {
+    "humble-scholar": {
+      "layers": [
+        "L1",
+        "L3"
+      ],
+      "tags": [
+        "教育",
+        "机会"
+      ]
+    },
+    "orphan": {
+      "layers": [
+        "L1",
+        "L5"
+      ],
+      "tags": [
+        "风险",
+        "机会"
+      ]
+    },
+    "wealthy-merchant": {
+      "layers": [
+        "L4",
+        "L5"
+      ],
+      "tags": [
+        "金钱",
+        "人情"
+      ]
+    },
+    "state-household": {
+      "layers": [
+        "L2",
+        "L3"
+      ],
+      "tags": [
+        "职场",
+        "人情"
+      ]
+    }
+  },
+  "eraModifiers": {
+    "E1": {
+      "incomeMul": 0.72,
+      "volatility": 0.8,
+      "tags": [
+        "铁饭碗",
+        "分房"
+      ]
+    },
+    "E2": {
+      "incomeMul": 0.95,
+      "volatility": 1.3,
+      "tags": [
+        "下海",
+        "个体"
+      ]
+    },
+    "E3": {
+      "incomeMul": 1.15,
+      "volatility": 1.2,
+      "tags": [
+        "房改",
+        "按揭"
+      ]
+    },
+    "E4": {
+      "incomeMul": 1.05,
+      "volatility": 1.1,
+      "tags": [
+        "互联网",
+        "创业"
+      ]
+    },
+    "E5": {
+      "incomeMul": 1.08,
+      "volatility": 1.15,
+      "tags": [
+        "移动互联",
+        "网贷"
+      ]
+    },
+    "E6": {
+      "incomeMul": 0.98,
+      "volatility": 0.95,
+      "tags": [
+        "存量",
+        "内卷"
+      ]
+    },
+    "E7": {
+      "incomeMul": 1,
+      "volatility": 1.05,
+      "tags": [
+        "灵活用工",
+        "AI"
+      ]
+    }
+  }
+}

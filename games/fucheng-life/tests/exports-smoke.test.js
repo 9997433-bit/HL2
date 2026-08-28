@@ -105,7 +105,14 @@ async function main() {
   assert.equal(context.FC.events.deck(), deck, "FC.events.deck must expose the loaded deck");
   assert.ok(context.FC.events.pick({ layer: 2, allowRedline: false }), "FC.events.pick must return an event");
 
-  console.log("Browser exports smoke test: FCMotion, FC.overlay, and FC.events passed.");
+  const gameplay = JSON.parse(fs.readFileSync(path.join(gameRoot, "data/gameplay-pack.json"), "utf8"));
+  context.FC.gameplay = gameplay;
+
+  evaluate("js/fc-sim.js");
+  assert.ok(context.FC.Sim && typeof context.FC.Sim.income === "function", "FC.Sim must export income");
+  assert.ok(typeof context.FC.Sim.pickAmbient === "function", "FC.Sim.pickAmbient required");
+
+  console.log("Browser exports smoke test: FCMotion, FC.overlay, FC.events, and FC.Sim passed.");
 }
 
 main().catch((error) => {
