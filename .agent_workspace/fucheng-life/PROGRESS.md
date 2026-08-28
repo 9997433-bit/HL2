@@ -86,7 +86,8 @@
 | 模块 | Status |
 |------|--------|
 | A 玩法（AP/Tab/阶段/终局） | ✅ done |
-| B 内容（160 事件 / 5 Saga / 23 区域） | ✅ done |
+| B 内容（301 事件 / 115 区域 / 12 Saga） | ✅ done |
+| 平衡与模拟测试（180 月无早退） | ✅ done |
 | C 动效（3D 卡 / 跨层转场 / 终局仪式） | ✅ done |
 | 测试链 5/5 | ✅ done |
 | 分支 | `cursor/fucheng-life-gameplay-fa72` |

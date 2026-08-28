@@ -117,7 +117,7 @@ games/fucheng-life/
 ├── tests/                      # Node 驱动的语法、schema、链接与确定性断言
 └── effects/                    # 可复用效果的独立展示页
 
-scripts/run-fucheng-life-tests.sh       # 仓库级测试入口（5 项：语法/schema/pack/链接/exports）
+scripts/run-fucheng-life-tests.sh       # 仓库级测试入口（6 项，含 180 月模拟）
 scripts/build-gameplay-data.js          # 生成 gameplay-pack.json
 .github/workflows/fucheng-life-tests.yml # 相关路径变更的 CI 门禁
 ```
