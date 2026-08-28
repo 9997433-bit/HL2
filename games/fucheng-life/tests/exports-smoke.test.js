@@ -64,6 +64,62 @@ function assertFunctions(object, names, label) {
   }
 }
 
+function optionsForOnly(event, deck) {
+  return {
+    layer: Number(event.layerId.slice(1)),
+    avoid: deck.filter((candidate) => candidate.id !== event.id).map((candidate) => candidate.id),
+    era: Array.isArray(event.eras) ? event.eras[0] : story.eras[0].id,
+    months: event.minMonths === undefined ? 0 : event.minMonths
+  };
+}
+
+function assertPickFilters(deck) {
+  const eraEvents = story.events.filter((event) => Array.isArray(event.eras) && event.eras.length);
+  const minMonthEvents = story.events.filter((event) => event.minMonths > 0);
+  const onceEvents = story.events.filter((event) => event.once === true);
+  const storyEraIds = story.eras.map((era) => era.id);
+
+  /* R2-A authors the gated events and lands the picker implementation in
+     parallel. Until those authored fixtures arrive, this smoke test has no
+     meaningful candidate to isolate and intentionally reports zero coverage. */
+  for (const event of eraEvents) {
+    const options = optionsForOnly(event, deck);
+    const picked = context.FC.events.pick(options);
+    assert.equal(picked && picked.id, event.id,
+      `pick must admit ${event.id} in its authored era`);
+
+    const excludedEra = storyEraIds.find((eraId) => !event.eras.includes(eraId));
+    if (excludedEra) {
+      assert.equal(context.FC.events.pick({ ...options, era: excludedEra }), null,
+        `pick must exclude ${event.id} outside its authored eras`);
+    }
+  }
+
+  for (const event of minMonthEvents) {
+    const options = optionsForOnly(event, deck);
+    const picked = context.FC.events.pick(options);
+    assert.equal(picked && picked.id, event.id,
+      `pick must admit ${event.id} at minMonths ${event.minMonths}`);
+    assert.equal(context.FC.events.pick({ ...options, months: event.minMonths - 1 }), null,
+      `pick must exclude ${event.id} before minMonths ${event.minMonths}`);
+  }
+
+  for (const event of onceEvents) {
+    const options = optionsForOnly(event, deck);
+    const picked = context.FC.events.pick({ ...options, done: {} });
+    assert.equal(picked && picked.id, event.id,
+      `pick must admit unfinished once event ${event.id}`);
+    assert.equal(context.FC.events.pick({ ...options, done: { [event.id]: true } }), null,
+      `pick must exclude completed once event ${event.id}`);
+  }
+
+  return {
+    eras: eraEvents.length,
+    minMonths: minMonthEvents.length,
+    once: onceEvents.length
+  };
+}
+
 /* The file:// lifeboat has to answer with real choices, and it may only ever
    restate story.json — nothing in fc-events.js is allowed to author branching. */
 async function assertOfflineMirror() {
@@ -147,6 +203,12 @@ async function main() {
     "every deck entry must reach the overlay with its choices");
   assert.equal(context.FC.events.deck(), deck, "FC.events.deck must expose the loaded deck");
   assert.ok(context.FC.events.pick({ layer: 2, allowRedline: false }), "FC.events.pick must return an event");
+  const pickCoverage = assertPickFilters(deck);
+  const gatedCount = Object.values(pickCoverage).reduce((total, count) => total + count, 0);
+  console.log(gatedCount
+    ? `Pick filter smoke: ${pickCoverage.eras} era, ${pickCoverage.minMonths} minMonths, ` +
+      `and ${pickCoverage.once} once fixtures passed.`
+    : "Pick filter smoke: skipped gracefully; R2-A gated fixtures have not landed.");
 
   await assertOfflineMirror();
 

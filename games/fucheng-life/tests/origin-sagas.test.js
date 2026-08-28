@@ -25,6 +25,7 @@ const originIdSet = new Set(originIds);
 const sagaIds = new Set();
 const mappedOriginIds = new Set();
 const allowedDeltaKeys = new Set(["money", "health", "social", "rep", "edu", "debt", "gap"]);
+const sagaMoneyRanges = [];
 
 for (const [sagaIndex, saga] of pack.originSagas.entries()) {
   const label = `originSagas[${sagaIndex}]`;
@@ -43,6 +44,7 @@ for (const [sagaIndex, saga] of pack.originSagas.entries()) {
   assert.ok(saga.steps.length >= 3 && saga.steps.length <= 4,
     `${label}.steps must contain 3–4 steps, got ${saga.steps.length}`);
 
+  let moneyTotals = [0];
   for (const [stepIndex, step] of saga.steps.entries()) {
     const stepLabel = `${label}.steps[${stepIndex}]`;
     nonEmptyString(step.title, `${stepLabel}.title`);
@@ -63,7 +65,15 @@ for (const [sagaIndex, saga] of pack.originSagas.entries()) {
         assert.ok(Number.isFinite(value), `${outcomeLabel}.d.${key} must be finite`);
       }
     }
+    moneyTotals = moneyTotals.flatMap((total) =>
+      outcomes.map((outcome) => total + (outcome.d.money || 0)));
   }
+
+  const moneyMin = Math.min(...moneyTotals);
+  const moneyMax = Math.max(...moneyTotals);
+  assert.ok(moneyMin >= -8 && moneyMax <= 6,
+    `${label} possible money totals must stay within [-8, +6], got [${moneyMin}, ${moneyMax}]`);
+  sagaMoneyRanges.push({ min: moneyMin, max: moneyMax });
 }
 
 assert.deepEqual(
@@ -108,4 +118,7 @@ assert.ok(balance.originSagaMonthlyOdds > 0 && balance.originSagaMonthlyOdds < 1
   "origin chain odds must leave the trigger month random inside the window");
 
 console.log(`Origin sagas: ${pack.originSagas.length} origins mapped one-to-one, 3–4 steps each, ` +
-  `${pack.originSagas.reduce((total, saga) => total + saga.steps.length, 0)} steps total.`);
+  `${pack.originSagas.reduce((total, saga) => total + saga.steps.length, 0)} steps total; ` +
+  `all money paths within [-8, +6] (observed ` +
+  `${Math.min(...sagaMoneyRanges.map((range) => range.min))} to ` +
+  `${Math.max(...sagaMoneyRanges.map((range) => range.max))}).`);
