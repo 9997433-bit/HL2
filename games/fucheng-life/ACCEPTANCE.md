@@ -222,3 +222,9 @@ python3 -m http.server 8000
     闯城选择卡按 Escape 仍不可取消关闭，但面板给出一次弱反馈，lede 明示「必须选定才继续」；`prefers-reduced-motion: reduce` 下无动画，提示仍保留。  
     选轨日志使用 `careerTracks` 的中文 `name`，不再显示英文 slug。  
     `node games/fucheng-life/tests/r21-focus-trap.test.js` 与 `./scripts/run-fucheng-life-tests.sh` 全绿。
+
+45. [ ] **R22 · 焦点 trap 可见过滤 + 选轨/闯城 ARIA**  
+    焦点 trap 只循环当前可见、可聚焦的控件，不把 `[hidden]` 分段或其他不可见项纳入回绕。  
+    可见控件名单为空时仍拦截 Tab，不让焦点泄漏到背后的仪表盘。  
+    选轨与闯城选择卡均以 `aria-labelledby` / `aria-describedby` 关联各自标题与说明。  
+    `node games/fucheng-life/tests/r22-trap-visible.test.js` 与 `./scripts/run-fucheng-life-tests.sh` 全绿。
