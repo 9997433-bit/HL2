@@ -142,6 +142,7 @@
 
   function cardHtml(def, run, era, origin) {
     var goal = FC.Sim.contractGoal(def, run, era, origin);
+    var start = Math.round(FC.Sim.contractPreview(run, def.id, era, origin));
     return '<button type="button" class="fc-contract-card" data-id="' + esc(def.id) +
       '" style="--tint:' + (def.tint || "var(--neon-cyan)") + '">' +
       '<span class="fc-contract-card__en">' + esc(def.en || "") + "</span>" +
@@ -150,6 +151,7 @@
       '<dl class="fc-contract-card__meta">' +
         "<dt>目标</dt><dd>" + esc(targetLabel(def, goal)) + "</dd>" +
         "<dt>期限</dt><dd>" + def.deadline + " 个月</dd>" +
+        "<dt>今天</dt><dd>" + start + "%</dd>" +
       "</dl>" +
       '<span class="fc-contract-card__detail">' + esc(def.detail) + "</span>" +
       '<span class="fc-contract-card__source">' + esc(def.source) + "</span>" +

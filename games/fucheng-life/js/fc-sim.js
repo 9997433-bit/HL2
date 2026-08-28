@@ -255,16 +255,16 @@
       return found;
     },
 
-    /** 首付线按签约当月的收入折算：写死一个 ¥ 数字的话，1984 年永远签不下，
-        2026 年第一年就签完了。同一张合约要在七个时代都值同样多的力气。 */
+    /** 首付线 = 签约当月收入 × 房价收入比。写死一个 ¥ 数字的话，1984 年永远签不下，
+        2026 年第一年就签完了 —— 同一张合约要在七个时代都值同样多的力气。 */
     contractGoal: function (def, run, era, origin) {
       if (!def) return 100;
       if (def.id !== "home") return def.goal || 100;
       var inc = 0;
       try { inc = FC.Sim.income(run, era, origin) || 0; } catch (e) { inc = 0; }
-      var scale = def.goalMonthsOfIncome || 30;
+      var scale = def.goalMonthsOfIncome || 70;
       var raw = Math.round(inc * scale / 1000) * 1000;
-      return Math.max(def.goalMin || 60000, Math.min(def.goalMax || 800000, raw));
+      return Math.max(def.goalMin || 60000, Math.min(def.goalMax || 1500000, raw));
     },
 
     selectContract: function (run, id, era, origin) {
@@ -283,6 +283,21 @@
       };
       FC.Sim.refreshContract(run);
       return run.contract;
+    },
+
+    /** 签约弹窗要先说清这张合约今天从几分起步：高学历出身签落户，
+        进度条一开始就不在零，这是选择的一部分而不是意外。 */
+    contractPreview: function (run, id, era, origin) {
+      var def = FC.Sim.contractDef(id);
+      if (!def || !run) return 0;
+      var saved = run.contract;
+      run.contract = {
+        id: def.id, progress: 0, target: 100, points: 0,
+        goal: FC.Sim.contractGoal(def, run, era, origin)
+      };
+      var pct = FC.Sim.contractProgress(run);
+      run.contract = saved;
+      return pct;
     },
 
     contractMonthsLeft: function (run) {
