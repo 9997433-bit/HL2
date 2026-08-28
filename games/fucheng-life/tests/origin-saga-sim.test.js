@@ -71,7 +71,11 @@ for (const source of story.origins) {
   for (let month = 1; month <= 24; month++) {
     run.months = month;
     run.age = 22 + Math.floor(month / 12);
-    FC.Sim.tryStartRandomSaga(run, era, origin);
+    if (typeof FC.Sim.tryStartOriginSaga === "function") {
+      FC.Sim.tryStartOriginSaga(run, origin);
+    } else {
+      FC.Sim.tryStartRandomSaga(run, era, origin);
+    }
     if (!run.saga) continue;
     assert.equal(run.saga.id, expected.id,
       `${source.id} started another origin's saga at month ${month}`);
@@ -96,7 +100,10 @@ for (const source of story.origins) {
     `${expected.id} must execute every declared step`);
 
   run.months = triggeredAt + 1;
-  assert.equal(FC.Sim.tryStartRandomSaga(run, era, origin), false,
+  const restarted = typeof FC.Sim.tryStartOriginSaga === "function"
+    ? FC.Sim.tryStartOriginSaga(run, origin)
+    : FC.Sim.tryStartRandomSaga(run, era, origin);
+  assert.equal(restarted, false,
     `${expected.id} must not restart after completion`);
   assert.equal(run.saga, null, `${expected.id} must remain completed`);
 }
