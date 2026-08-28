@@ -2015,6 +2015,173 @@
           "kpi": 2,
           "result": "最后一页你放了六个人的名字。名单公布之前，那六个人先替你在别处说了话。" }
       ]
+    },
+    {
+      "id": "EV98",
+      "title": "内部转岗表",
+      "layerId": "L2",
+      "category": "职场",
+      "weight": 11,
+      "once": true,
+      "minMonths": 12,
+      "body": "HR 发来一张内部转岗表，三个部门在招「愿意换赛道的人」。备注里写着：转岗不算跳槽，工龄连续算。",
+      "choices": [
+        { "id": "tech", "label": "转技术线", "cost": "KPI −", "d": { "rep": 2, "health": -2, "social": 1 },
+          "track": "tech", "kpi": -6,
+          "result": "新工位在机房旁边，空调永远比人间低两度。第一周你学会了在噪音里写注释。" },
+        { "id": "sales", "label": "转业务线", "cost": "人脉 ▲", "d": { "social": 4, "rep": -1, "health": -1 },
+          "track": "sales", "kpi": -4,
+          "result": "名片换了颜色，酒局换到了周三。你发现自己开始记住每个客户的口味。" },
+        { "id": "stay", "label": "留在原岗", "cost": "稳定", "d": { "health": 2, "rep": 1 },
+          "kpi": 2,
+          "result": "你把表存档，继续改原来的方案。走廊里有人转岗，有人离职，你的文件夹还是原来那个编号。" }
+      ]
+    },
+    {
+      "id": "EV99",
+      "title": "猎头的未接来电",
+      "layerId": "L3",
+      "category": "机会",
+      "weight": 10,
+      "once": true,
+      "minMonths": 18,
+      "body": "猎头连打三个未接，短信里写：对家开价高两成，入职奖一笔现金。你盯着薪资条上的税前数字，发现两成够付半年房租。",
+      "choices": [
+        { "id": "jump", "label": "去面试", "cost": "空窗风险", "d": { "money": 3, "rep": -3, "health": -2 },
+          "track": "staff", "kpi": -10,
+          "result": "三面之后 offer 落在邮箱里。辞职信发出去那天，老同事在群里发了一个沉默的表情。" },
+        { "id": "bargain", "label": "拿 offer 谈加薪", "cost": "信任 −", "d": { "money": 2, "rep": -2, "social": -1 },
+          "kpi": 4,
+          "result": "HR 约你喝茶，说公司也有预算。数字涨了一截，不是两成，但够你把猎头号码删了。" },
+        { "id": "ignore", "label": "不回", "cost": "机会 −", "d": { "health": 2, "rep": 1 },
+          "result": "你把短信划走，继续写周报。城市从来不缺更便宜的劳动力，你只是暂时还在牌桌上。" }
+      ]
+    },
+    {
+      "id": "EV100",
+      "title": "季度复盘会",
+      "layerId": "L2",
+      "category": "职场",
+      "weight": 13,
+      "once": true,
+      "minMonths": 9,
+      "body": "季度复盘会排在周五下午，投影仪坏了一半像素。你的 KPI 曲线在屏幕上像一条犹豫的心电图。",
+      "choices": [
+        { "id": "push", "label": "报功，把曲线拉高", "cost": "健康 −", "d": { "health": -3, "rep": 2 },
+          "kpi": 7,
+          "result": "你讲了三个数字，领导记了两笔。散会时人事说下个季度目标会上调。" },
+        { "id": "honest", "label": "如实汇报缺口", "cost": "KPI −", "d": { "social": 2, "rep": -1 },
+          "kpi": -5,
+          "result": "你说完沉默了几秒。后来有人私聊说：至少你没把锅甩给天气。" },
+        { "id": "team", "label": "强调团队产出", "cost": "个人 −", "d": { "social": 4, "rep": -2 },
+          "kpi": 2,
+          "result": "你把功劳写成「我们」。名单上没有你的名字，但协作分悄悄涨了一格。" }
+      ]
+    },
+    {
+      "id": "EV101",
+      "title": "陈姐的催缴单",
+      "layerId": "L1",
+      "category": "居住",
+      "weight": 14,
+      "once": true,
+      "requires": { "npc": "chenjie", "maxBalance": -3 },
+      "body": "门缝塞进一张手写催缴单，落款是陈姐。上面列着三个月的差额，最下面一行：再不结就换锁。",
+      "choices": [
+        { "id": "pay", "label": "先结清", "cost": "现金 −−", "d": { "money": -3, "health": -2 },
+          "npcEffects": [{ "id": "chenjie", "balance": 3, "clearFlag": "owe_rent" }],
+          "result": "你转了账，她回了一个「收到」。那晚你第一次认真看了租约上的违约条款。" },
+        { "id": "install", "label": "分期，写欠条", "cost": "人情 −", "d": { "money": -1, "social": -2 },
+          "npcEffects": [{ "id": "chenjie", "balance": 1, "flag": "owe_rent" }],
+          "result": "她让你签了张纸，说下个月必须补齐。纸很薄，但压在心里很厚。" },
+        { "id": "leave", "label": "拖行李走人", "cost": "声望 −", "d": { "rep": -4, "health": -3, "money": -2 },
+          "npcEffects": [{ "id": "chenjie", "balance": -2, "flag": "blacklist" }],
+          "result": "押金没要回来。你在青年旅社开了一间床位，行李只有一只箱子和半条欠账。" }
+      ]
+    },
+    {
+      "id": "EV102",
+      "title": "老周来收班",
+      "layerId": "L2",
+      "category": "职场",
+      "weight": 14,
+      "once": true,
+      "requires": { "npc": "laozhou", "maxBalance": -3 },
+      "body": "老周堵在电梯口，把考勤表摊给你看：「那天你欠的半天，现在要么补，要么请一顿。」",
+      "choices": [
+        { "id": "shift", "label": "周末来补班", "cost": "健康 −", "d": { "health": -4, "rep": 2 },
+          "npcEffects": [{ "id": "laozhou", "balance": 3, "clearFlag": "owe_shift" }],
+          "result": "周六办公室空荡，键盘声特别响。补完他请你喝了瓶 soda，说两清。" },
+        { "id": "meal", "label": "请烧烤", "cost": "现金 −", "d": { "money": -2, "social": 2 },
+          "npcEffects": [{ "id": "laozhou", "balance": 2, "clearFlag": "owe_shift" }],
+          "result": "炭火烤到半夜，话题从 KPI 聊到房贷。结账时他抢单失败，但人情账平了。" },
+        { "id": "stall", "label": "再拖一阵", "cost": "信任 −", "d": { "rep": -3, "health": -1 },
+          "npcEffects": [{ "id": "laozhou", "balance": -1, "flag": "drifted" }],
+          "result": "你说下次一定。他笑笑没接话。之后工位之间的问候少了半句。" }
+      ]
+    },
+    {
+      "id": "EV103",
+      "title": "王总的那顿饭",
+      "layerId": "L4",
+      "category": "人情",
+      "weight": 13,
+      "once": true,
+      "requires": { "npc": "wangzong", "maxBalance": -3 },
+      "body": "王总把账单截图发在私聊里，备注：「上次那顿你签的单，这次该回了吧。」定位是一家你半年没去过的私房菜。",
+      "choices": [
+        { "id": "host", "label": "回请", "cost": "现金 −−", "d": { "money": -3, "social": 3, "rep": 1 },
+          "npcEffects": [{ "id": "wangzong", "balance": 3, "clearFlag": "owe_dinner" }],
+          "result": "你提前订了包间。他带了两张新面孔来，介绍时用了你的全名。" },
+        { "id": "gift", "label": "送酒抵账", "cost": "现金 −", "d": { "money": -2, "social": 1 },
+          "npcEffects": [{ "id": "wangzong", "balance": 2, "clearFlag": "owe_dinner" }],
+          "result": "他收下说讲究。后来局上仍有你的位置，只是话题不再绕着你转。" },
+        { "id": "ghost", "label": "装没看见", "cost": "人脉 −", "d": { "social": -4, "rep": -2 },
+          "npcEffects": [{ "id": "wangzong", "balance": -2, "flag": "cold" }],
+          "result": "消息变成已读不回。下一个项目名单发布时，你的名字不在抄送里。" }
+      ]
+    },
+    {
+      "id": "EV104",
+      "title": "阿敏的转账提醒",
+      "layerId": "L1",
+      "category": "人情",
+      "weight": 12,
+      "once": true,
+      "requires": { "npc": "amin", "maxBalance": -3 },
+      "body": "阿敏发来转账提醒的截图，金额后面跟着一句：「姐当年借你的，现在家里也要用。」",
+      "choices": [
+        { "id": "full", "label": "一次还清", "cost": "现金 −−", "d": { "money": -3, "social": 2 },
+          "npcEffects": [{ "id": "amin", "balance": 3, "clearFlag": "lent_amin" }],
+          "result": "她回了一个拥抱表情。电话那头说：还是你靠谱。" },
+        { "id": "part", "label": "先还一半", "cost": "现金 −", "d": { "money": -1, "social": -1 },
+          "npcEffects": [{ "id": "amin", "balance": 1 }],
+          "result": "她说好吧，另一半下个月。你记在手机日历里，设了两次提醒。" },
+        { "id": "late", "label": "说手头紧", "cost": "关系 −", "d": { "social": -3, "rep": -1 },
+          "npcEffects": [{ "id": "amin", "balance": -1, "flag": "missed_wedding" }],
+          "result": "聊天框安静了。同乡群里有人发喜帖，你点开了又关掉。" }
+      ]
+    },
+    {
+      "id": "EV105",
+      "title": "小余的货箱",
+      "layerId": "L1",
+      "category": "生计",
+      "weight": 12,
+      "once": true,
+      "requires": { "npc": "xiaoyu", "maxBalance": -3 },
+      "body": "小余把一只空货箱放在你门口，附字条：「上次那单你欠的，今天要么跑完，要么按件结。」",
+      "choices": [
+        { "id": "run", "label": "帮他跑完", "cost": "健康 −", "d": { "health": -3, "money": 1 },
+          "npcEffects": [{ "id": "xiaoyu", "balance": 3, "clearFlag": "ran_route" }],
+          "result": "楼梯跑上跑下，汗把 T 恤贴在背上。他把运费转给你，多加了二十块。" },
+        { "id": "pay", "label": "直接给钱", "cost": "现金 −", "d": { "money": -2, "social": 1 },
+          "npcEffects": [{ "id": "xiaoyu", "balance": 2, "clearFlag": "ran_route" }],
+          "result": "他收下说省事。货箱拖走，楼道又空出来半平米。" },
+        { "id": "refuse", "label": "说不是你的件", "cost": "邻里 −", "d": { "social": -3, "rep": -2 },
+          "npcEffects": [{ "id": "xiaoyu", "balance": -2, "flag": "fell_out" }],
+          "result": "他在业主群里@了你。监控截图发出来，时间戳对得上。" }
+      ]
     }
   ],
   "uiCopy": {

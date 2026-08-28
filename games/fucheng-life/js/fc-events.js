@@ -337,6 +337,18 @@
       if (!meetsContract(opts.contract, deck[i])) continue;
       if (deck[i].requires && !deck[i].contract &&
           !meetsNpc(opts.npcs, deck[i].requires)) continue;
+      if (opts.debtNpc) {
+        var debtRules = [].concat(deck[i].requires || []);
+        var debtHit = false;
+        for (var dr = 0; dr < debtRules.length; dr++) {
+          var rule = debtRules[dr];
+          if (!rule) continue;
+          var nid = rule.npc || rule.id;
+          var cap = rule.maxBalance != null ? rule.maxBalance : rule.balanceMax;
+          if (nid === opts.debtNpc && cap != null && cap <= -3) debtHit = true;
+        }
+        if (!debtHit) continue;
+      }
       var w = weightOf(deck[i], layer);
       if (deck[i].eras) w *= 2;
       /* A debt that has come due should be heard over the ambient city. */

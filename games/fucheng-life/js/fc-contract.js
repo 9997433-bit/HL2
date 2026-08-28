@@ -226,6 +226,7 @@
 
   FC.contract = {
     PICK_WINDOW: PICK_WINDOW,
+    SECONDARY_WINDOW: 6,
     defs: defs,
     def: defOf,
     targetLabel: targetLabel,
@@ -241,6 +242,72 @@
       if (!run || run.contract) return false;
       if (!defs().length) return false;
       return (run.months || 0) <= PICK_WINDOW;
+    },
+
+    canPickSecondary: function (run) {
+      return !!(FC.Sim && FC.Sim.canPickSecondary && FC.Sim.canPickSecondary(run));
+    },
+
+    secondaryDefs: function () {
+      return (FC.Sim && FC.Sim.secondaryContracts && FC.Sim.secondaryContracts()) || [];
+    },
+
+    showSecondaryPicker: function (opts) {
+      opts = opts || {};
+      return new Promise(function (resolve) {
+        var list = FC.contract.secondaryDefs();
+        if (!doc || !FC.overlay || !list.length) { resolve(null); return; }
+        if (picker || (FC.events && FC.events.isOpen())) { resolve(null); return; }
+
+        var host = doc.createElement("div");
+        host.className = "fc-contract-pick fc-contract-pick--secondary";
+        host.innerHTML =
+          '<div class="fc-contract-pick__scrim"></div>' +
+          '<div class="fc-contract-pick__panel" role="dialog" aria-modal="true" tabindex="-1">' +
+            '<p class="fc-contract-pick__eyebrow">SECOND CHAPTER · 二级合约</p>' +
+            '<h2 class="fc-contract-pick__title">主线已达成，下一章签什么？</h2>' +
+            '<p class="fc-contract-pick__lede">六个月内可选一张副线目标：换租、结婚备案或副业备案。</p>' +
+            '<div class="fc-contract-pick__grid">' +
+              list.map(function (def) {
+                return '<button type="button" class="fc-contract-card" data-id="' + esc(def.id) +
+                  '" style="--tint:' + (def.tint || "var(--neon-jade)") + '">' +
+                  '<span class="fc-contract-card__en">' + esc(def.en || "") + "</span>" +
+                  '<b class="fc-contract-card__name">' + esc(def.name) + "</b>" +
+                  '<span class="fc-contract-card__pitch">' + esc(def.pitch) + "</span>" +
+                  '<span class="fc-contract-card__detail">' + esc(def.detail) + "</span>" +
+                  "</button>";
+              }).join("") +
+            "</div>" +
+            '<button type="button" class="fc-btn fc-btn--ghost fc-contract-pick__skip">先不签</button>' +
+          "</div>";
+
+        var panel = host.querySelector(".fc-contract-pick__panel");
+        var settled = false;
+
+        function finish(id) {
+          if (settled) return;
+          settled = true;
+          if (host.parentNode) host.parentNode.removeChild(host);
+          FC.overlay.pop(host);
+          resolve(id || null);
+        }
+
+        [].slice.call(host.querySelectorAll(".fc-contract-card")).forEach(function (btn) {
+          btn.addEventListener("click", function () { finish(btn.getAttribute("data-id")); });
+        });
+        host.querySelector(".fc-contract-pick__skip").addEventListener("click", function () { finish(null); });
+        host.querySelector(".fc-contract-pick__scrim").addEventListener("click", function () { finish(null); });
+
+        doc.body.appendChild(host);
+        if (FC.overlay.push("modal", host)) {
+          FC.overlay.top().onKey = function (e) {
+            if (e.key === "Escape") { e.preventDefault(); finish(null); }
+            if (e.key === "Tab") FC.overlay.trap(panel, e);
+          };
+        }
+        panel.focus();
+        host.classList.add("is-open");
+      });
     },
 
     showPicker: function (opts) {

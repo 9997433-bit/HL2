@@ -56,8 +56,21 @@
         if (FC.overlay) FC.overlay.push("modal", root);
 
         var pick = root.querySelector("#talentPick");
-        var chosen = TALENTS[Math.floor(Math.random() * TALENTS.length)];
-        TALENTS.slice(0, 3).forEach(function (t) {
+        var kept = (payload.inherited || []).slice(0, 2);
+        var offered = TALENTS.slice().sort(function () { return Math.random() - 0.5; }).slice(0, 3);
+        var chosen = offered[0];
+
+        if (kept.length) {
+          var keepEl = doc.createElement("p");
+          keepEl.className = "fc-quote fc-ending__inherit";
+          keepEl.textContent = "已携带印记：" + kept.map(function (id) {
+            var t = TALENTS.filter(function (x) { return x.id === id; })[0];
+            return t ? t.name : id;
+          }).join("、");
+          root.querySelector(".fc-ending__inherit").before(keepEl);
+        }
+
+        offered.forEach(function (t) {
           var btn = doc.createElement("button");
           btn.type = "button";
           btn.className = "fc-btn fc-btn--ghost fc-ending__talent" +
@@ -74,8 +87,12 @@
         });
 
         root.querySelector("#endingOk").addEventListener("click", function () {
+          var next = kept.concat(chosen.id).filter(function (id, i, arr) {
+            return id && arr.indexOf(id) === i;
+          }).slice(-3);
           try {
-            global.localStorage.setItem("fucheng.inheritedTalent.v1", chosen.id);
+            global.localStorage.setItem("fucheng.inheritedTalents.v1", JSON.stringify(next));
+            global.localStorage.removeItem("fucheng.inheritedTalent.v1");
           } catch (e) { /* ignore */ }
           if (FC.overlay) FC.overlay.pop(root);
           root.remove();
@@ -91,6 +108,7 @@
         title: meta.title,
         summary: meta.summary + " 你在" + era.name + "以" + origin.name + "的身份生活了 " +
           run.months + " 个月。",
+        inherited: (run.talents || []).slice(0, 2),
         stats: [
           { k: "现金结余", v: "¥" + run.money.toLocaleString("zh-CN") },
           { k: "健康", v: run.health },

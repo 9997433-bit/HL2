@@ -206,6 +206,50 @@
       }
     }
   ],
+  "secondaryContracts": [
+    {
+      "id": "rent",
+      "name": "换租升级",
+      "en": "RENT UP",
+      "tint": "var(--neon-jade)",
+      "deadline": 12,
+      "goalMonthsOfIncome": 8,
+      "goalMin": 6000,
+      "goalMax": 80000,
+      "pitch": "从合租换到整租，或者离地铁更近的一站。",
+      "detail": "12 个月内现金越过换租线。线按当前月收入折算。",
+      "reward": { "health": 4, "rep": 3 }
+    },
+    {
+      "id": "marriage",
+      "name": "结婚备案",
+      "en": "REGISTRY",
+      "tint": "var(--neon-violet)",
+      "deadline": 18,
+      "goal": 100,
+      "pitch": "把关系写进系统：人脉与声望都到了才办得下来。",
+      "detail": "18 个月内人脉×55% + 声望×45% 达 100。",
+      "reward": { "social": 6, "health": 3 }
+    },
+    {
+      "id": "sidebiz",
+      "name": "副业备案",
+      "en": "SIDE BIZ",
+      "tint": "var(--neon-gold)",
+      "deadline": 24,
+      "goalMonthsOfIncome": 15,
+      "goalMin": 10000,
+      "goalMax": 120000,
+      "pitch": "给副业一个能开发票的壳，基金账户要养到线。",
+      "detail": "24 个月内副业基金越过备案线。",
+      "reward": { "money": 2, "rep": 4 }
+    }
+  ],
+  "assetCatalog": [
+    { "id": "ebike", "name": "二手电动车", "type": "vehicle", "cost": 2, "minLayer": 1 },
+    { "id": "usedcar", "name": "代步二手车", "type": "vehicle", "cost": 6, "minLayer": 2, "rep": 2 },
+    { "id": "side_room", "name": "小产权单间", "type": "property", "cost": 10, "minLayer": 2, "sideFund": 5000 }
+  ],
   "ambientEvents": [
     {
       "layerId": "L1",
@@ -229,6 +273,7 @@
         "health": -3,
         "rep": -1
       },
+      "npcEffects": [{ "id": "laozhou", "balance": -1, "note": "爬楼迟到被记了一次" }],
       "weight": 6,
       "title": "居住 · L2"
     },
@@ -4423,6 +4468,7 @@
           "rep": -2,
           "health": -2
         },
+        "npcEffects": [{ "id": "wangzong", "balance": -1, "note": "错过晨会" }],
         "weight": 6
       },
       {

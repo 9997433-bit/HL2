@@ -107,7 +107,7 @@ async function main() {
     return;
   }
 
-  assert.equal(run.version, 3, "NPC saves must use schema version 3");
+  assert.equal(run.version, 4, "NPC saves must use schema version 4");
   assert.equal(run.npcs.length, 5, "a fresh run must contain exactly five named NPCs");
   assert.deepEqual(
     Array.from(run.npcs, (npc) => npc.name).sort(),

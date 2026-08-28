@@ -189,8 +189,15 @@
 
   function loadRun() {
     var inh = null;
-    try { inh = localStorage.getItem("fucheng.inheritedTalent.v1"); } catch (e) { /* ignore */ }
-    if (inh) FC.write({ inheritedTalent: inh });
+    try {
+      var raw = localStorage.getItem("fucheng.inheritedTalents.v1");
+      if (raw) inh = JSON.parse(raw);
+    } catch (e) { /* ignore */ }
+    if (!inh || !inh.length) {
+      try { inh = localStorage.getItem("fucheng.inheritedTalent.v1"); } catch (e2) { /* ignore */ }
+      if (inh) inh = [inh];
+    }
+    if (inh && inh.length) FC.write({ inheritedTalent: inh[0], inheritedTalents: inh });
     var saved = FC.read().run;
     if (saved && saved.key === era.id + "/" + origin.id) {
       run = FC.Sim.migrate(saved, era, origin);
@@ -466,12 +473,34 @@
     $("kpiVal").textContent = run.career.kpi + " / 100";
     $("kpiMeter").style.width = run.career.kpi + "%";
     renderNpcs();
+    var talentNames = (run.talents || []).map(function (id) {
+      var map = { hustle: "耐熬", frugal: "省门", network: "识人", luck: "偏运", study: "书骨" };
+      return map[id] || id;
+    });
     $("assetKv").innerHTML =
       "<dt>房产</dt><dd>" + esc(run.assets.property || "无") + "</dd>" +
+      "<dt>交通工具</dt><dd>" + esc(run.assets.vehicle || "无") + "</dd>" +
       "<dt>副业基金</dt><dd>¥" + fmt(run.assets.sideFund || 0) + "</dd>" +
       "<dt>负债本金</dt><dd>¥" + fmt(run.debt) + "</dd>" +
       "<dt>学历</dt><dd>" + run.edu + " / 100</dd>" +
-      (run.talents.length ? "<dt>印记</dt><dd>" + esc(run.talents.join("、")) + "</dd>" : "");
+      (talentNames.length ? "<dt>印记</dt><dd>" + esc(talentNames.join("、")) + "</dd>" : "");
+    renderAssetShop();
+  }
+
+  function renderAssetShop() {
+    var host = $("assetShop");
+    if (!host || !FC.Sim.assetCatalog) return;
+    var items = FC.Sim.assetCatalog();
+    if (!items.length) { host.innerHTML = ""; return; }
+    host.innerHTML = items.map(function (a) {
+      var ok = FC.Sim.canBuyAsset(run, a.id, era, origin);
+      var owned = run.assets.owned && run.assets.owned.indexOf(a.id) >= 0;
+      return '<button type="button" class="fc-btn fc-btn--ghost fc-asset-buy' +
+        (owned ? " is-owned" : ok ? "" : " is-disabled") + '" data-asset="' + a.id + '" ' +
+        (ok && !owned ? "" : "disabled") + ">" +
+        esc(a.name) + (owned ? " · 已持有" : " · ¥≈" + fmt(FC.Sim.moneyOf(a.cost || 1, income()))) +
+        "</button>";
+    }).join("");
   }
 
   function render(flash) {
@@ -718,6 +747,8 @@
       npcs: run.npcs,
       contract: FC.Sim.contractCtx(run)
     };
+    var debtor = FC.Sim.debtNpc(run);
+    if (debtor) draw.debtNpc = debtor.id;
     var ev = FC.events.pick(draw);
     if (!ev) return null;
     if (ev.type === "redline" && (run.months < 6 || (run.lastRedline && run.months - run.lastRedline < 12))) {
@@ -743,6 +774,46 @@
     }
     if (choice.property) run.assets.property = choice.property;
     if (choice.contractProgress) FC.Sim.creditContract(run, choice.contractProgress);
+    if (choice.track && run.career) {
+      run.career.track = choice.track;
+      run.career.picked = true;
+    }
+  }
+
+  function maybeOfferSecondaryContract() {
+    if (!FC.contract || !FC.contract.canPickSecondary(run)) return Promise.resolve(false);
+    if (!run.done) run.done = {};
+    if (run.done.secondarySkipped === run.months) return Promise.resolve(false);
+    return FC.contract.showSecondaryPicker({ run: run, era: era, origin: origin }).then(function (id) {
+      if (!id) {
+        run.done.secondarySkipped = run.months;
+        return false;
+      }
+      FC.Sim.selectSecondaryContract(run, id, era, origin);
+      var def = FC.Sim.secondaryDef(id) || {};
+      pushLog({
+        t: ts(), tag: "副线", tint: "var(--neon-jade)",
+        text: "你签下了二级合约「" + def.name + "」。" + def.pitch,
+        d: {}, kind: "contract"
+      });
+      render(true);
+      renderLog();
+      return true;
+    });
+  }
+
+  function maybeOfferCareerTrack() {
+    if (!FC.career || !FC.career.needsPick(run)) return Promise.resolve(false);
+    return FC.career.showPicker({ run: run, era: era, origin: origin }).then(function (id) {
+      FC.career.applyTrack(run, id);
+      pushLog({
+        t: ts(), tag: "职场", tint: "var(--neon-violet)",
+        text: "你选择了「" + id + "」轨道作为起点。", d: {}, kind: "saga"
+      });
+      render(true);
+      renderLog();
+      return true;
+    });
   }
 
   /* 一条事件解析完之后进日志。modal / toast / letter 都留一行「【标题】结果」，
@@ -860,6 +931,7 @@
     /* 合约每月只结算一次，在月结之后、抽卡之前：到期那天城市先把账算完，
        再决定今晚还要不要敲门。 */
     var settled = FC.Sim.tickContract(run, era, origin);
+    var settledSecondary = FC.Sim.tickSecondaryContract(run);
 
     FC.Sim.resetMonthAp(run, era);
     render(true);
@@ -872,6 +944,16 @@
         var resolution = FC.contract.resolutionEvent(run);
         if (resolution) return openEvent(resolution, silent);
       }
+      if (settledSecondary && settledSecondary.status === "won") {
+        pushLog({
+          t: ts(), tag: "副线", tint: "var(--neon-jade)",
+          text: "二级合约「" + ((settledSecondary.def && settledSecondary.def.name) || "") + "」达成。",
+          d: (settledSecondary.def && settledSecondary.def.reward) || {}, kind: "contract"
+        });
+      }
+      return maybeOfferSecondaryContract();
+    }).then(function (hit) {
+      if (hit) return true;
       return maybeOfferContract();
     }).then(function (hit) {
       if (hit) return true;
@@ -914,7 +996,14 @@
     pushLog({ t: ts(), tag: "行动", tint: "var(--neon-cyan)", text: res.text, d: res.applied });
     if (res.zoneEvent) {
       var zd = FC.Sim.applyDeltas(run, res.zoneEvent.d || {}, income());
+      var zLedger = FC.Sim.applyNpcEffects(run, res.zoneEvent.npcEffects);
       pushLog(zoneEventToLog(res.zoneEvent, zd));
+      if (zLedger.length) {
+        pushLog({
+          t: ts(), tag: "人情", tint: "var(--neon-amber)",
+          text: "探区之后，人情账有变动。" + npcNote(zLedger), d: {}, kind: "npc"
+        });
+      }
       flyMoney([zd.money], null);
     }
     render(true);
@@ -1056,6 +1145,20 @@
     bindVitals();
     bindDock();
     bindTabs();
+    if ($("assetShop")) {
+      $("assetShop").addEventListener("click", function (e) {
+        var btn = e.target.closest("[data-asset]");
+        if (!btn || btn.disabled) return;
+        var bought = FC.Sim.buyAsset(run, btn.dataset.asset, era, origin);
+        if (!bought) return;
+        pushLog({
+          t: ts(), tag: "资产", tint: "var(--neon-gold)",
+          text: "你买下了「" + bought.def.name + "」。", d: bought.applied, kind: "o1"
+        });
+        render(true);
+        renderLog();
+      });
+    }
     if (FC.events) FC.events.load();
     if (!run.log.length) {
       pushLog({ t: ts(), tag: "入城", tint: "var(--neon-amber)",
@@ -1067,8 +1170,12 @@
     $("ledgerBtn").disabled = !FC.ledger;
     render(false);
     renderLog();
-    /* 入城第一屏就把合约摆上：这是整局唯一一次三选一，不该被埋在按钮后面。 */
-    maybeOfferContract();
+    maybeOfferCareerTrack().then(function () {
+      if (FC.guide && FC.guide.shouldShow()) return FC.guide.show();
+      return false;
+    }).then(function () {
+      maybeOfferContract();
+    });
   }
 
   FC.ready.then(init, function () {

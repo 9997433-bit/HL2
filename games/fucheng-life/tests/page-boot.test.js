@@ -224,6 +224,8 @@ async function main() {
     "js/fc-events.js",
     "js/fc-ledger.js",
     "js/fc-contract.js",
+    "js/fc-career.js",
+    "js/fc-guide.js",
     "js/fc-ending.js",
     "js/dashboard-app.js"
   ];

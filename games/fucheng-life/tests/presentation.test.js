@@ -99,10 +99,10 @@ function main() {
   const defaultModalCount = story.events
     .filter((event) => !hasOwn(event, "presentation")).length;
 
-  assert.equal(story.events.length, 97, "R5-B must migrate in place without changing the 97-event O1 deck");
+  assert.equal(story.events.length, 105, "R6 adds 8 career/debt events on top of the 97-event O1 deck");
   assert.equal(storyCounts.toast, 10, "R5-B must migrate exactly 10 O1 events to toast");
   assert.equal(storyCounts.letter, 5, "R5-B must migrate exactly 5 O1 events to letter");
-  assert.equal(defaultModalCount, 82, "the other 82 O1 events must keep the default modal presentation");
+  assert.equal(defaultModalCount, 90, "82 original modal events plus 8 R6 modal events");
   assert.equal(inlineCount, 15, "R5-B must promote exactly 15 ambient events to inline");
 
   const covered = new Set(["modal"]);

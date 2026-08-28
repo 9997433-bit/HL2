@@ -21,6 +21,27 @@
     return "staff";
   }
 
+  function loadInheritedTalents() {
+    var out = [];
+    try {
+      var raw = global.localStorage.getItem("fucheng.inheritedTalents.v1");
+      if (raw) {
+        var parsed = JSON.parse(raw);
+        if (Object.prototype.toString.call(parsed) === "[object Array]") {
+          parsed.forEach(function (id) {
+            if (id && out.indexOf(id) < 0) out.push(id);
+          });
+        }
+      }
+    } catch (e) { /* ignore */ }
+    if (!out.length) {
+      var single = null;
+      try { single = global.localStorage.getItem("fucheng.inheritedTalent.v1"); } catch (e2) { /* ignore */ }
+      if (single) out.push(single);
+    }
+    return out.slice(0, 3);
+  }
+
   /* 人情账本：balance 记的是结余而不是好感 —— 正数是对方欠你，负数是你欠对方。
      让别人替你结账、替你顶班，账面就往下走，直到某个月对方来收。 */
   var NPCS = [
@@ -142,12 +163,13 @@
       return !requires;
     },
 
+    suggestTrack: pickTrack,
+
     freshRun: function (era, origin) {
       var money = parseInt(String(origin.start).replace(/[^\d]/g, ""), 10) || 1000;
-      var track = pickTrack(origin);
       return {
         key: era.id + "/" + origin.id,
-        version: 3,
+        version: 4,
         year: era.startYear || era.yearAnchor || 2021,
         month: 3,
         age: 22,
@@ -164,22 +186,18 @@
         ap: 3,
         apMax: 3,
         apSpent: [],
-        career: { track: track, level: 0, kpi: 48, title: null },
+        career: { track: pickTrack(origin), level: 0, kpi: 48, title: null, picked: false },
         contract: null,
+        secondaryContract: null,
         npcs: FC.Sim.freshNpcs(),
-        assets: { property: null, vehicle: null, sideFund: 0 },
+        assets: { property: null, vehicle: null, sideFund: 0, owned: [] },
         saga: null,
         done: {},
         recent: [],
         recentModal: [],
         recentZone: {},
         log: [],
-        talents: (function () {
-          var inh = null;
-          try { inh = global.localStorage.getItem("fucheng.inheritedTalent.v1"); } catch (e) { /* ignore */ }
-          if (!inh && FC.read) inh = FC.read().inheritedTalent;
-          return inh ? [inh] : [];
-        })(),
+        talents: loadInheritedTalents(),
         zoneQueue: null,
         ended: false
       };
@@ -202,10 +220,18 @@
       return FC.Sim.migrateContract(FC.Sim.migrateNpcs(out));
     },
 
-    /** v2→v3：老档没有合约槽位，补一个空的。还在头三个月的存档照样会收到选择弹窗。 */
+    /** v2→v4：补合约/二级合约/资产/职业选轨字段。 */
     migrateContract: function (run) {
       if (run.contract === undefined) run.contract = null;
-      run.version = 3;
+      if (run.secondaryContract === undefined) run.secondaryContract = null;
+      if (!run.assets) run.assets = { property: null, vehicle: null, sideFund: 0, owned: [] };
+      if (!run.assets.owned) run.assets.owned = [];
+      if (run.career) {
+        if ((run.months || 0) > 0) run.career.picked = true;
+        else if (run.career.picked == null) run.career.picked = !!run.career.track;
+      }
+      if (!run.talents || !run.talents.length) run.talents = loadInheritedTalents();
+      run.version = 4;
       return run;
     },
 
@@ -235,8 +261,47 @@
         };
       });
       delete run.relations;
-      run.version = 3;
+      run.version = 4;
       return run;
+    },
+
+    assetCatalog: function () {
+      return (FC.Sim.pack && FC.Sim.pack.assetCatalog) || [];
+    },
+
+    assetDef: function (id) {
+      var found = null;
+      FC.Sim.assetCatalog().forEach(function (a) {
+        if (a.id === id) found = a;
+      });
+      return found;
+    },
+
+    canBuyAsset: function (run, assetId, era, origin) {
+      var def = FC.Sim.assetDef(assetId);
+      if (!run || !def) return false;
+      if (!run.assets) run.assets = { property: null, vehicle: null, sideFund: 0, owned: [] };
+      if (!run.assets.owned) run.assets.owned = [];
+      if (run.assets.owned.indexOf(assetId) >= 0) return false;
+      if (def.type === "vehicle" && run.assets.vehicle) return false;
+      if (def.minLayer && FC.Sim.layerOf(run, origin) < def.minLayer) return false;
+      var cost = FC.Sim.moneyOf(def.cost || 1, FC.Sim.income(run, era, origin));
+      return run.money >= cost;
+    },
+
+    buyAsset: function (run, assetId, era, origin) {
+      var def = FC.Sim.assetDef(assetId);
+      if (!FC.Sim.canBuyAsset(run, assetId, era, origin)) return null;
+      var cost = FC.Sim.moneyOf(def.cost || 1, FC.Sim.income(run, era, origin));
+      run.money -= cost;
+      if (!run.assets.owned) run.assets.owned = [];
+      run.assets.owned.push(assetId);
+      if (def.type === "vehicle") run.assets.vehicle = def.name;
+      if (def.type === "property") run.assets.property = def.name;
+      if (def.sideFund) run.assets.sideFund = (run.assets.sideFund || 0) + def.sideFund;
+      var applied = { money: -Math.round(cost / 100) * 100 };
+      if (def.rep) { run.rep = clamp(run.rep + def.rep, 0, 100); applied.rep = def.rep; }
+      return { def: def, applied: applied, cost: cost };
     },
 
     /* ------------------------------------------------------ 中期人生合约
@@ -370,7 +435,112 @@
       return FC.Sim.updateContract(run, era, origin);
     },
 
-    /** fc-events.pick 的合约门禁上下文。 */
+    /** 二级合约：主合约达成后 6 月内可选一张。 */
+    secondaryContracts: function () {
+      return (FC.Sim.pack && FC.Sim.pack.secondaryContracts) || [];
+    },
+
+    secondaryDef: function (id) {
+      var found = null;
+      FC.Sim.secondaryContracts().forEach(function (c) {
+        if (c.id === id) found = c;
+      });
+      return found;
+    },
+
+    canPickSecondary: function (run) {
+      var c = run && run.contract;
+      if (!c || c.status !== "won" || run.secondaryContract) return false;
+      var windowEnd = (c.settledMonth || 0) + 6;
+      return (run.months || 0) <= windowEnd;
+    },
+
+    selectSecondaryContract: function (run, id, era, origin) {
+      var def = FC.Sim.secondaryDef(id);
+      if (!run || !def || !FC.Sim.canPickSecondary(run)) return false;
+      var goal = def.goal || 100;
+      if (id === "rent" || id === "sidebiz") {
+        var inc = FC.Sim.income(run, era, origin) || 0;
+        goal = Math.round(inc * (def.goalMonthsOfIncome || 12) / 1000) * 1000;
+        goal = Math.max(def.goalMin || 8000, Math.min(def.goalMax || 200000, goal));
+      }
+      run.secondaryContract = {
+        id: def.id,
+        progress: 0,
+        target: 100,
+        goal: goal,
+        deadlineMonths: def.deadline,
+        chosenMonth: run.months || 0,
+        deadlineMonth: (run.months || 0) + def.deadline,
+        status: "active"
+      };
+      FC.Sim.refreshSecondaryContract(run);
+      return run.secondaryContract;
+    },
+
+    secondaryProgress: function (run, origin) {
+      var sc = run && run.secondaryContract;
+      if (!sc || sc.status !== "active") return 0;
+      if (sc.id === "rent") {
+        return round1(clamp((run.money || 0) / Math.max(1, sc.goal) * 100, 0, 100));
+      }
+      if (sc.id === "marriage") {
+        return round1(clamp((run.social || 0) * 0.55 + (run.rep || 0) * 0.45, 0, 100));
+      }
+      if (sc.id === "sidebiz") {
+        var fund = (run.assets && run.assets.sideFund) || 0;
+        return round1(clamp(fund / Math.max(1, sc.goal) * 100, 0, 100));
+      }
+      return sc.progress || 0;
+    },
+
+    refreshSecondaryContract: function (run) {
+      var sc = run && run.secondaryContract;
+      if (!sc) return 0;
+      sc.progress = FC.Sim.secondaryProgress(run);
+      return sc.progress;
+    },
+
+    tickSecondaryContract: function (run) {
+      var sc = run && run.secondaryContract;
+      if (!sc || sc.status !== "active") return null;
+      FC.Sim.refreshSecondaryContract(run);
+      var def = FC.Sim.secondaryDef(sc.id);
+      if (sc.progress >= sc.target) {
+        sc.status = "won";
+        sc.settledMonth = run.months || 0;
+        return { status: "won", def: def, contract: sc };
+      }
+      if (sc.deadlineMonth - (run.months || 0) <= 0) {
+        sc.status = "failed";
+        sc.settledMonth = run.months || 0;
+        return { status: "failed", def: def, contract: sc };
+      }
+      return null;
+    },
+
+    secondaryCtx: function (run) {
+      var sc = run && run.secondaryContract;
+      if (!sc) return null;
+      return {
+        id: sc.id,
+        status: sc.status,
+        progress: Math.round(FC.Sim.secondaryProgress(run)),
+        monthsLeft: sc.deadlineMonth - (run.months || 0)
+      };
+    },
+
+    /** 人情账 ≤ −3 时优先抽讨债事件（由 dashboard 传入 draw.debtNpc）。 */
+    debtNpc: function (run) {
+      var worst = null;
+      (run.npcs || []).forEach(function (n) {
+        if (!n || typeof n.balance !== "number") return;
+        if (n.balance > -3) return;
+        if (!worst || n.balance < worst.balance) worst = n;
+      });
+      return worst;
+    },
+
     contractCtx: function (run) {
       var c = run && run.contract;
       if (!c) return null;
@@ -435,6 +605,7 @@
         { k: "还贷", v: Math.round(run.debt * 0.015) }
       ];
       if (run.assets.property) rows.push({ k: "物业费", v: Math.round(base * 0.12) });
+      if (run.assets.vehicle) rows.push({ k: "养车", v: Math.round(base * 0.06) });
       return rows;
     },
 
@@ -639,6 +810,7 @@
       picked = pool[Math.min(i, pool.length - 1)];
       var ev = picked.ev;
       FC.Sim.markAmbientSeen(run, ev);
+      if (ev.npcEffects) FC.Sim.applyNpcEffects(run, ev.npcEffects);
       return ev;
     },
 
