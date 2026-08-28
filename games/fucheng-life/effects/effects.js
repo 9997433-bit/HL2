@@ -11,6 +11,7 @@
   let manuallyPaused = false;
   let pageVisible = !document.hidden;
   let animationFrame = 0;
+  let lastFrameTime = 0;
   let resizeTimer = 0;
   let width = 0;
   let height = 0;
@@ -48,13 +49,10 @@
 
     draw() {
       const drift = 3 + pointer.x * 8 * this.depth;
-      const gradient = ctx.createLinearGradient(this.x, this.y, this.x + drift, this.y + this.length);
-      gradient.addColorStop(0, "rgba(88, 246, 255, 0)");
-      gradient.addColorStop(1, `rgba(139, 222, 255, ${this.alpha})`);
       ctx.beginPath();
       ctx.moveTo(this.x, this.y);
       ctx.lineTo(this.x + drift, this.y + this.length);
-      ctx.strokeStyle = gradient;
+      ctx.strokeStyle = `rgba(139, 222, 255, ${this.alpha})`;
       ctx.lineWidth = this.width;
       ctx.stroke();
     }
@@ -69,6 +67,7 @@
       this.pulse = random(0, Math.PI * 2);
       this.speed = random(.006, .02);
       this.warm = Math.random() > .62;
+      this.heightScale = random(.8, 1.8);
     }
 
     update() {
@@ -82,10 +81,7 @@
       ctx.fillStyle = this.warm
         ? `rgba(255, 203, 119, ${glow})`
         : `rgba(88, 246, 255, ${glow})`;
-      ctx.shadowColor = this.warm ? "#ffcb77" : "#58f6ff";
-      ctx.shadowBlur = this.radius * 6;
-      ctx.fillRect(x, y, this.radius, this.radius * random(.8, 1.8));
-      ctx.shadowBlur = 0;
+      ctx.fillRect(x, y, this.radius, this.radius * this.heightScale);
     }
   }
 
@@ -157,10 +153,13 @@
 
     ctx.save();
     ctx.globalCompositeOperation = "lighter";
+    ctx.shadowColor = "#58f6ff";
+    ctx.shadowBlur = 4;
     lights.forEach((light) => {
       if (update) light.update();
       light.draw();
     });
+    ctx.shadowBlur = 0;
     motes.forEach((mote) => {
       if (update) mote.update();
       mote.draw();
@@ -176,8 +175,11 @@
     return ctx && pageVisible && !manuallyPaused && !reducedMotionQuery.matches;
   }
 
-  function animate() {
-    drawFrame(true);
+  function animate(time) {
+    if (time - lastFrameTime >= 1000 / 30) {
+      drawFrame(true);
+      lastFrameTime = time;
+    }
     if (shouldAnimate()) {
       animationFrame = window.requestAnimationFrame(animate);
     } else {
