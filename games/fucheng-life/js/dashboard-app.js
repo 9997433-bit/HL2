@@ -535,6 +535,52 @@
   }
 
   /* 签约窗口只有头三个月。「再想想」记下当月，下个月才会再问一次。 */
+  function autoSpendAp() {
+    var guard = 0;
+    while (run.ap > 0 && guard++ < 10) {
+      var tip = FC.Sim.suggestMonth ? FC.Sim.suggestMonth(run, era, origin) : null;
+      var id = tip && tip.actionId;
+      var acts = FC.Sim.actions();
+      var act = null;
+      var i;
+      if (id) {
+        for (i = 0; i < acts.length; i++) if (acts[i].id === id) act = acts[i];
+      }
+      if (!act || !FC.Sim.canAction(run, act, era, origin)) {
+        act = null;
+        for (i = 0; i < acts.length; i++) {
+          if (FC.Sim.canAction(run, acts[i], era, origin)) { act = acts[i]; break; }
+        }
+      }
+      if (!act) break;
+      onAction(act.id);
+    }
+  }
+
+  function fastForwardMonths(n) {
+    n = n || 3;
+    return (function step(i) {
+      if (i >= n) return Promise.resolve(false);
+      autoSpendAp();
+      if (run.ap > 0) {
+        pushLog({
+          t: ts(), tag: "系统", tint: "var(--text-faint)",
+          text: "快进中止：行动点花不完（可能缺探区目标）。", d: {}
+        });
+        renderLog();
+        return Promise.resolve(true);
+      }
+      return tick(i < n - 1).then(function (hit) {
+        if (hit) {
+          pushLog({ t: ts(), tag: "系统", tint: "var(--text-faint)", text: "快进被一件事打断。", d: {} });
+          renderLog();
+          return true;
+        }
+        return step(i + 1);
+      });
+    })(0);
+  }
+
   function maybeOfferContract() {
     if (!run.done) run.done = {};
     if (!FC.contract || !FC.contract.canPick(run)) return Promise.resolve(false);
@@ -1200,9 +1246,10 @@
 
     return checkEnding().then(function (ended) {
       if (ended) return true;
+      /* R14：每月最多一个强交互弹窗（合约结算 > 要约 > 危机/O1）。 */
       if (settled && FC.contract) {
         var resolution = FC.contract.resolutionEvent(run);
-        if (resolution) return openEvent(resolution, silent);
+        if (resolution) return openEvent(resolution, silent).then(function () { return true; });
       }
       if (settledSecondary && settledSecondary.status === "won") {
         pushLog({
@@ -1216,7 +1263,10 @@
       if (hit) return true;
       return maybeOfferContract();
     }).then(function (hit) {
-      if (hit) return true;
+      if (hit) {
+        maybeShowLedger(silent);
+        return true;
+      }
       var ev = drawModalEvent();
       if (!ev) { maybeShowLedger(silent); return false; }
       return openEvent(ev, silent);
@@ -1330,14 +1380,8 @@
         if (e.target.closest("[data-drawer-close]")) { closeDrawer(); return; }
         if (e.target.closest("[data-drawer-tick6]")) {
           closeDrawer();
-          if (!window.confirm("快进会连续推进 3 个月（每月仍需先花完行动点）。确定？")) return;
-          (function step(i) {
-            if (i >= 3) return;
-            tick(i < 2).then(function (hit) {
-              if (!hit) step(i + 1);
-              else pushLog({ t: ts(), tag: "系统", tint: "var(--text-faint)", text: "快进被一件事打断。", d: {} });
-            });
-          })(0);
+          if (!window.confirm("快进会自动花完行动点并连续推进 3 个月。遇到大事会停下。确定？")) return;
+          fastForwardMonths(3);
           return;
         }
         if (e.target.closest("[data-drawer-reset]")) {
@@ -1397,14 +1441,8 @@
 
     $("tickBtn").addEventListener("click", function () { tick(false); });
     $("tick6Btn").addEventListener("click", function () {
-      if (!window.confirm("快进会连续推进 3 个月（每月仍需先花完行动点）。确定？")) return;
-      (function step(i) {
-        if (i >= 3) return;
-        tick(i < 2).then(function (hit) {
-          if (!hit) step(i + 1);
-          else pushLog({ t: ts(), tag: "系统", tint: "var(--text-faint)", text: "快进被一件事打断。", d: {} });
-        });
-      })(0);
+      if (!window.confirm("快进会自动花完行动点并连续推进 3 个月。遇到大事会停下。确定？")) return;
+      fastForwardMonths(3);
     });
     $("ledgerBtn").addEventListener("click", function () { FC.ledger.show(buildLedgerPayload()); });
     $("resetBtn").addEventListener("click", function () {
