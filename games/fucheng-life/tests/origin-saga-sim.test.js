@@ -108,7 +108,43 @@ for (const source of story.origins) {
   assert.equal(run.saga, null, `${expected.id} must remain completed`);
 }
 
+/* The trigger month itself is random: replay each origin under a seeded roll and
+   assert the chain still lands inside the declared months 3–18 window. */
+const window = {
+  min: probePack.balance.originSagaMinMonths,
+  max: probePack.balance.originSagaMaxMonths
+};
+let seed = 20260828;
+deterministicMath.random = () => {
+  seed = (seed * 1103515245 + 12345) % 2147483648;
+  return seed / 2147483648;
+};
+
+const seededMonths = [];
+for (const source of story.origins) {
+  for (let attempt = 0; attempt < 12; attempt++) {
+    const origin = {
+      id: source.legacyId || source.id,
+      storyId: source.id,
+      layer: source.layer,
+      mods: { money: 50, health: 60, social: 55, edu: 60 },
+      start: `¥ ${source.startMoney}`
+    };
+    const run = FC.Sim.freshRun(era, origin);
+    let triggeredAt = null;
+    for (let month = 1; month <= 36 && !triggeredAt; month++) {
+      run.months = month;
+      if (FC.Sim.tryStartOriginSaga(run, origin)) triggeredAt = month;
+    }
+    assert.ok(triggeredAt, `${source.id} origin saga never fired under seeded rolls`);
+    assert.ok(triggeredAt >= window.min && triggeredAt <= window.max,
+      `${source.id} fired at month ${triggeredAt}, outside months ${window.min}–${window.max}`);
+    seededMonths.push(triggeredAt);
+  }
+}
+
 console.log(
   `Origin saga sim: ${story.origins.length}/10 triggered by month 24 ` +
-  `(range ${Math.min(...triggerMonths)}–${Math.max(...triggerMonths)}).`
+  `(range ${Math.min(...triggerMonths)}–${Math.max(...triggerMonths)}), ` +
+  `seeded replays land in months ${Math.min(...seededMonths)}–${Math.max(...seededMonths)}.`
 );

@@ -72,4 +72,40 @@ assert.deepEqual(
   "originSagas must map every canonical story origin exactly once"
 );
 
-console.log(`Origin sagas: ${pack.originSagas.length} origins mapped one-to-one, 3–4 steps each.`);
+/* --------------------------------------------- authored-content guarantees */
+
+const han = /[\u4e00-\u9fa5]/;
+
+for (const [sagaIndex, saga] of pack.originSagas.entries()) {
+  const label = `originSagas[${sagaIndex}]`;
+  assert.equal(saga.kind, "origin", `${label}.kind must be "origin" so the UI can tag it`);
+  assert.ok(han.test(saga.title), `${label}.title must be written in Chinese`);
+
+  const choiceSteps = saga.steps.filter((step) => Array.isArray(step.choices) && step.choices.length >= 2);
+  assert.ok(choiceSteps.length >= 1, `${label} must offer a decision in at least one step`);
+  for (const step of choiceSteps) {
+    assert.ok(step.choices.length <= 3, `${label} steps must stay at 2–3 choices`);
+  }
+
+  for (const [stepIndex, step] of saga.steps.entries()) {
+    const stepLabel = `${label}.steps[${stepIndex}]`;
+    assert.ok(han.test(step.title), `${stepLabel}.title must be written in Chinese`);
+    assert.ok(han.test(step.text), `${stepLabel}.text must be written in Chinese`);
+    assert.ok(step.text.length >= 14, `${stepLabel}.text is too thin to read as prose: ${step.text}`);
+  }
+}
+
+/* Origin chains live in their own pool so the random saga roll cannot draw them. */
+const randomSagaIds = new Set((pack.sagas || []).map((saga) => saga.id));
+for (const saga of pack.originSagas) {
+  assert.ok(!randomSagaIds.has(saga.id), `${saga.id} must stay out of the random saga pool`);
+}
+
+const balance = pack.balance || {};
+assert.equal(balance.originSagaMinMonths, 3, "origin chains must wait until month 3");
+assert.equal(balance.originSagaMaxMonths, 18, "origin chains must be guaranteed by month 18");
+assert.ok(balance.originSagaMonthlyOdds > 0 && balance.originSagaMonthlyOdds < 1,
+  "origin chain odds must leave the trigger month random inside the window");
+
+console.log(`Origin sagas: ${pack.originSagas.length} origins mapped one-to-one, 3–4 steps each, ` +
+  `${pack.originSagas.reduce((total, saga) => total + saga.steps.length, 0)} steps total.`);
