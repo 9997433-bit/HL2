@@ -42,6 +42,24 @@
     return out.slice(0, 3);
   }
 
+  /* 存档只吃能进 JSON 的东西：先整段深拷贝，拷不动（循环引用等）就退一步做浅拷贝，
+     并逐个丢掉自身不可序列化的字段，保证返回值一定能跟着存档写出去。 */
+  function serializableCopy(obj) {
+    try {
+      return JSON.parse(JSON.stringify(obj));
+    } catch (e) {
+      var out = {};
+      Object.keys(obj).forEach(function (k) {
+        var v = obj[k];
+        if (typeof v === "function" || v === undefined) return;
+        try {
+          out[k] = JSON.parse(JSON.stringify(v));
+        } catch (e2) { /* 这一格存不住，就当它不存在 */ }
+      });
+      return out;
+    }
+  }
+
   /* 人情账本：balance 记的是结余而不是好感 —— 正数是对方欠你，负数是你欠对方。
      让别人替你结账、替你顶班，账面就往下走，直到某个月对方来收。 */
   var NPCS = [
@@ -464,6 +482,7 @@
         lastCrisisMonth: 0,
         recentCrisis: [],
         zoneAftershock: null,
+        pendingModal: null,
         challengeMonths: (function () {
           var mode = null;
           try {
@@ -514,6 +533,7 @@
       if (run.lastCrisisMonth == null) run.lastCrisisMonth = 0;
       if (!run.recentCrisis) run.recentCrisis = [];
       if (run.zoneAftershock === undefined) run.zoneAftershock = null;
+      if (run.pendingModal === undefined) run.pendingModal = null;
       if (run.challengeMonths == null) {
         var mode = null;
         try { if (FC.read) mode = FC.read().playMode; } catch (e) { /* ignore */ }
@@ -552,6 +572,39 @@
       delete run.relations;
       run.version = 4;
       return run;
+    },
+
+    /* R16：把还没答完的事件卡挂在存档上。刷新、切页、误关弹窗之后，
+       这张卡还能原样再开一次，不至于让危机凭空消失。
+       payload 形如 { kind: "crisis"|"o1"|"npc", event: <事件卡> }，
+       event 要带 openEvent 需要的 id/title/choices。存不下的卡一律不挂，
+       挂了半张比没挂更糟 —— 与其留个开不出来的残卡，不如当没有。 */
+    setPendingModal: function (run, payload) {
+      if (!run) return null;
+      if (!payload || typeof payload !== "object") {
+        run.pendingModal = null;
+        return null;
+      }
+      var snap = serializableCopy(payload);
+      if (!snap || !snap.event || typeof snap.event !== "object" || !snap.event.id) {
+        run.pendingModal = null;
+        return null;
+      }
+      if (typeof snap.kind !== "string" || !snap.kind) snap.kind = null;
+      run.pendingModal = snap;
+      return snap;
+    },
+
+    clearPendingModal: function (run) {
+      if (!run) return false;
+      var had = FC.Sim.hasPendingModal(run);
+      run.pendingModal = null;
+      return had;
+    },
+
+    hasPendingModal: function (run) {
+      var p = run && run.pendingModal;
+      return !!(p && p.event && typeof p.event === "object" && p.event.id);
     },
 
     assetCatalog: function () {
