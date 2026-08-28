@@ -16,16 +16,16 @@
 
 | ID | 模型 | slug | 可写路径 | 任务 |
 |----|------|------|----------|------|
-| R16-F1 | fable | `claude-fable-5-thinking-xhigh` | `round16/fable-r16-sota-gates.md` | SOTA 门禁 |
-| R16-F2 | fable | `claude-fable-5-thinking-xhigh` | `round16/fable-r16-playfeel.md` | 体验风险 |
-| R16-F3 | fable | `claude-fable-5-thinking-xhigh` | `round16/fable-r16-acceptance-draft.md` | §39 草稿 |
-| R16-O1 | opus-fast | `claude-opus-5-thinking-high-fast` | **仅** `js/dashboard-app.js` | pendingModal 写入/清除、replayPendingModal、monthModal/openEvent 接线、init 链；快进走内置确认 API |
-| R16-O2 | opus-fast | `claude-opus-5-thinking-high-fast` | **仅** `js/fc-sim.js` | freshRun/migrate：`pendingModal: null`；可选 `setPendingModal`/`clearPendingModal` 小 API |
-| R16-O3 | opus-fast | `claude-opus-5-thinking-high-fast` | **仅** `js/fc-events.js` 或新建极小 `js/fc-confirm.js`（若新建须改 dashboard.html script 标签） | 通用 confirm overlay：`FC.confirm(opts) → Promise<boolean>` |
-| R16-O4 | opus-fast | `claude-opus-5-thinking-high-fast` | **仅** `css/fc-events.css` 或 `css/fc-gameplay.css` | confirm 面板样式（克制，无紫霓虹） |
-| R16-O5 | opus-fast | `claude-opus-5-thinking-high-fast` | **仅** `js/fc-guide.js` + 必要时 `screens/dashboard.html` script | 教学一句：城市敲门刷新会补弹；若新建 fc-confirm.js 则 html 引入 |
-| R16-G1 | gpt-sol | `gpt-5.6-sol-xhigh` | `tests/r16-crisis-replay.test.js` + runner | 断言 pendingModal / confirm / boot replay |
-| R16-G2 | gpt-sol | `gpt-5.6-sol-xhigh` | `ACCEPTANCE.md` §38✓ §39 + `round16/R16_TEST_NOTES.md` | 验收 |
+| R16-F1 | fable | `claude-fable-5-thinking-xhigh` | `round16/fable-r16-sota-gates.md` | SOTA 门禁 | `bc-7840c3c7-f7da-5ebb-a984-42cdaffaf2ff` |
+| R16-F2 | fable | `claude-fable-5-thinking-xhigh` | `round16/fable-r16-playfeel.md` | 体验风险 | `bc-a2c1b69d-6f7b-591b-9b54-e7412a881edb` |
+| R16-F3 | fable | `claude-fable-5-thinking-xhigh` | `round16/fable-r16-acceptance-draft.md` | §39 草稿 | `bc-95d3b572-d54d-5e15-b037-d373470c6bac` |
+| R16-O1 | opus-fast | `claude-opus-5-thinking-high-fast` | **仅** `js/dashboard-app.js` | pendingModal 写入/清除、replay、init；快进内确认 | `bc-05c5339b-a4e4-55bf-a6d1-da17f47146ff` |
+| R16-O2 | opus-fast | `claude-opus-5-thinking-high-fast` | **仅** `js/fc-sim.js` | pendingModal helpers | `bc-82e9ed63-316e-57dc-9ac2-eac1475f4ceb` |
+| R16-O3 | opus-fast | `claude-opus-5-thinking-high-fast` | **仅** `js/fc-events.js` | `FC.confirm` | `bc-4ad9740c-2830-526b-8597-015c47a667c2` |
+| R16-O4 | opus-fast | `claude-opus-5-thinking-high-fast` | **仅** `css/fc-events.css` | confirm 样式 | `bc-29c098a9-bdc8-578e-9b91-aebf1f16e9af` |
+| R16-O5 | opus-fast | `claude-opus-5-thinking-high-fast` | **仅** `js/fc-guide.js` | 教学补弹提示 | `bc-94500c15-856c-5380-9d0e-fed0d5d0df17` |
+| R16-G1 | gpt-sol | `gpt-5.6-sol-xhigh` | `tests/r16-*.test.js` + runner | 测试 | `bc-6e6f765d-6600-55bf-acc7-0360fbc850ab` |
+| R16-G2 | gpt-sol | `gpt-5.6-sol-xhigh` | `ACCEPTANCE.md` + notes | §39 | `bc-75d0550e-e6a0-51c4-9526-5fad54828504` |
 
 ## 合入顺序
 
