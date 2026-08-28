@@ -640,14 +640,36 @@
 
   var FF_MONTHS = 3;
 
-  function startFastForward() {
-    if (!window.confirm(
-      "快进会自动花完行动点并连续推进 " + FF_MONTHS + " 个月。\n" +
+  /* R15 的三条护栏原样写进确认面板：问的人得先知道快进替他做什么、不做什么。 */
+  function ffConfirmBody() {
+    return "快进会自动花完行动点并连续推进 " + FF_MONTHS + " 个月。\n" +
       "· 不会自动去探区：探区目标留着，要你自己点「探区」。\n" +
       "· 现金紧时优先上班，不会拿行动点去进修 / 休息。\n" +
-      "· 遇到大事会停下。确定？"
-    )) return;
-    fastForwardMonths(FF_MONTHS);
+      "· 遇到大事会停下。";
+  }
+
+  /* FC.confirm 没加载时（旧缓存、或者直接双击开页）仍要问一句再走。 */
+  function nativeConfirm(text) {
+    if (typeof window === "undefined" || !window.confirm) return true;
+    return !!window.confirm(text + "确定？");
+  }
+
+  function startFastForward() {
+    if (fastForwarding || run.ended) return Promise.resolve(false);
+    var body = ffConfirmBody();
+    var ask = FC.confirm
+      ? FC.confirm({
+        title: "快进 " + FF_MONTHS + " 个月？",
+        body: body,
+        confirmLabel: "开始快进",
+        cancelLabel: "再等等",
+        layer: "L" + layerOf()
+      })
+      : Promise.resolve(nativeConfirm(body));
+    return ask.then(function (ok) {
+      if (!ok) return false;
+      return fastForwardMonths(FF_MONTHS);
+    });
   }
 
   /* 签约窗口只有头三个月。「再想想」记下当月，下个月才会再问一次。 */
@@ -1183,11 +1205,73 @@
     return entry;
   }
 
+  /* R16：危机 / O1 / 人情讨债这类强弹窗，在弹出之前先挂到存档上。玩家没答完
+     就刷新、切页、误关，这张卡都还欠着，下次进门原样补弹；答完才销账。
+     Sim 给了 API 就用 Sim 的，缺了退回 run.pendingModal 这一份本地记账。 */
+  function pendingModalOf() {
+    var p = run && run.pendingModal;
+    return p && p.event && p.event.id ? p : null;
+  }
+
+  function hasPendingModal() {
+    if (!run) return false;
+    if (FC.Sim && typeof FC.Sim.hasPendingModal === "function") {
+      return !!FC.Sim.hasPendingModal(run);
+    }
+    return !!pendingModalOf();
+  }
+
+  /* 危机与 O1 补弹时的标签不同，日志读起来才知道这张卡是从哪儿来的。 */
+  function pendingKindOf(ev) {
+    if (!ev) return "modal";
+    if (ev.category === "本月危机") return "crisis";
+    if (ev.requires) return "npc";
+    return "o1";
+  }
+
+  function setPendingModal(ev, kind) {
+    if (!run || !ev || !ev.id) return null;
+    var cur = pendingModalOf();
+    if (cur && cur.event.id === ev.id) return cur;
+    var payload = { kind: kind || pendingKindOf(ev), event: ev };
+    if (FC.Sim && typeof FC.Sim.setPendingModal === "function") {
+      FC.Sim.setPendingModal(run, payload);
+    } else {
+      run.pendingModal = payload;
+    }
+    FC.write({ run: run });
+    return pendingModalOf();
+  }
+
+  function clearPendingModal() {
+    if (!run) return false;
+    var had = hasPendingModal();
+    if (FC.Sim && typeof FC.Sim.clearPendingModal === "function") {
+      FC.Sim.clearPendingModal(run);
+    }
+    run.pendingModal = null;
+    FC.write({ run: run });
+    return had;
+  }
+
+  /* 合约结算走自己的 resolutionPending，不占这条通道；其余强弹窗默认都占。 */
+  function tracksPending(ev, opts) {
+    if (opts && typeof opts.pending === "boolean") return opts.pending;
+    return !!(ev && ev.id) && !(ev && ev.contract);
+  }
+
   /* onApplied 只在玩家真把这张卡结掉时才跑：被 dismiss 的卡没落账，
      调用方也就不该把它记成「已结算」。 */
-  function openEvent(ev, silent, onApplied) {
+  function openEvent(ev, silent, onApplied, opts) {
+    opts = opts || {};
+    var tracked = tracksPending(ev, opts);
+    if (tracked) setPendingModal(ev, opts.kind);
     return FC.events.show(ev, { moneyRef: income() }).then(function (res) {
-      if (res.dismissed) return true;
+      if (res.dismissed) {
+        /* 关掉不算答完：这张卡继续挂在存档上，下次进门再敲一次门。 */
+        if (tracked && run.pendingModal) FC.write({ run: run });
+        return true;
+      }
       var applied = FC.Sim.applyDeltas(run, res.deltas, income());
       var ledger = FC.Sim.applyNpcEffects(run, res.choice && res.choice.npcEffects);
       applyContractChoice(res.choice);
@@ -1196,6 +1280,7 @@
       render(true); renderLog(); flyMoney([applied.money], null);
       maybeShowLedger(silent);
       if (onApplied) onApplied(res);
+      if (tracked) clearPendingModal();
       return true;
     });
   }
@@ -1238,6 +1323,22 @@
     }
     return openEvent(resolution, true, function () {
       markContractResolutionDone(run);
+    }, { pending: false }).then(function () { return true; });
+  }
+
+  /* 进门时补弹：上一局停在「危机 / O1 已经敲过门但没答完」，这里把那张卡
+     原样开回来。玩家再关一次就继续欠着，下次进门再弹。 */
+  function replayPendingModal(silent) {
+    if (!FC.events || !hasPendingModal()) return Promise.resolve(false);
+    var pending = run.pendingModal;
+    var ev = pending && pending.event;
+    if (!ev || !ev.id) {
+      clearPendingModal();
+      return Promise.resolve(false);
+    }
+    return openEvent(ev, silent !== false, null, {
+      pending: true,
+      kind: pending.kind
     }).then(function () { return true; });
   }
 
@@ -1393,7 +1494,7 @@
       if (resolution) {
         return openEvent(resolution, silent, function () {
           markContractResolutionDone(run);
-        }).then(function () { return true; });
+        }, { pending: false }).then(function () { return true; });
       }
     }
     return maybeOfferSecondaryContract().then(function (hit) {
@@ -1409,8 +1510,12 @@
         maybeShowLedger(silent);
         return true;
       }
+      /* 上个月被关掉 / 刷新掉的那张卡还欠玩家一次：先补它，本月新抽的危机
+         与 O1 顺延到下个月，两张卡不叠在一起。 */
+      if (hasPendingModal()) return replayPendingModal(silent);
       var ev = drawModalEvent();
       if (!ev) { maybeShowLedger(silent); return false; }
+      setPendingModal(ev);
       return openEvent(ev, silent);
     });
   }
@@ -1640,10 +1745,12 @@
     $("ledgerBtn").disabled = !FC.ledger;
     render(false);
     renderLog();
-    /* 补弹结算 → 选轨 → 合约 → 教学：欠玩家的那张结算卡排在最前面，
+    /* 补弹结算 → 补弹危机/O1 → 选轨 → 合约 → 教学：欠玩家的那两张卡排在
+       最前面，合约结算先于危机，因为它带的是上个月已经判定完的账；
        教学要指着已经挂上的合约 HUD 与行动区，所以放在几张选卡之后；
        点遮罩不会关掉，必须「下一步 / 跳过」。 */
     replayContractResolution()
+      .then(function () { return replayPendingModal(); })
       .then(function () { return maybeOfferCareerTrack(); })
       .then(function () { return maybeOfferChallengeGoal(); })
       .then(function () { return maybeOfferContract(); })
