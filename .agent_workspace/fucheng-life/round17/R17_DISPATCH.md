@@ -16,16 +16,16 @@
 
 | ID | 模型 | slug | 可写路径 | 任务 |
 |----|------|------|----------|------|
-| R17-F1 | fable | `claude-fable-5-thinking-xhigh` | `round17/fable-r17-sota-gates.md` | SOTA 门禁 |
-| R17-F2 | fable | `claude-fable-5-thinking-xhigh` | `round17/fable-r17-playfeel.md` | 体验风险 |
-| R17-F3 | fable | `claude-fable-5-thinking-xhigh` | `round17/fable-r17-acceptance-draft.md` | §40 草稿 |
-| R17-O1 | opus-fast | `claude-opus-5-thinking-high-fast` | **仅** `js/dashboard-app.js` | tracksPending 收窄；init boot 收敛 |
-| R17-O2 | opus-fast | `claude-opus-5-thinking-high-fast` | **仅** `js/fc-sim.js` | MONTH_CRISES 扩 2–3 条 |
-| R17-O3 | opus-fast | `claude-opus-5-thinking-high-fast` | **仅** `js/fc-guide.js` | 教学一句：合约相关城市事件也会补弹；boot 若跳过教学不升版也行，升版则兼容旧键 |
-| R17-O4 | opus-fast | `claude-opus-5-thinking-high-fast` | **仅** `data/story.json` 抽样核对 1–2 条带 contract 的 O1 字段可被 pending（只读报告写入 round17 也可；若改 JSON 须极小且合法） | 确认门禁 O1 载荷带 id/choices；必要时补 presentation:modal |
-| R17-O5 | opus-fast | `claude-opus-5-thinking-high-fast` | **仅** `css/fc-gameplay.css` 或 `css/fc-events.css` | 若 boot 收敛后无需 CSS 可加极小「有未确认事件」提示样式占位；无则写 round17/o5-skip.md 说明跳过 |
-| R17-G1 | gpt-sol | `gpt-5.6-sol-xhigh` | `tests/r17-pending-contract.test.js` + runner | tracksPending / boot / 危机池断言 |
-| R17-G2 | gpt-sol | `gpt-5.6-sol-xhigh` | `ACCEPTANCE.md` §39✓ §40 + notes | 验收 |
+| R17-F1 | fable | `claude-fable-5-thinking-xhigh` | `round17/fable-r17-sota-gates.md` | SOTA 门禁 | `bc-a4fa1090-f268-5bcf-86fb-1448585a0fe5` |
+| R17-F2 | fable | `claude-fable-5-thinking-xhigh` | `round17/fable-r17-playfeel.md` | 体验风险 | `bc-aeab30e5-d624-5491-8dc7-4808b58150d9` |
+| R17-F3 | fable | `claude-fable-5-thinking-xhigh` | `round17/fable-r17-acceptance-draft.md` | §40 草稿 | `bc-4a1ad9af-ab67-5439-876b-b15c4338e0cf` |
+| R17-O1 | opus-fast | `claude-opus-5-thinking-high-fast` | **仅** `js/dashboard-app.js` | tracksPending + boot 收敛 | `bc-d5d095cd-eaaf-5a70-99f2-8adb87c6134d` |
+| R17-O2 | opus-fast | `claude-opus-5-thinking-high-fast` | **仅** `js/fc-sim.js` | MONTH_CRISES 扩池 | `bc-033806a2-4ce2-57c2-a58c-e65601c361f9` |
+| R17-O3 | opus-fast | `claude-opus-5-thinking-high-fast` | **仅** `js/fc-guide.js` | 教学提示 | `bc-21f825d0-eac2-5261-ae48-5a74e5b85091` |
+| R17-O4 | opus-fast | `claude-opus-5-thinking-high-fast` | story 审计/最小修补 | 合约 O1 载荷 | `bc-07879b87-c601-54f9-8fa1-06ec911a4905` |
+| R17-O5 | opus-fast | `claude-opus-5-thinking-high-fast` | CSS 或 skip 说明 | 可选 | `bc-20daf19f-1285-5412-954a-08a1a721234d` |
+| R17-G1 | gpt-sol | `gpt-5.6-sol-xhigh` | tests + runner | 断言 | `bc-8e9a7f76-eff7-546d-a554-cbaa0ba2c864` |
+| R17-G2 | gpt-sol | `gpt-5.6-sol-xhigh` | ACCEPTANCE §40 | 验收 | `bc-750c0c0d-1e5b-53d6-836e-388353d8673c` |
 
 ## 合入顺序
 
