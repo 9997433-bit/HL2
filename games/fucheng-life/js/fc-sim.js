@@ -146,12 +146,69 @@
           (cleared.length ? "这笔账清了" : null) ||
           (delta > 0 ? "对方欠你一笔" : delta < 0 ? "你欠对方一笔" : null);
         if (note) npc.last = note;
+        if (added.length) FC.Sim.queueNpcFollowups(run, npc.id, added);
         out.push({
           id: npc.id, name: npc.name, balance: npc.balance,
           delta: delta, added: added, cleared: cleared, note: note
         });
       });
       return out;
+    },
+
+    /* R8：挂上欠账 flag 后 2–4 月内定向插队回账事件，不再只靠 O1 随机抽中。 */
+    NPC_FOLLOWUPS: {
+      owe_rent: { eventId: "EV88", delayMin: 2, delayMax: 4 },
+      owe_dinner: { eventId: "EV89", delayMin: 2, delayMax: 4 },
+      owe_shift: { eventId: "EV90", delayMin: 2, delayMax: 4 },
+      hosted_amin: { eventId: "EV91", delayMin: 3, delayMax: 6 },
+      lent_amin: { eventId: "EV91", delayMin: 3, delayMax: 6 },
+      charged_bike: { eventId: "EV92", delayMin: 2, delayMax: 5 },
+      ran_route: { eventId: "EV92", delayMin: 2, delayMax: 5 },
+      trusted: { eventId: "EV92", delayMin: 2, delayMax: 5 }
+    },
+
+    queueNpcFollowups: function (run, npcId, flags) {
+      if (!run || !flags || !flags.length) return;
+      if (!run.npcQueue) run.npcQueue = [];
+      var map = FC.Sim.NPC_FOLLOWUPS;
+      flags.forEach(function (flag) {
+        var spec = map[flag];
+        if (!spec) return;
+        var already = false;
+        run.npcQueue.forEach(function (q) {
+          if (q.eventId === spec.eventId && !q.fired) already = true;
+        });
+        if (already) return;
+        var span = Math.max(0, (spec.delayMax || 4) - (spec.delayMin || 2));
+        var delay = (spec.delayMin || 2) + Math.floor(Math.random() * (span + 1));
+        run.npcQueue.push({
+          eventId: spec.eventId,
+          npc: npcId,
+          flag: flag,
+          dueMonth: (run.months || 0) + delay,
+          fired: false
+        });
+      });
+    },
+
+    /** 到期且未抽过的回账事件 id；没有则 null。 */
+    dueNpcFollowup: function (run) {
+      if (!run || !run.npcQueue || !run.npcQueue.length) return null;
+      var months = run.months || 0;
+      var hit = null;
+      run.npcQueue.forEach(function (q) {
+        if (!q || q.fired || months < q.dueMonth) return;
+        if (run.done && run.done[q.eventId]) { q.fired = true; return; }
+        if (!hit || q.dueMonth < hit.dueMonth) hit = q;
+      });
+      return hit;
+    },
+
+    markNpcFollowupFired: function (run, eventId) {
+      if (!run || !run.npcQueue) return;
+      run.npcQueue.forEach(function (q) {
+        if (q && q.eventId === eventId) q.fired = true;
+      });
     },
 
     /** requires: { npc, minBalance, maxBalance, flag, notFlag }，或它们的数组（全部满足）。
@@ -231,6 +288,7 @@
         else if (run.career.picked == null) run.career.picked = !!run.career.track;
       }
       if (!run.talents || !run.talents.length) run.talents = loadInheritedTalents();
+      if (!run.npcQueue) run.npcQueue = [];
       run.version = 4;
       return run;
     },
@@ -322,7 +380,8 @@
     },
 
     /** 首付线 = 签约当月收入 × 房价收入比。写死一个 ¥ 数字的话，1984 年永远签不下，
-        2026 年第一年就签完了 —— 同一张合约要在七个时代都值同样多的力气。 */
+        2026 年第一年就签完了 —— 同一张合约要在七个时代都值同样多的力气。
+        R8：再与「当前现金 × 1.5」取高，避免开局就买得起的出身一签即赢。 */
     contractGoal: function (def, run, era, origin) {
       if (!def) return 100;
       if (def.id !== "home") return def.goal || 100;
@@ -330,7 +389,10 @@
       try { inc = FC.Sim.income(run, era, origin) || 0; } catch (e) { inc = 0; }
       var scale = def.goalMonthsOfIncome || 70;
       var raw = Math.round(inc * scale / 1000) * 1000;
-      return Math.max(def.goalMin || 60000, Math.min(def.goalMax || 1500000, raw));
+      raw = Math.max(def.goalMin || 60000, Math.min(def.goalMax || 1500000, raw));
+      var cash = (run.money || 0) + ((run.assets && run.assets.sideFund) || 0);
+      var floor = Math.round(cash * 1.5 / 1000) * 1000;
+      return Math.max(raw, floor);
     },
 
     selectContract: function (run, id, era, origin) {
@@ -385,8 +447,9 @@
         var kpi = (run.career && run.career.kpi) || 0;
         return round1(Math.min(1, lv / 2) * 55 + Math.min(1, kpi / 70) * 45);
       }
-      /* 落户：学历分打底，加分项（进修行动、居住年限、合约事件）补足差额。 */
-      return round1(clamp((run.edu || 0) + (c.points || 0), 0, 100));
+      /* R8 落户：学历只贡献 35% 打底，其余靠居住年限 / 进修加分 / 合约事件。
+         旧公式 edu+points 让寒门（edu≈86）近乎签约即达成。 */
+      return round1(clamp((run.edu || 0) * 0.35 + (c.points || 0), 0, 100));
     },
 
     refreshContract: function (run) {
@@ -430,7 +493,8 @@
       var c = run && run.contract;
       if (!c || c.status !== "active") return null;
       if (c.id === "hukou") {
-        FC.Sim.creditContract(run, 0.3 + (run.edu || 0) / 100 * 0.9);
+        /* R8：月度居住分约 0.4–0.6，36 月自然攒 ~18 分，其余靠进修与事件。 */
+        FC.Sim.creditContract(run, 0.35 + (run.edu || 0) / 100 * 0.25);
       }
       return FC.Sim.updateContract(run, era, origin);
     },

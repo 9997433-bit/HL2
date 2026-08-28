@@ -352,7 +352,7 @@
       var w = weightOf(deck[i], layer);
       if (deck[i].eras) w *= 2;
       /* A debt that has come due should be heard over the ambient city. */
-      if (deck[i].requires) w *= 2.4;
+      if (deck[i].requires) w *= 5.0;
       /* 主线也一样：签下的那张合约要盖过背景噪音。 */
       if (deck[i].contract) w *= 2.2;
       pool.push(deck[i]);
@@ -993,6 +993,13 @@
   FC.events = {
     load: load,
     deck: function () { return deck; },
+    byId: function (id) {
+      if (!deck || !id) return null;
+      for (var i = 0; i < deck.length; i++) {
+        if (deck[i].id === id) return deck[i];
+      }
+      return null;
+    },
     pick: pick,
     show: show,
     showToast: function (payload, opts) { return showAs("toast", payload, opts); },

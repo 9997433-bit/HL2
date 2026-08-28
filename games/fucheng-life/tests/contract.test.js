@@ -75,7 +75,10 @@ function setLowState(run, kind) {
 }
 
 function setHighState(run, kind) {
-  if (kind === "settlement") run.edu = 100;
+  if (kind === "settlement") {
+    run.edu = 100;
+    if (run.contract) run.contract.points = 70;
+  }
   if (kind === "deposit") run.money = 100000000;
   if (kind === "promotion") {
     run.career.level = 4;
@@ -131,12 +134,27 @@ function main() {
   const settlementRun = Sim.freshRun(era, origin);
   settlementRun.edu = 40;
   select(settlementRun, settlement);
-  assert.equal(progressOf(settlementRun), 40,
-    "落户 progress must start from the education score");
+  assert.equal(progressOf(settlementRun), 14,
+    "落户 progress must start from education × 35% (R8)");
   assert.equal(Sim.creditContract(settlementRun, 12.5), 12.5,
     "落户 creditContract must report the credited points");
-  assert.equal(progressOf(settlementRun), 52.5,
-    "落户 progress must add education and credited points");
+  assert.equal(progressOf(settlementRun), 26.5,
+    "落户 progress must add education×0.35 and credited points");
+
+  /* R8：高学历出身签约时不应接近完成。 */
+  const eliteRun = Sim.freshRun(era, origin);
+  eliteRun.edu = 86;
+  select(eliteRun, settlement);
+  assert.ok(progressOf(eliteRun) < 40,
+    "high-edu hukou start must stay under 40% after R8 rebalance, got " + progressOf(eliteRun));
+
+  /* R8：首付线至少是签约时现金的 1.5 倍。 */
+  const richRun = Sim.freshRun(era, origin);
+  richRun.money = 200000;
+  richRun.assets.sideFund = 0;
+  select(richRun, deposit);
+  assert.ok(richRun.contract.goal >= 300000,
+    "home goal must be at least 1.5× starting cash, got " + richRun.contract.goal);
 
   const depositRun = Sim.freshRun(era, origin);
   select(depositRun, deposit);

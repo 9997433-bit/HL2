@@ -735,9 +735,30 @@
 
   function drawModalEvent() {
     if (!FC.events || FC.events.isOpen()) return null;
+    if (!run.done) run.done = {};
+
+    /* R8：人情回账到期时插队，不走 MODAL_ODDS —— 账到了就会敲门。 */
+    var forced = FC.Sim.dueNpcFollowup(run);
+    if (forced) {
+      var forcedEv = FC.events.byId
+        ? FC.events.byId(forced.eventId)
+        : (FC.events.deck() || []).filter(function (e) { return e.id === forced.eventId; })[0];
+      if (forcedEv && !(forcedEv.once && run.done[forcedEv.id])) {
+        if (FC.events.meetsNpc(run.npcs, forcedEv.requires)) {
+          if (forcedEv.once) run.done[forcedEv.id] = true;
+          FC.Sim.markNpcFollowupFired(run, forced.eventId);
+          run.sinceModal = 0;
+          run.recentModal = (run.recentModal || []).concat(forcedEv.id).slice(-8);
+          return forcedEv;
+        }
+        FC.Sim.markNpcFollowupFired(run, forced.eventId);
+      } else {
+        FC.Sim.markNpcFollowupFired(run, forced.eventId);
+      }
+    }
+
     run.sinceModal = (run.sinceModal || 0) + 1;
     if (Math.random() >= MODAL_ODDS[Math.min(run.sinceModal, 4)]) return null;
-    if (!run.done) run.done = {};
     var draw = {
       layer: layerOf(),
       avoid: run.recentModal || [],
@@ -758,6 +779,7 @@
     }
     if (ev.type === "redline") run.lastRedline = run.months;
     if (ev.once) run.done[ev.id] = true;
+    FC.Sim.markNpcFollowupFired(run, ev.id);
     run.sinceModal = 0;
     /* Eight is roughly two years of knocks: with a deck this size a window of
        three still let the same door repeat within the year. */
