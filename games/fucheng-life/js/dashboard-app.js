@@ -534,29 +534,67 @@
     }
   }
 
-  /* 自动花 AP：先听 suggestMonth 的建议，建议这月点不动就挑第一个能点的行动。
-     一轮下来 AP 没少，说明没有行动可点了，收手让调用方去解释剩下的点。 */
+  /* 自动行动永远不替玩家去探区：探区是唯一带地点选择的行动，替玩家点掉
+     等于替他花了 zoneQueue，而且高风险地点的余波要他自己认。 */
+  var AUTO_SKIP = { explore: 1 };
+
+  function actById(id) {
+    var acts = FC.Sim.actions();
+    for (var i = 0; i < acts.length; i++) if (acts[i].id === id) return acts[i];
+    return null;
+  }
+
+  function canDo(act) {
+    return !!act && FC.Sim.canAction(run, act, era, origin);
+  }
+
+  /* 现金撑不过这个月的账单时，自动行动别再拿 AP 去进修 / 休息烧成负债。
+     suggestMonth 的 high 级建议（健康见底、人情要债）仍然压过这条护栏。 */
+  function cashTight() {
+    var out = bills().reduce(function (a, b) { return a + b.v; }, 0);
+    return run.money < out;
+  }
+
+  /* 自动行动挑谁：先听 suggestMonth（带 skipExplore / preferWorkIfPoor），
+     它这月点不动就挑第一个能点的行动 —— 探区始终不算在候选里。 */
+  function pickAutoAction() {
+    var tip = FC.Sim.suggestMonth
+      ? FC.Sim.suggestMonth(run, era, origin, { skipExplore: true, preferWorkIfPoor: true })
+      : null;
+    var id = tip && tip.actionId;
+    var act = id && !AUTO_SKIP[id] ? actById(id) : null;
+    if (!canDo(act)) act = null;
+
+    /* Sim 还没实现 preferWorkIfPoor 时，这里自己兜一层现金护栏。 */
+    if (cashTight() && id !== "work" && (!act || !tip || tip.urgency !== "high")) {
+      var work = actById("work");
+      if (canDo(work)) return work;
+    }
+    if (act) return act;
+
+    var acts = FC.Sim.actions();
+    for (var i = 0; i < acts.length; i++) {
+      if (AUTO_SKIP[acts[i].id]) continue;
+      if (canDo(acts[i])) return acts[i];
+    }
+    return null;
+  }
+
+  /* 自动花 AP：一轮下来 AP 没少，说明没有行动可点了，收手让调用方去解释剩下的点。 */
   function autoSpendAp() {
+    var keepZone = run.zoneQueue;
     var guard = 0;
     while (run.ap > 0 && guard++ < 24) {
-      var tip = FC.Sim.suggestMonth ? FC.Sim.suggestMonth(run, era, origin) : null;
-      var id = tip && tip.actionId;
-      var acts = FC.Sim.actions();
-      var act = null;
-      var i;
-      if (id) {
-        for (i = 0; i < acts.length; i++) if (acts[i].id === id) act = acts[i];
-      }
-      if (!act || !FC.Sim.canAction(run, act, era, origin)) {
-        act = null;
-        for (i = 0; i < acts.length; i++) {
-          if (FC.Sim.canAction(run, acts[i], era, origin)) { act = acts[i]; break; }
-        }
-      }
+      var act = pickAutoAction();
       if (!act) break;
       var before = run.ap;
       onAction(act.id);
       if (run.ap >= before) break;
+    }
+    /* 探区目标是玩家自己设的，快进结束后必须原样留在那儿。 */
+    if (keepZone && run.zoneQueue !== keepZone) {
+      run.zoneQueue = keepZone;
+      renderLocationChip();
     }
     return run.ap;
   }
@@ -578,12 +616,14 @@
       if (i >= n) return Promise.resolve(false);
       autoSpendAp();
       if (run.ap > 0) {
-        sysLog("快进中止：还剩 " + run.ap + " 点行动点花不出去（可能缺探区目标）。");
+        sysLog("快进走了 " + i + "/" + n + " 月：还剩 " + run.ap +
+          " 点行动点花不出去。快进不会替你去探区，探区请自己点。");
         return Promise.resolve(true);
       }
       return tick(i < n - 1).then(function (hit) {
         if (hit) {
-          sysLog("快进被一件事打断，剩下的月份没走。");
+          sysLog("快进走了 " + (i + 1) + "/" + n + " 月，被一件事打断" +
+            (i + 1 >= n ? "。" : "，剩下的月份没走。"));
           return true;
         }
         return step(i + 1);
@@ -598,9 +638,16 @@
     });
   }
 
+  var FF_MONTHS = 3;
+
   function startFastForward() {
-    if (!window.confirm("快进会自动花完行动点并连续推进 3 个月。遇到大事会停下。确定？")) return;
-    fastForwardMonths(3);
+    if (!window.confirm(
+      "快进会自动花完行动点并连续推进 " + FF_MONTHS + " 个月。\n" +
+      "· 不会自动去探区：探区目标留着，要你自己点「探区」。\n" +
+      "· 现金紧时优先上班，不会拿行动点去进修 / 休息。\n" +
+      "· 遇到大事会停下。确定？"
+    )) return;
+    fastForwardMonths(FF_MONTHS);
   }
 
   /* 签约窗口只有头三个月。「再想想」记下当月，下个月才会再问一次。 */
@@ -1136,7 +1183,9 @@
     return entry;
   }
 
-  function openEvent(ev, silent) {
+  /* onApplied 只在玩家真把这张卡结掉时才跑：被 dismiss 的卡没落账，
+     调用方也就不该把它记成「已结算」。 */
+  function openEvent(ev, silent, onApplied) {
     return FC.events.show(ev, { moneyRef: income() }).then(function (res) {
       if (res.dismissed) return true;
       var applied = FC.Sim.applyDeltas(run, res.deltas, income());
@@ -1146,8 +1195,50 @@
       pushLog(eventToLog(ev, res, applied, ledger));
       render(true); renderLog(); flyMoney([applied.money], null);
       maybeShowLedger(silent);
+      if (onApplied) onApplied(res);
       return true;
     });
+  }
+
+  /* 合约结算的奖惩挂在弹窗那唯一一个选项上：卡没弹、或者弹了被刷新掉，
+     奖励就没进账。Sim / contract 侧提供判定与标记时用它们的，缺了就退回
+     合约自身的一个本地标记，至少保证同一张卡不会每月重弹。 */
+  function contractResolutionPending(run0) {
+    var c = run0 && run0.contract;
+    if (!c || c.status === "active") return false;
+    if (FC.Sim && typeof FC.Sim.needsContractResolution === "function") {
+      return !!FC.Sim.needsContractResolution(run0);
+    }
+    if (FC.contract && typeof FC.contract.needsResolutionReplay === "function") {
+      return !!FC.contract.needsResolutionReplay(run0);
+    }
+    return !c.resolutionDone;
+  }
+
+  function markContractResolutionDone(run0) {
+    if (FC.Sim && typeof FC.Sim.markContractResolutionDone === "function") {
+      FC.Sim.markContractResolutionDone(run0);
+    }
+    if (FC.contract && typeof FC.contract.markResolutionDone === "function") {
+      FC.contract.markResolutionDone(run0);
+    }
+    var c = run0 && run0.contract;
+    if (c && c.status !== "active") c.resolutionDone = true;
+    FC.write({ run: run0 });
+  }
+
+  /* 进门时补弹：上一局停在「合约已结算但奖惩没落账」，这里把那张卡补回来。 */
+  function replayContractResolution() {
+    if (!contractResolutionPending(run)) return Promise.resolve(false);
+    if (!FC.events || !FC.contract || !FC.contract.resolutionEvent) return Promise.resolve(false);
+    var resolution = FC.contract.resolutionEvent(run);
+    if (!resolution) {
+      markContractResolutionDone(run);
+      return Promise.resolve(false);
+    }
+    return openEvent(resolution, true, function () {
+      markContractResolutionDone(run);
+    }).then(function () { return true; });
   }
 
   function checkEnding() {
@@ -1299,7 +1390,11 @@
     if (settled && FC.contract && FC.contract.resolutionEvent) {
       var resolution = FC.contract.resolutionEvent(run);
       /* openEvent 结束时自己会 maybeShowLedger，这里不必再叫一次。 */
-      if (resolution) return openEvent(resolution, silent).then(function () { return true; });
+      if (resolution) {
+        return openEvent(resolution, silent, function () {
+          markContractResolutionDone(run);
+        }).then(function () { return true; });
+      }
     }
     return maybeOfferSecondaryContract().then(function (hit) {
       if (hit) return true;
@@ -1545,9 +1640,11 @@
     $("ledgerBtn").disabled = !FC.ledger;
     render(false);
     renderLog();
-    /* 选轨 → 合约 → 教学：教学要指着已经挂上的合约 HUD 与行动区，
-       所以放在两张选卡之后；点遮罩不会关掉，必须「下一步 / 跳过」。 */
-    maybeOfferCareerTrack()
+    /* 补弹结算 → 选轨 → 合约 → 教学：欠玩家的那张结算卡排在最前面，
+       教学要指着已经挂上的合约 HUD 与行动区，所以放在几张选卡之后；
+       点遮罩不会关掉，必须「下一步 / 跳过」。 */
+    replayContractResolution()
+      .then(function () { return maybeOfferCareerTrack(); })
       .then(function () { return maybeOfferChallengeGoal(); })
       .then(function () { return maybeOfferContract(); })
       .then(function () {
