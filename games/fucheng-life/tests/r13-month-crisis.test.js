@@ -71,7 +71,10 @@ run.lastCrisisMonth = 4;
 run.health = 80;
 run.debt = 0;
 run.social = 80;
+/* R15 给冷却后的危机加了概率闸；本断言测的是「池与回退」而非掷骰，固定过闸。 */
+Math.random = function () { return 0; };
 const forced = Sim.pickMonthCrisis(run, era, origin);
+Math.random = rnd;
 assert.ok(forced, "long gap without conditions still yields a fallback crisis");
 
 /* Zone aftershock */
