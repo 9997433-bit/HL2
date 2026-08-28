@@ -18,7 +18,7 @@
      FC.overlay.push(kind, el) / .pop(el) / .top() / .trap(el, event)
      FC.events.load()                → Promise<deck>
      FC.events.deck()                → array | null
-     FC.events.pick({layer, avoid, allowRedline})
+     FC.events.pick({layer, avoid, allowRedline, era, months, done})
      FC.events.show(payload, opts?)  → Promise<{choiceId, choice, deltas, event, dismissed}>
      FC.events.close()               → force-close, resolves dismissed:true
      FC.events.moneyOf(units, ref)   → ¥ amount for a money delta
@@ -137,6 +137,12 @@
       title: raw.title,
       body: raw.body || raw.text,
       weight: raw.weight || 8,
+      /* Gating metadata travels with the payload so `pick` can filter on it
+         without reaching back into story.json. */
+      eras: raw.eras && raw.eras.length ? raw.eras : null,
+      once: !!raw.once,
+      minMonths: raw.minMonths || 0,
+      maxMonths: raw.maxMonths || 0,
       choices: raw.choices || []
     };
   }
@@ -210,17 +216,40 @@
     return ev.weight * (dist === 0 ? 3 : dist === 1 ? 1.4 : 0.45);
   }
 
+  /* An event with no `eras` belongs to every era — it is one of the city's
+     constants. A tagged one only shows up in the decades it was written for,
+     and then twice as loudly, because three of them have to be heard over
+     fifty that are always in the deck. */
+  function fitsEra(ev, era) {
+    if (!ev.eras) return true;
+    return !!era && ev.eras.indexOf(era) >= 0;
+  }
+
+  function fitsMonths(ev, months) {
+    if (months == null) return true;
+    if (ev.minMonths && months < ev.minMonths) return false;
+    if (ev.maxMonths && months > ev.maxMonths) return false;
+    return true;
+  }
+
+  /* opts: { layer, avoid, allowRedline, era, months, done } — all optional,
+     so a caller that knows nothing about the run still gets an event. */
   function pick(opts) {
     opts = opts || {};
     if (!deck || !deck.length) return null;
     var layer = opts.layer || 2;
     var avoid = opts.avoid || [];
+    var done = opts.done || null;
     var pool = [], weights = [], total = 0, i;
 
     for (i = 0; i < deck.length; i++) {
       if (avoid.indexOf(deck[i].id) >= 0) continue;
       if (opts.allowRedline === false && deck[i].type === "redline") continue;
+      if (!fitsEra(deck[i], opts.era)) continue;
+      if (!fitsMonths(deck[i], opts.months)) continue;
+      if (deck[i].once && done && done[deck[i].id]) continue;
       var w = weightOf(deck[i], layer);
+      if (deck[i].eras) w *= 2;
       pool.push(deck[i]);
       weights.push(w);
       total += w;
