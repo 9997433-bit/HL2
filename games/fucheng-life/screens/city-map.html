@@ -86,8 +86,11 @@
     {
       id: "L5", elev: "地下 · UNDERCURRENT",
       zones: [
+        /* The undercurrent's own ceiling. It has a price too, it just isn't
+           quoted in money — architecture §2 S3 asks L5 to read colder. */
         { n: "地下钱庄", d: "利息按天算，规矩按人算。没有合同，只有名字。",
-          th: 88, cost: 74, risk: 96, tags: ["高回报", "红线"], locked: false },
+          th: 88, cost: 74, risk: 96, tags: ["高回报", "红线"], locked: true,
+          gate: "不收钱 · 收把柄" },
         { n: "灰色中介", d: "什么都能办，报价随需求浮动。他从不问你为什么。",
           th: 62, cost: 58, risk: 88, tags: ["捷径", "把柄"], locked: false },
         { n: "夜场后巷", d: "灯牌背面的世界。这里的人情不记账，记仇。",
@@ -100,11 +103,14 @@
       id: "L4", elev: "顶层 · CAPITAL",
       zones: [
         { n: "CBD 顶层会所", d: "会员制。名片在这里没用，介绍人才有用。",
-          th: 94, cost: 96, risk: 42, tags: ["资源", "门槛极高"], locked: true },
+          th: 94, cost: 96, risk: 42, tags: ["资源", "门槛极高"], locked: true,
+          gate: "入场券 ¥5,000,000 · 需引荐" },
         { n: "江景豪宅", d: "落地窗外是整片江。物业费比很多人的房租高。",
-          th: 90, cost: 98, risk: 18, tags: ["资产", "身份"], locked: true },
+          th: 90, cost: 98, risk: 18, tags: ["资产", "身份"], locked: true,
+          gate: "入场券 ¥2,000,000" },
         { n: "私募办公室", d: "安静得能听见空调。这里的一个决定，能改十条街的命运。",
-          th: 86, cost: 72, risk: 56, tags: ["资本", "杠杆"], locked: true },
+          th: 86, cost: 72, risk: 56, tags: ["资本", "杠杆"], locked: true,
+          gate: "入场券 ¥1,000,000 · 声望 86" },
         { n: "拍卖行", d: "落槌声很轻。买下的不是东西，是一次被看见的机会。",
           th: 78, cost: 88, risk: 34, tags: ["社交", "声望"], locked: false }
       ]
@@ -164,6 +170,13 @@
     return layout;
   });
 
+  /* The price of admission, printed on the node itself. Zones that never got
+     their own line fall back to the raw threshold rather than going silent —
+     an unexplained lock is just a dead button. */
+  function gateOf(z) {
+    return z.gate || "准入门槛 " + z.th + " / 100";
+  }
+
   /* --------------------------------------------------------------- build */
   $("map").innerHTML = STRATA.map(function (s) {
     return (
@@ -179,9 +192,15 @@
           '<div class="fc-zones">' +
             s.zones.map(function (z, j) {
               return '<button type="button" class="fc-zone' + (z.locked ? " is-locked" : "") + '" ' +
-                'data-l="' + s.id + '" data-z="' + j + '"' + (z.locked ? ' aria-disabled="true"' : "") + ">" +
-                '<span class="fc-zone__dot"></span>' + esc(z.n) +
-                (z.locked ? ' <span style="opacity:.7;font-size:11px">· 未解锁</span>' : "") +
+                'data-l="' + s.id + '" data-z="' + j + '"' +
+                (z.locked ? ' aria-disabled="true"' : "") + ">" +
+                (z.locked
+                  ? '<span class="fc-zone__lockicon" aria-hidden="true"></span>'
+                  : '<span class="fc-zone__dot"></span>') +
+                '<span class="fc-zone__stack">' +
+                  '<span class="fc-zone__label">' + esc(z.n) + "</span>" +
+                  (z.locked ? '<span class="fc-zone__gate">' + esc(gateOf(z)) + "</span>" : "") +
+                "</span>" +
                 "</button>";
             }).join("") +
           "</div>" +
@@ -227,7 +246,9 @@
       "<dt>准入门槛</dt><dd>" + z.th + " / 100</dd>" +
       "<dt>生活成本</dt><dd>" + z.cost + " / 100</dd>" +
       "<dt>风险指数</dt><dd" + (z.risk > 70 ? ' style="color:var(--bad)"' : "") + ">" + z.risk + " / 100</dd>" +
-      "<dt>状态</dt><dd>" + (z.locked ? "未解锁" : "可进入") + "</dd>";
+      "<dt>状态</dt><dd" + (z.locked ? ' style="color:var(--warn)"' : "") + ">" +
+        (z.locked ? "未解锁" : "可进入") + "</dd>" +
+      (z.locked ? "<dt>入场券</dt><dd>" + esc(gateOf(z)) + "</dd>" : "");
     $("dMeters").innerHTML =
       meter("门槛", z.th, "fc-meter--cyan") +
       meter("物价", z.cost, "") +

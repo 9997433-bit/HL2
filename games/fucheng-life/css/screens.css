@@ -1180,14 +1180,130 @@ button {
     0 0 40px color-mix(in srgb, var(--tint) 32%, transparent);
 }
 
+/* Locked zone — the glass ceiling, made literal.
+   Frosted film over the node, corner brackets clamped around it, and the
+   price of admission printed underneath the name. The name itself sits a
+   hair out of focus: you can see the place, you cannot read it clearly from
+   where you are standing. Leaning in (hover / focus) clears the glass. */
 .fc-zone.is-locked {
-  opacity: 0.42;
+  align-items: flex-start;
+  padding: 7px 13px 7px 10px;
+  max-width: 100%;
   cursor: not-allowed;
+  border-color: color-mix(in srgb, var(--tint) 20%, transparent);
+  background: rgba(6, 10, 20, 0.5);
 }
 
-.fc-zone.is-locked:hover {
+.fc-zone.is-locked::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  backdrop-filter: blur(6px) saturate(60%);
+  -webkit-backdrop-filter: blur(6px) saturate(60%);
+  background: linear-gradient(
+    118deg,
+    rgba(232, 240, 255, 0.09),
+    rgba(232, 240, 255, 0.02) 42%,
+    rgba(6, 10, 20, 0.12)
+  );
+  transition: opacity 0.28s var(--ease);
+}
+
+/* Corner brackets: four L-shaped clamps, no box, so the node reads as held
+   rather than as merely outlined. */
+.fc-zone.is-locked::after {
+  content: "";
+  position: absolute;
+  inset: -3px;
+  pointer-events: none;
+  --arm: 9px;
+  --hair: 1.5px;
+  --clamp: color-mix(in srgb, var(--tint) 62%, transparent);
+  background:
+    linear-gradient(var(--clamp), var(--clamp)) left 0 top 0 / var(--arm) var(--hair) no-repeat,
+    linear-gradient(var(--clamp), var(--clamp)) left 0 top 0 / var(--hair) var(--arm) no-repeat,
+    linear-gradient(var(--clamp), var(--clamp)) right 0 top 0 / var(--arm) var(--hair) no-repeat,
+    linear-gradient(var(--clamp), var(--clamp)) right 0 top 0 / var(--hair) var(--arm) no-repeat,
+    linear-gradient(var(--clamp), var(--clamp)) left 0 bottom 0 / var(--arm) var(--hair) no-repeat,
+    linear-gradient(var(--clamp), var(--clamp)) left 0 bottom 0 / var(--hair) var(--arm) no-repeat,
+    linear-gradient(var(--clamp), var(--clamp)) right 0 bottom 0 / var(--arm) var(--hair) no-repeat,
+    linear-gradient(var(--clamp), var(--clamp)) right 0 bottom 0 / var(--hair) var(--arm) no-repeat;
+}
+
+/* The frosted film is a positioned box, so it paints above inline content;
+   lifting the label and the glyph into the same phase puts them back on top.
+   Without this the price of admission ends up behind the glass too. */
+.fc-zone__stack,
+.fc-zone__lockicon,
+.fc-zone__dot {
+  position: relative;
+}
+
+.fc-zone__stack {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  min-width: 0;
+}
+
+.fc-zone__label {
+  transition: filter 0.28s var(--ease), opacity 0.28s var(--ease);
+}
+
+.fc-zone.is-locked .fc-zone__label {
+  filter: blur(0.7px);
+  opacity: 0.74;
+}
+
+/* The price stays sharp. A ceiling you cannot read the price of is just a
+   wall, and the point of this one is that the number is public. */
+.fc-zone__gate {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.05em;
+  line-height: 1.4;
+  /* Mixed toward --text rather than --text-dim: L5's deep red went unreadable
+     against its own band at the dimmer weight. */
+  color: color-mix(in srgb, var(--tint) 44%, var(--text));
+}
+
+.fc-zone__lockicon {
+  width: 9px;
+  height: 11px;
+  margin-top: 3px;
+  flex: none;
+  opacity: 0.72;
+  background: var(--tint);
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 18 22'%3E%3Cpath d='M5 10V6.5a4 4 0 0 1 8 0V10' fill='none' stroke='%23000' stroke-width='2.4'/%3E%3Crect x='2' y='9.6' width='14' height='11.4' rx='2.6'/%3E%3C/svg%3E") center / contain no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 18 22'%3E%3Cpath d='M5 10V6.5a4 4 0 0 1 8 0V10' fill='none' stroke='%23000' stroke-width='2.4'/%3E%3Crect x='2' y='9.6' width='14' height='11.4' rx='2.6'/%3E%3C/svg%3E") center / contain no-repeat;
+}
+
+/* Locked nodes never lift and never glow — the lack of an answer is the
+   answer. All they do is let you read them properly. */
+.fc-zone.is-locked:hover,
+.fc-zone.is-locked:focus-visible,
+.fc-zone.is-locked.is-active {
   transform: none;
   box-shadow: none;
+  text-shadow: none;
+  background: rgba(6, 10, 20, 0.5);
+  border-color: color-mix(in srgb, var(--tint) 42%, transparent);
+}
+
+.fc-zone.is-locked:hover .fc-zone__label,
+.fc-zone.is-locked:focus-visible .fc-zone__label,
+.fc-zone.is-locked.is-active .fc-zone__label {
+  filter: none;
+  opacity: 1;
+}
+
+.fc-zone.is-locked:hover::before,
+.fc-zone.is-locked:focus-visible::before,
+.fc-zone.is-locked.is-active::before {
+  opacity: 0.45;
 }
 
 /* Layer colour presets applied to any element */
