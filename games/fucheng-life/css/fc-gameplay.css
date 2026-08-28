@@ -1195,6 +1195,8 @@
   .fc-career-pick.is-closing .fc-career-pick__panel { transition: none; }
   .fc-career-pick__panel,
   .fc-career-pick.is-closing .fc-career-pick__panel { transform: none; }
+  /* 没有过渡时 is-open 要等一帧 rAF 才挂上，弹窗不能在这一帧里是透明的 */
+  .fc-career-pick:not(.is-closing) { opacity: 1; }
 }
 
 .fc-asset-shop {
