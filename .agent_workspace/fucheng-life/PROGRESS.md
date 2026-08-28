@@ -44,7 +44,7 @@
 ## Subagent Status (Round 1)
 | Agent | Model | Status |
 |-------|-------|--------|
-| [fable-r1-ui-arch](bc-e1fcf7fb-cf9f-5787-8931-17c7bd1f6395) | fable | running ☁️ |
+| [fable-r1-ui-arch](bc-e1fcf7fb-cf9f-5787-8931-17c7bd1f6395) | fable | ✅ done → `67ea417` |
 | [fable-r1-sota-ui](bc-23b25f5e-5910-5a77-ab2d-5b6465eb0f01) | fable | ✅ done → `08ccc8e` |
 | [opus-r1-main-shell](bc-ed2ea4bd-4931-5c4e-ac56-be6c153e7c3d) | opus-fast | running ☁️ |
 | [opus-r1-core-screens](bc-17288417-4671-5100-8d00-dd6d2a791b83) | opus-fast | running |
