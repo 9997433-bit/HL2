@@ -48,10 +48,10 @@
         host.className = "fc-career-pick";
         host.innerHTML =
           '<div class="fc-career-pick__scrim"></div>' +
-          '<div class="fc-career-pick__panel" role="dialog" aria-modal="true" tabindex="-1">' +
+          '<div class="fc-career-pick__panel" role="dialog" aria-modal="true" aria-labelledby="fcCareerTitle" aria-describedby="fcCareerLede" tabindex="-1">' +
             '<p class="fc-eyebrow">CAREER TRACK · 入职选轨</p>' +
-            '<h2 class="fc-career-pick__title">第一份工，你打算走哪条线？</h2>' +
-            '<p class="fc-career-pick__lede">轨道决定职级名称与 KPI 成长节奏。之后仍可能转岗，但起点会影响前两年的手感。</p>' +
+            '<h2 class="fc-career-pick__title" id="fcCareerTitle">第一份工，你打算走哪条线？</h2>' +
+            '<p class="fc-career-pick__lede" id="fcCareerLede">轨道决定职级名称与 KPI 成长节奏。之后仍可能转岗，但起点会影响前两年的手感。</p>' +
             '<div class="fc-career-pick__grid">' +
               tracks().map(function (tr) {
                 var rec = tr.id === hint ? ' <span class="fc-career-pick__rec">推荐</span>' : "";
