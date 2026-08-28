@@ -301,7 +301,7 @@ async function testChallengeEscapePulse() {
 function testRequiredWordingAndCareerLogName() {
   const challengeSrc = functionSection(dashSrc, "maybeOfferChallengeGoal");
   const lede = challengeSrc.match(
-    /<p class="fc-career-pick__lede">([^<]+)<\/p>/
+    /<p class="fc-career-pick__lede"(?:\s[^>]*)?>([^<]+)<\/p>/
   );
   assert.ok(lede, "challenge picker must render a lede");
   assert.match(
