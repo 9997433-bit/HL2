@@ -34,3 +34,15 @@
 - O2 / O4 同文件不同函数区：禁止互相改对方函数。
 - O3 / O5 同 CSS：O3 写 shake；O5 只动 reduce 块或写 `o5-skip.md`。
 - 未授权路径禁止改 `games/`。
+
+## Agent IDs
+- F1: bc-334692a6-c7f8-5933-8d6e-01815ee63a01
+- F2: bc-156e2ca9-4aaa-54e2-a763-ca0b4c5d60e0
+- F3: bc-3ada258b-4412-5a45-aa93-214ed3cd35c0
+- O1: bc-3670a970-ffdc-5e53-9131-a499ab0f584a
+- O2: bc-fe3da298-e2ab-574a-a456-94a7ec5ef1a2
+- O3: bc-49e21c45-0760-5b5f-b132-6bd07f9fd68e
+- O4: bc-6073f89a-7e51-5d16-be77-13d433e0184b
+- O5: bc-f1197d2b-eda0-5c31-abe3-48685d934575
+- G1: bc-62fa2fb0-f0b1-534a-b1c4-bccdbdd06738
+- G2: bc-5dedad8f-7c07-5a1b-9fbe-47c504b1f37c
