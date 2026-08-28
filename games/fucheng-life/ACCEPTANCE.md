@@ -210,3 +210,9 @@ python3 -m http.server 8000
     boot 自动流打开的选轨面板保持原语义：按 Escape 仍接受并应用推荐轨。  
     §40 已对齐 dismiss 语义：发生过 `pendingModal` 补弹（含被关闭/dismiss）时，当次 boot 推迟自动选轨、签约与聚光灯教学。  
     `node games/fucheng-life/tests/r19-career-dismiss.test.js` 与 `./scripts/run-fucheng-life-tests.sh` 全绿。
+
+43. [x] **R20 · 选轨/闯城选择卡开合动效 + 玻璃底**  
+    选轨与闯城选择卡具备一致的开合动效，并使用玻璃底视觉。  
+    闯城选择卡按 Escape 不可取消关闭；按 Tab 或 Shift+Tab 时，焦点保持在卡内循环（Tab trap）。  
+    `prefers-reduced-motion: reduce` 下开合即时完成、面板保持可见，选卡与放行不受影响。  
+    `node games/fucheng-life/tests/r20-picker-motion.test.js` 与 `./scripts/run-fucheng-life-tests.sh` 全绿。

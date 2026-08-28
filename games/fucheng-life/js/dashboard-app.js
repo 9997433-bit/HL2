@@ -1147,8 +1147,7 @@
                 "<b>" + esc(g.name) + "</b><span>" + esc(g.blurb) + "</span></button>";
             }).join("") +
           "</div></div>";
-      document.body.appendChild(host);
-      FC.overlay.push("modal", host);
+      var panel = host.querySelector(".fc-career-pick__panel");
       var settled = false;
       function finish(id) {
         if (settled) return;
@@ -1160,16 +1159,32 @@
           text: "主目标定为「" + ((def && def.name) || run.goal.id) + "」。六十个月后按此交卷。",
           d: {}, kind: "saga"
         });
-        if (host.parentNode) host.parentNode.removeChild(host);
-        FC.overlay.pop(host);
-        render(true);
-        renderLog();
-        resolve(true);
+        host.classList.add("is-closing");
+        setTimeout(function () {
+          if (host.parentNode) host.parentNode.removeChild(host);
+          FC.overlay.pop(host);
+          render(true);
+          renderLog();
+          resolve(true);
+        }, 180);
       }
+
+      /* 主目标不可取消：Esc 只吞掉按键，不当作「随便给你一张」也不放行，
+         否则这局没有目标可以计分 —— 宁可让玩家再看一眼这三张牌。 */
+      function onKey(e) {
+        if (e.key === "Escape") { e.preventDefault(); return; }
+        if (e.key === "Tab" && panel) { FC.overlay.trap(panel, e); return; }
+      }
+
       host.addEventListener("click", function (e) {
         var btn = e.target.closest("[data-goal]");
         if (btn) finish(btn.getAttribute("data-goal"));
       });
+
+      document.body.appendChild(host);
+      if (FC.overlay.push("modal", host)) FC.overlay.top().onKey = onKey;
+      if (panel && panel.focus) panel.focus();
+      requestAnimationFrame(function () { host.classList.add("is-open"); });
     });
   }
 
