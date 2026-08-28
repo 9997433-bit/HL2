@@ -519,15 +519,34 @@
     }).join("");
   }
 
+  /* 日志存的是字段不是 HTML —— 存档要经得起换皮，卡片每次渲染现画。 */
+  function inlineHtmlOf(e) {
+    if (!FC.events || !FC.events.showInline) return "";
+    return FC.events.showInline({
+      id: e.id,
+      title: e.title,
+      body: e.text,
+      category: e.tag,
+      layerId: e.layerId || "L2",
+      type: e.type,
+      presentation: "inline"
+    }, { tag: e.tag, note: e.note }).html;
+  }
+
   function logCardItem(e, i) {
+    /* presentation: "inline" 的事件走 fc-events 画的那张卡；探区回执仍走本地
+       这张。时间列和左侧轨道两者共用，时间线不会断。 */
+    var body = e.inline
+      ? inlineHtmlOf(e) + '<div class="fc-log__delta">' + logDeltas(e.d) + "</div>"
+      : '<article class="fc-log__card">' +
+        '<span class="fc-log__tag" style="color:' + e.tint + '">' + esc(e.tag) + "</span>" +
+        (e.title ? '<h3 class="fc-log__card-title">' + esc(e.title) + "</h3>" : "") +
+        '<p class="fc-log__card-text">' + esc(e.text) + '</p>' +
+        '<div class="fc-log__delta">' + logDeltas(e.d) + "</div></article>";
     return '<li class="fc-log__item fc-log__item--card is-new" style="--i:' + Math.min(i, 7) +
       ";--tint:" + (e.tint || "var(--l2)") + '">' +
       '<div class="fc-log__time">' + e.t + '</div><div class="fc-log__body">' +
-      '<article class="fc-log__card">' +
-      '<span class="fc-log__tag" style="color:' + e.tint + '">' + esc(e.tag) + "</span>" +
-      (e.title ? '<h3 class="fc-log__card-title">' + esc(e.title) + "</h3>" : "") +
-      '<p class="fc-log__card-text">' + esc(e.text) + '</p>' +
-      '<div class="fc-log__delta">' + logDeltas(e.d) + "</div></article></div></li>";
+      body + "</div></li>";
   }
 
   function logItem(e, i) {
@@ -557,25 +576,49 @@
     painted = head.map(function (e) { return e.seq; });
   }
 
+  function layerNumOf(ev) {
+    /* 151/301 ambient 事件没写 layerId；缺省按 L2，别让整月结算炸掉 */
+    return parseInt(String(ev.layerId || "L2").replace(/\D/g, ""), 10) || 2;
+  }
+
+  /* presentation: "inline" 的 ambient 不再是日志里的一行灰字 —— 它拿到一张
+     有标题、有左边框的卡。其余的照旧：一个月里值得抬头看的事只有那么几件。 */
   function ambientToLog(ev, applied) {
-    return {
-      /* 151/301 ambient 事件没写 layerId；缺省按 L2，别让整月结算炸掉 */
-      t: ts(), tag: ev.category || "城市", tint: "var(--l" + (parseInt(String(ev.layerId || "L2").replace(/\D/g, ""), 10) || 2) + ")",
-      text: ev.text || ev.title, d: applied
+    var entry = {
+      t: ts(),
+      tag: ev.category || "城市",
+      tint: "var(--l" + layerNumOf(ev) + ")",
+      text: ev.text || ev.title,
+      d: applied
     };
+    if (FC.events && FC.events.presentationOf(ev) === "inline") {
+      entry.id = ev.id;
+      entry.title = ev.title || "";
+      entry.layerId = ev.layerId || "L2";
+      entry.card = true;
+      entry.inline = true;
+    }
+    return entry;
   }
 
   function zoneEventToLog(ev, applied) {
-    var layerNum = parseInt(String(ev.layerId || "L2").replace(/\D/g, ""), 10) || 2;
-    return {
+    var entry = {
       t: ts(),
       tag: ev.category || "探区",
-      tint: "var(--l" + layerNum + ")",
+      tint: "var(--l" + layerNumOf(ev) + ")",
       title: ev.title || "",
       text: ev.text || "",
       card: true,
       d: applied
     };
+    /* 探区回执默认还是 R5-C 那张本地卡；zone 数据一旦标了 inline，就换成
+       fc-events 的呈现壳，不必再改这里。 */
+    if (FC.events && FC.events.presentationOf(ev) === "inline") {
+      entry.id = ev.id;
+      entry.layerId = ev.layerId || "L2";
+      entry.inline = true;
+    }
+    return entry;
   }
 
   function settleMonth(moves) {
@@ -647,6 +690,33 @@
     if (choice.contractProgress) FC.Sim.creditContract(run, choice.contractProgress);
   }
 
+  /* 一条事件解析完之后进日志。modal / toast / letter 都留一行「【标题】结果」，
+     inline 没有弹过窗，日志卡就是它唯一的现身方式，所以整段叙事都写进卡里。 */
+  function eventToLog(ev, res, applied, ledger) {
+    var entry = {
+      t: ts(),
+      tag: ev.contract ? "合约"
+        : ledger.length ? ledger[0].name : (FC.events.TYPE_LABEL[ev.type] || ev.category),
+      tint: ev.contract ? "var(--neon-gold)"
+        : ledger.length ? "var(--neon-amber)" : "var(--l" + ev.layerIndex + ")",
+      text: "【" + ev.title + "】" + ((res.choice && res.choice.result) || "") + npcNote(ledger),
+      d: applied
+    };
+    if (res.inline) {
+      /* res.event 是归一化后的 payload —— 原始事件不一定带 layer/body。 */
+      var payload = res.event || ev;
+      entry.id = payload.id;
+      entry.title = payload.title;
+      entry.text = payload.body;
+      entry.note = res.card.note + npcNote(ledger);
+      entry.layerId = payload.layer;
+      entry.type = payload.type;
+      entry.card = true;
+      entry.inline = true;
+    }
+    return entry;
+  }
+
   function openEvent(ev, silent) {
     return FC.events.show(ev, { moneyRef: income() }).then(function (res) {
       if (res.dismissed) return true;
@@ -654,15 +724,7 @@
       var ledger = FC.Sim.applyNpcEffects(run, res.choice && res.choice.npcEffects);
       applyContractChoice(res.choice);
       if (FC.contract) FC.contract.creditDeltas(run, applied);
-      pushLog({
-        t: ts(),
-        tag: ev.contract ? "合约"
-          : ledger.length ? ledger[0].name : (FC.events.TYPE_LABEL[ev.type] || ev.category),
-        tint: ev.contract ? "var(--neon-gold)"
-          : ledger.length ? "var(--neon-amber)" : "var(--l" + ev.layerIndex + ")",
-        text: "【" + ev.title + "】" + ((res.choice && res.choice.result) || "") + npcNote(ledger),
-        d: applied
-      });
+      pushLog(eventToLog(ev, res, applied, ledger));
       render(true); renderLog(); flyMoney([applied.money], null);
       maybeShowLedger(silent);
       return true;
