@@ -39,7 +39,8 @@
 - `exports-smoke.test.js` 扩展：无 SCRIPT 索引、SEED 对齐 story.json。
 
 ### fable 架构
-- 无额外架构 commit；设计约束已写入 fable-sota-gates 与 ACCEPTANCE §21–25。
+- `round1/fable-o1-architecture.md`：O1 SSOT 数据流、load/pick/show 契约、SEED 镜像策略。
+- `data/events-schema.json`：events/choices 字段 JSON Schema 草案，供 R2 校验与文档对齐。
 
 ---
 
