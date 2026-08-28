@@ -522,8 +522,11 @@
       if (!run.assets) run.assets = { property: null, vehicle: null, sideFund: 0, owned: [] };
       if (!run.assets.owned) run.assets.owned = [];
       if (run.career) {
-        if ((run.months || 0) > 0) run.career.picked = true;
-        else if (run.career.picked == null) run.career.picked = !!run.career.track;
+        /* 旧档没有 picked 字段时：已推进过的档默认当作选过；显式 false
+           （手动入口取消后）必须保留，不能靠 months>0 再强推。 */
+        if (run.career.picked == null) {
+          run.career.picked = (run.months || 0) > 0 ? true : !!run.career.track;
+        }
       }
       if (!run.talents || !run.talents.length) run.talents = loadInheritedTalents();
       if (!run.npcQueue) run.npcQueue = [];

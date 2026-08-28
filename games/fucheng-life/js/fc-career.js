@@ -31,8 +31,9 @@
       if (!run || !run.career) return false;
       run.career.track = trackId || suggestTrack();
       run.career.picked = true;
-      run.career.level = 0;
-      run.career.kpi = 48;
+      /* 推迟选轨期间可能已攒 KPI/职级；只在缺省时填入门值，勿清零。 */
+      if (typeof run.career.level !== "number") run.career.level = 0;
+      if (typeof run.career.kpi !== "number") run.career.kpi = 48;
       return true;
     },
 
@@ -65,7 +66,7 @@
         if (!panel) { resolve(null); return; }
         var settled = false;
 
-        function finish(id) {
+        function close(value) {
           if (settled) return;
           settled = true;
           host.classList.add("is-closing");
@@ -73,13 +74,24 @@
             if (host.parentNode) host.parentNode.removeChild(host);
             FC.overlay.pop(host);
             picker = null;
-            resolve(id || hint);
+            resolve(value);
           };
           global.setTimeout(done, 180);
         }
 
+        function finish(id) {
+          close(id || hint);
+        }
+
+        /* 手动入口（玩家自己点开看看）关掉就该当没发生：resolve(null)，
+           不把推荐轨硬塞给他。开局强制选轨仍走 finish(hint) 兜底。 */
+        function dismiss() {
+          if (opts.cancelable) { close(null); return; }
+          finish(hint);
+        }
+
         function onKey(e) {
-          if (e.key === "Escape") { e.preventDefault(); finish(hint); return; }
+          if (e.key === "Escape") { e.preventDefault(); dismiss(); return; }
           if (e.key === "Tab") { FC.overlay.trap(panel, e); return; }
         }
 
@@ -89,7 +101,7 @@
           });
         });
         var scrim = host.querySelector(".fc-career-pick__scrim");
-        if (scrim) scrim.addEventListener("click", function () { finish(hint); });
+        if (scrim) scrim.addEventListener("click", function () { dismiss(); });
 
         doc.body.appendChild(host);
         if (FC.overlay.push("modal", host)) FC.overlay.top().onKey = onKey;

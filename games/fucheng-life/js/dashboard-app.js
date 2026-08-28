@@ -1106,9 +1106,15 @@
     });
   }
 
-  function maybeOfferCareerTrack() {
+  /* 无参调用（进门自动弹）走不可取消语义：这张卡必须选完才放行。
+     手动点「选轨」是玩家自己翻开来看的，允许关掉，关掉就当没发生过。 */
+  function maybeOfferCareerTrack(opts) {
+    opts = opts || {};
     if (!FC.career || !FC.career.needsPick(run)) return Promise.resolve(false);
-    return FC.career.showPicker({ run: run, era: era, origin: origin }).then(function (id) {
+    var pick = { run: run, era: era, origin: origin };
+    if (opts.manual) pick.cancelable = true;
+    return FC.career.showPicker(pick).then(function (id) {
+      if (!id) return false;
       FC.career.applyTrack(run, id);
       pushLog({
         t: ts(), tag: "职场", tint: "var(--neon-violet)",
@@ -1759,7 +1765,7 @@
     }
     if ($("careerPickBtn")) {
       $("careerPickBtn").addEventListener("click", function () {
-        maybeOfferCareerTrack();
+        maybeOfferCareerTrack({ manual: true });
       });
     }
 
