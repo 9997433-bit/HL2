@@ -125,7 +125,11 @@
     return raw;
   }
 
-  FC.ready = FC.loadStory().then(function () {
-    return loadGameplay().then(publishGameplay);
+  /* Resolve with the story itself: screens.js chains installStory onto
+     FC.ready and must receive the story, not the gameplay pack. */
+  FC.ready = FC.loadStory().then(function (story) {
+    return loadGameplay().then(publishGameplay).then(function () {
+      return story;
+    });
   });
 })(window);
