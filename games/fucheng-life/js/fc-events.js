@@ -608,9 +608,9 @@
         { id: "pay", label: "把账结了", cost: "现金 −−−",
           d: { money: -3, social: 4, rep: 3 }, result: "你去前台签了单，回来时没有说。第二天有人在群里提了一句，你说小事。" },
         { id: "owe", label: "让对方结，记下这笔", cost: "人情 ▲",
-          d: { social: 6, rep: -2 }, result: "这一顿你没有付钱。人情账本上多了一行，落款是你。" },
+          d: { social: 6, rep: -2 }, result: "这一顿你没有掏钱。人情账本上多了一行字，落款是你。" },
         { id: "aa", label: "AA，把话说明白", cost: "关系 −",
-          d: { money: -1, social: -2, rep: 2 }, result: "你提议平摊，桌上短暂安静，然后有人笑着答应。此后联系少了一些。" }
+          d: { money: -1, social: -2, rep: 2 }, result: "你提议平摊，桌上短暂安静，然后有人笑着答应。后来联系少了一些。" }
       ] },
     { id: "EV09", title: "潮汐线下的借据", layerId: "L5", category: "风险", weight: 7, type: "redline",
       body: "江水准时退去，露出一张被雨泡软的借据。名字还清楚，承诺已经晕开。",
