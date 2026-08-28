@@ -198,3 +198,9 @@ python3 -m http.server 8000
     开局若已完成合约结算或 `pendingModal` 补弹，当次推迟自动选轨、签约与聚光灯教学；闯城档缺少主目标时仍会询问，手动教学入口继续可用。  
     本月危机池新增写实二选一，并继续遵守概率闸、近期去重与每月一个强弹窗上限。  
     `node games/fucheng-life/tests/r17-pending-contract.test.js` 与 `./scripts/run-fucheng-life-tests.sh` 全绿。
+
+41. [x] **R18 · 过期合约门禁销账 + 选轨手动入口 + 教学 KEY 政策**  
+    带 `contract` 字段的 `pendingModal` 补弹前会重验当前合约是否仍 active 且 id 匹配；合约已结算、换签或消失时不再开卡，清除待办并写入系统日志，卡片选项后果不入账（进度窗口漂移仍补弹）。  
+    尚未选轨时，仪表盘显示「选择职业轨道」手动入口；开局补弹推迟自动选轨后，玩家仍可主动完成选轨；选完后按钮正确收起。  
+    教学增量文案默认不 bump KEY，仅结构性改版才升版；本轮文案修正继续使用 `fucheng.guide.v7`，不会强制已读玩家重看。  
+    R18 专项测试与 `./scripts/run-fucheng-life-tests.sh` 全绿。

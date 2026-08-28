@@ -534,6 +534,14 @@
     }
   }
 
+  /* 选轨卡被补弹逻辑推到下次进门时，玩家不该只能等：工具区留一个手动入口，
+     选完就自己收起来。 */
+  function renderCareerPickBtn() {
+    var btn = $("careerPickBtn");
+    if (!btn) return;
+    btn.hidden = !(FC.career && FC.career.needsPick(run));
+  }
+
   /* 自动行动永远不替玩家去探区：探区是唯一带地点选择的行动，替玩家点掉
      等于替他花了 zoneQueue，而且高风险地点的余波要他自己认。 */
   var AUTO_SKIP = { explore: 1 };
@@ -816,6 +824,7 @@
 
     renderActions();
     renderContract();
+    renderCareerPickBtn();
     renderGoalHud();
     renderLocationChip();
     renderTabsExtra();
@@ -1341,6 +1350,16 @@
     }, { pending: false }).then(function () { return true; });
   }
 
+  /* 挂账那一刻合约还在手上，补弹时可能已经结算或换签 —— 只拦「合约没了 /
+     换签了 / 已结算」；进度/期限窗口漂移仍补弹，避免 KPI 回落把 EV97 一类
+     门禁卡永久销掉。 */
+  function pendingContractStale(ev) {
+    if (!ev || !ev.contract) return false;
+    if (!FC.Sim || typeof FC.Sim.contractCtx !== "function") return false;
+    var ctx = FC.Sim.contractCtx(run);
+    return !ctx || ctx.id !== ev.contract || ctx.status !== "active";
+  }
+
   /* 进门时补弹：上一局停在「危机 / O1 已经敲过门但没答完」，这里把那张卡
      原样开回来。玩家再关一次就继续欠着，下次进门再弹。 */
   function replayPendingModal(silent) {
@@ -1349,6 +1368,13 @@
     var ev = pending && pending.event;
     if (!ev || !ev.id) {
       clearPendingModal();
+      return Promise.resolve(false);
+    }
+    /* 销掉过期合约卡时返回 false：这一步没弹窗，不该占掉本轮的敲门额度。 */
+    if (pendingContractStale(ev)) {
+      clearPendingModal();
+      sysLog("那张合约相关的通知过期了，不再补弹。");
+      FC.write({ run: run });
       return Promise.resolve(false);
     }
     return openEvent(ev, silent !== false, null, {
@@ -1729,6 +1755,11 @@
       $("guideBtn").addEventListener("click", function () {
         if (FC.guide.isOpen && FC.guide.isOpen()) return;
         FC.guide.show({ force: true });
+      });
+    }
+    if ($("careerPickBtn")) {
+      $("careerPickBtn").addEventListener("click", function () {
+        maybeOfferCareerTrack();
       });
     }
 

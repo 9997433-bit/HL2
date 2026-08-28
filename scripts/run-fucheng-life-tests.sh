@@ -54,6 +54,7 @@ run_test "R14 flow fixes and goal bindings" "$TEST_DIR/r14-flow-fixes.test.js"
 run_test "R15 fast-forward guards and settlement replay" "$TEST_DIR/r15-ff-guards.test.js"
 run_test "R16 crisis modal replay and in-app confirm" "$TEST_DIR/r16-crisis-replay.test.js"
 run_test "R17 contract O1 pending and boot coalescing" "$TEST_DIR/r17-pending-contract.test.js"
+run_test "R18 stale contract replay and career picker guards" "$TEST_DIR/r18-stale-contract.test.js"
 run_test "dashboard browser boot regression" "$TEST_DIR/page-boot.test.js"
 
 printf '\n浮城人生 test summary: %d passed, %d failed\n' "$passed" "$failed"
