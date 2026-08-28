@@ -1144,7 +1144,7 @@
         '<div class="fc-career-pick__panel" role="dialog" aria-modal="true" tabindex="-1">' +
           '<p class="fc-eyebrow">CHALLENGE · 闯城 60 月</p>' +
           '<h2 class="fc-career-pick__title">这六十个月，你赌哪一张牌？</h2>' +
-          '<p class="fc-career-pick__lede">选一个主目标。期满按完成度与生存质量打分，不是混满月数就算赢。</p>' +
+          '<p class="fc-career-pick__lede">选一个主目标。期满按完成度与生存质量打分，不是混满月数就算赢。必须选定一张才能往下走。</p>' +
           '<div class="fc-career-pick__grid">' +
             goals.map(function (g) {
               return '<button type="button" class="fc-career-card" data-goal="' + esc(g.id) + '">' +
@@ -1173,10 +1173,24 @@
         }, 180);
       }
 
+      /* 吞掉的按键要有回音，否则玩家只会以为键盘没进来、接着一路猛敲 Esc。
+         连按得能重新起拍：先摘类、强制回流，再挂上去。 */
+      var escPulseTimer = 0;
+      function pulseEsc() {
+        if (!panel || settled) return;
+        clearTimeout(escPulseTimer);
+        panel.classList.remove("is-esc-pulse");
+        void panel.offsetWidth;
+        panel.classList.add("is-esc-pulse");
+        escPulseTimer = setTimeout(function () {
+          panel.classList.remove("is-esc-pulse");
+        }, 320);
+      }
+
       /* 主目标不可取消：Esc 只吞掉按键，不当作「随便给你一张」也不放行，
          否则这局没有目标可以计分 —— 宁可让玩家再看一眼这三张牌。 */
       function onKey(e) {
-        if (e.key === "Escape") { e.preventDefault(); return; }
+        if (e.key === "Escape") { e.preventDefault(); pulseEsc(); return; }
         if (e.key === "Tab" && panel) { FC.overlay.trap(panel, e); return; }
       }
 
