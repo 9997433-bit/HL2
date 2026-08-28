@@ -209,3 +209,4 @@ python3 -m http.server 8000
     从仪表盘「选择职业轨道」手动入口打开选轨面板时，按 Escape 或点击遮罩可取消关闭；取消后不应用推荐轨、不写入 `null` 日志，手动入口继续保留。  
     boot 自动流打开的选轨面板保持原语义：按 Escape 仍接受并应用推荐轨。  
     §40 已对齐 dismiss 语义：发生过 `pendingModal` 补弹（含被关闭/dismiss）时，当次 boot 推迟自动选轨、签约与聚光灯教学。  
+    `node games/fucheng-life/tests/r19-career-dismiss.test.js` 与 `./scripts/run-fucheng-life-tests.sh` 全绿。
