@@ -9,6 +9,178 @@
   var fmt = function (n) { return n.toLocaleString("zh-CN"); };
   var esc = function (s) { return FC.esc(s); };
 
+  /* Mini map zones — keys must match gameplay-pack zoneEvents + city-map.html */
+  var ZONE_PICKER = [
+    { id: "L5", zones: [
+      { key: "broker", name: "灰色中介" },
+      { key: "alley", name: "夜场后巷" },
+      { key: "factory", name: "废弃厂区" }
+    ]},
+    { id: "L4", zones: [
+      { key: "auction", name: "拍卖行" }
+    ]},
+    { id: "L3", zones: [
+      { key: "school", name: "重点中学" },
+      { key: "exam", name: "考场" },
+      { key: "jobfair", name: "校招现场" },
+      { key: "nightclass", name: "夜校 / 证书班" },
+      { key: "incubator", name: "创业孵化器" }
+    ]},
+    { id: "L2", zones: [
+      { key: "office", name: "写字楼" },
+      { key: "rent", name: "合租房" },
+      { key: "metro", name: "早高峰地铁" },
+      { key: "mall", name: "连锁商圈" },
+      { key: "bank", name: "银行网点" }
+    ]},
+    { id: "L1", zones: [
+      { key: "village", name: "城中村" },
+      { key: "market", name: "早市" },
+      { key: "delivery", name: "外卖站点" },
+      { key: "nightfood", name: "夜宵大排档" },
+      { key: "labor", name: "劳务市场" }
+    ]}
+  ];
+  var ZONE_BY_KEY = {};
+  var zonePickerHost = null;
+  var zonePickerLayerId = "L2";
+
+  ZONE_PICKER.forEach(function (stratum) {
+    stratum.zones.forEach(function (z) {
+      ZONE_BY_KEY[z.key] = { name: z.name, layerId: stratum.id };
+    });
+  });
+
+  function zoneLabel(key) {
+    return key && ZONE_BY_KEY[key] ? ZONE_BY_KEY[key].name : null;
+  }
+
+  function zoneLayerTint(key) {
+    var meta = ZONE_BY_KEY[key];
+    if (!meta) return "var(--neon-cyan)";
+    var layer = FC.byId(FC.LAYERS, meta.layerId);
+    return layer ? "var(--" + layer.key + ")" : "var(--neon-cyan)";
+  }
+
+  function renderLocationChip() {
+    var textEl = $("locChipText");
+    var chip = $("locChip");
+    if (!textEl || !chip) return;
+    var key = run.zoneQueue;
+    textEl.textContent = zoneLabel(key) || "未设探区";
+    chip.classList.toggle("is-set", !!key);
+    chip.style.setProperty("--tint", key ? zoneLayerTint(key) : "var(--text-faint)");
+  }
+
+  function zonePickerBodyHtml() {
+    var target = run.zoneQueue;
+    var strip = FC.LAYERS.map(function (l) {
+      return '<button type="button" class="fc-elevator__step is-pick' +
+        (l.id === zonePickerLayerId ? " is-active" : "") +
+        '" data-layer="' + l.id + '" style="--tint:var(--' + l.key + ')">' +
+        "<b>" + l.id + "</b><span>" + esc(l.name) + "</span></button>";
+    }).join("");
+
+    var zones = [];
+    ZONE_PICKER.forEach(function (s) {
+      if (s.id === zonePickerLayerId) zones = s.zones;
+    });
+    var activeLayer = FC.byId(FC.LAYERS, zonePickerLayerId);
+    var tint = activeLayer ? "var(--" + activeLayer.key + ")" : "var(--neon-cyan)";
+    var zoneBtns = zones.map(function (z) {
+      return '<button type="button" class="fc-zone-mini__btn' +
+        (target === z.key ? " is-target" : "") +
+        '" data-zone="' + z.key + '" style="--tint:' + tint + '">' +
+        esc(z.name) + "</button>";
+    }).join("");
+
+    return '<div class="fc-zone-mini" style="--tint:' + tint + '">' +
+      '<div class="fc-zone-mini__strip"><div class="fc-elevator">' + strip + "</div></div>" +
+      '<div class="fc-zone-mini__zones">' + zoneBtns + "</div></div>";
+  }
+
+  function closeZonePicker() {
+    if (!zonePickerHost) return;
+    zonePickerHost.classList.add("is-closing");
+    var host = zonePickerHost;
+    var done = function () {
+      if (host.parentNode) host.parentNode.removeChild(host);
+      if (zonePickerHost === host) zonePickerHost = null;
+    };
+    host.addEventListener("animationend", function (e) {
+      if (e.animationName === "fc-sheet-down") done();
+    });
+    setTimeout(done, 400);
+    if (FC.overlay) FC.overlay.pop(host);
+  }
+
+  function paintZonePicker() {
+    if (!zonePickerHost) return;
+    var body = zonePickerHost.querySelector(".fc-zone-picker__body");
+    if (body) body.innerHTML = zonePickerBodyHtml();
+  }
+
+  function selectZone(key) {
+    run.zoneQueue = key;
+    FC.write({ run: run });
+    closeZonePicker();
+    renderActions();
+    renderLocationChip();
+    $("apHint").textContent = "已选探区「" + zoneLabel(key) + "」，可点「探区」消耗行动点。";
+  }
+
+  function openZonePicker() {
+    if (zonePickerHost) {
+      paintZonePicker();
+      return;
+    }
+    var meta = run.zoneQueue && ZONE_BY_KEY[run.zoneQueue];
+    zonePickerLayerId = meta ? meta.layerId : ("L" + layerOf());
+
+    zonePickerHost = document.createElement("div");
+    zonePickerHost.id = "zonePicker";
+    zonePickerHost.className = "fc-sheet";
+    zonePickerHost.innerHTML =
+      '<div class="fc-sheet__scrim"></div>' +
+      '<div class="fc-sheet__panel" role="dialog" aria-modal="true" aria-label="选择探区" tabindex="-1">' +
+        '<i class="fc-sheet__grip" aria-hidden="true"></i>' +
+        '<header class="fc-sheet__head">' +
+          '<h2 class="fc-sheet__title">选择探区 <span class="fc-sheet__ym">ZONE</span></h2>' +
+          '<p class="fc-sheet__caption">点选地点设为探区目标，本月「探区」行动将在此触发事件。</p>' +
+        "</header>" +
+        '<div class="fc-zone-picker__body"></div>' +
+        '<a class="fc-btn fc-btn--ghost fc-sheet__done" href="city-map.html" style="width:100%;margin-top:12px">打开完整城市地图</a>' +
+        '<button type="button" class="fc-btn fc-btn--primary fc-sheet__done" style="width:100%;margin-top:8px">取消</button>' +
+      "</div>";
+
+    var panel = zonePickerHost.querySelector(".fc-sheet__panel");
+    zonePickerHost.querySelector(".fc-zone-picker__body").innerHTML = zonePickerBodyHtml();
+
+    function onKey(e) {
+      if (e.key === "Escape") closeZonePicker();
+      if (e.key === "Tab" && FC.overlay) FC.overlay.trap(panel, e);
+    }
+
+    zonePickerHost.addEventListener("click", function (e) {
+      if (e.target.closest(".fc-sheet__scrim")) closeZonePicker();
+      var layerBtn = e.target.closest("[data-layer]");
+      if (layerBtn && layerBtn.classList.contains("is-pick")) {
+        zonePickerLayerId = layerBtn.dataset.layer;
+        paintZonePicker();
+        return;
+      }
+      var zoneBtn = e.target.closest("[data-zone]");
+      if (zoneBtn) selectZone(zoneBtn.dataset.zone);
+      if (e.target.closest(".fc-sheet__done") && e.target.tagName === "BUTTON") closeZonePicker();
+    });
+
+    document.body.appendChild(zonePickerHost);
+    if (FC.overlay && FC.overlay.push("sheet", zonePickerHost)) {
+      FC.overlay.top().onKey = onKey;
+    }
+    panel.focus();
+  }
+
   function income() { return FC.Sim.income(run, era, origin); }
   function bills() { return FC.Sim.bills(run, era, origin); }
   function layerOf() { return FC.Sim.layerOf(run, origin); }
@@ -88,9 +260,9 @@
     $("stageChip").textContent = FC.Sim.stage(run).label;
     $("tickBtn").disabled = run.ap > 0;
     $("apHint").textContent = run.zoneQueue
-      ? "已选探区目标，可点「探区」消耗行动点。"
+      ? "已选探区「" + (zoneLabel(run.zoneQueue) || run.zoneQueue) + "」，可点「探区」消耗行动点。"
       : run.ap > 0
-        ? "用完行动点后再推进一月。地图可设定探区目标。"
+        ? "用完行动点后再推进一月。侧栏可设定探区目标。"
         : "行动点已用尽，可以推进一月。";
   }
 
@@ -279,6 +451,7 @@
 
     renderActions();
     renderContract();
+    renderLocationChip();
     renderTabsExtra();
     if (lastLayer !== null && lastLayer !== L && window.FCMotion && FCMotion.layerPulse) {
       FCMotion.layerPulse($("elevatorPanel"), L);
@@ -288,12 +461,28 @@
     FC.write({ run: run });
   }
 
-  function logItem(e, i) {
-    var deltas = Object.keys(e.d || {}).map(function (k) {
-      var v = e.d[k];
+  function logDeltas(d) {
+    return Object.keys(d || {}).map(function (k) {
+      var v = d[k];
       return '<span class="' + (v >= 0 ? "up" : "down") + '">' + (STAT_NAME[k] || k) +
         " " + (v >= 0 ? "+" : "−") + Math.abs(v) + "</span>";
     }).join("");
+  }
+
+  function logCardItem(e, i) {
+    return '<li class="fc-log__item fc-log__item--card is-new" style="--i:' + Math.min(i, 7) +
+      ";--tint:" + (e.tint || "var(--l2)") + '">' +
+      '<div class="fc-log__time">' + e.t + '</div><div class="fc-log__body">' +
+      '<article class="fc-log__card">' +
+      '<span class="fc-log__tag" style="color:' + e.tint + '">' + esc(e.tag) + "</span>" +
+      (e.title ? '<h3 class="fc-log__card-title">' + esc(e.title) + "</h3>" : "") +
+      '<p class="fc-log__card-text">' + esc(e.text) + '</p>' +
+      '<div class="fc-log__delta">' + logDeltas(e.d) + "</div></article></div></li>";
+  }
+
+  function logItem(e, i) {
+    if (e.card) return logCardItem(e, i);
+    var deltas = logDeltas(e.d);
     return '<li class="fc-log__item is-new" style="--i:' + Math.min(i, 7) + '">' +
       '<div class="fc-log__time">' + e.t + "</div><div class=fc-log__body>" +
       '<span class="fc-log__tag" style="color:' + e.tint + '">' + esc(e.tag) + "</span><p>" +
@@ -323,6 +512,19 @@
       /* 151/301 ambient 事件没写 layerId；缺省按 L2，别让整月结算炸掉 */
       t: ts(), tag: ev.category || "城市", tint: "var(--l" + (parseInt(String(ev.layerId || "L2").replace(/\D/g, ""), 10) || 2) + ")",
       text: ev.text || ev.title, d: applied
+    };
+  }
+
+  function zoneEventToLog(ev, applied) {
+    var layerNum = parseInt(String(ev.layerId || "L2").replace(/\D/g, ""), 10) || 2;
+    return {
+      t: ts(),
+      tag: ev.category || "探区",
+      tint: "var(--l" + layerNum + ")",
+      title: ev.title || "",
+      text: ev.text || "",
+      card: true,
+      d: applied
     };
   }
 
@@ -544,7 +746,7 @@
     pushLog({ t: ts(), tag: "行动", tint: "var(--neon-cyan)", text: res.text, d: res.applied });
     if (res.zoneEvent) {
       var zd = FC.Sim.applyDeltas(run, res.zoneEvent.d || {}, income());
-      pushLog(ambientToLog(res.zoneEvent, zd));
+      pushLog(zoneEventToLog(res.zoneEvent, zd));
       flyMoney([zd.money], null);
     }
     render(true);
@@ -608,6 +810,9 @@
         run.done.contractSkipped = -1;
         maybeOfferContract();
       });
+    }
+    if ($("locChip")) {
+      $("locChip").addEventListener("click", openZonePicker);
     }
 
     bindTabs();

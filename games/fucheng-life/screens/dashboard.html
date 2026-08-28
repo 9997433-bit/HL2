@@ -93,7 +93,15 @@
 
   <!-- Mid-term life contract -->
   <section class="fc-contract-hud fc-rise" id="contractHud" hidden>
+    <div class="fc-contract-hud__ring-wrap" aria-hidden="true">
+      <svg class="fc-contract-hud__ring" viewBox="0 0 40 40" focusable="false">
+        <circle class="fc-contract-hud__ring-track" cx="20" cy="20" r="16" fill="none"/>
+        <circle class="fc-contract-hud__ring-arc" id="contractRing" cx="20" cy="20" r="16" fill="none"/>
+      </svg>
+      <span class="fc-contract-hud__ring-label" id="contractRingLabel"></span>
+    </div>
     <div class="fc-contract-hud__main">
+      <p class="fc-contract-hud__prompt" id="contractPrompt" hidden>城市在等你签一份合约</p>
       <div class="fc-contract-hud__head">
         <span class="fc-contract-hud__eyebrow">Life Contract</span>
         <b class="fc-contract-hud__name" id="contractName">尚未签约</b>
@@ -131,7 +139,7 @@
         </div>
         <div class="fc-apbar__dots" id="apDots" aria-hidden="true"></div>
         <div class="fc-actions" id="actionGrid"></div>
-        <p class="fc-quote fc-apbar__hint" id="apHint">先安排这月的行动，再点「推进一月」。探区需先在地图选地点。</p>
+        <p class="fc-quote fc-apbar__hint" id="apHint">先安排这月的行动，再点「推进一月」。侧栏可设定探区。</p>
       </div>
 
       <div class="fc-rowgap">
@@ -149,6 +157,15 @@
 
       <div class="fc-panel" id="elevatorPanel">
         <h2 class="fc-sectiontitle">圈层 <span>LAYER</span></h2>
+        <div class="fc-loc" id="locPanel">
+          <p class="fc-loc__label">当前位置 <span>LOCATION</span></p>
+          <button type="button" class="fc-loc-chip" id="locChip" aria-haspopup="dialog" aria-controls="zonePicker">
+            <span class="fc-loc-chip__pin" aria-hidden="true">◎</span>
+            <span class="fc-loc-chip__text" id="locChipText">未设探区</span>
+            <span class="fc-loc-chip__action">改</span>
+          </button>
+        </div>
+        <hr class="fc-hr" style="margin:14px 0">
         <div class="fc-elevator" id="elevator"></div>
         <p class="fc-quote" id="layerNote" style="margin:14px 0 0;font-size:12px">
           城市把人放在不同的高度，然后收不同的租。
