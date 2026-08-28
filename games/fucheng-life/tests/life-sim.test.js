@@ -30,10 +30,17 @@ const era = {
   stats: { opportunity: 70, threshold: 50, volatility: 50 }
 };
 const origin = {
-  id: "O03", storyId: "urban-white-collar", name: "白领", layer: 2,
+  id: "O03", storyId: "public-system", name: "白领", layer: 2,
   mods: { money: 50, health: 60, social: 55, edu: 65 },
   start: "¥ 12000"
 };
+
+assert.ok(story.events.length >= 50,
+  "story.json event pool regressed below 50 entries: " + story.events.length);
+assert.ok(story.origins.some((item) => item.id === origin.storyId),
+  "life-sim fixture must reference a canonical story origin: " + origin.storyId);
+assert.ok((pack.originSagas || []).some((saga) => saga.originId === origin.storyId),
+  "life-sim fixture must exercise a mapped origin saga: " + origin.storyId);
 
 function spendAp(run) {
   while (run.ap > 0 && FC.Sim.canAction(run, FC.Sim.actions()[0], era, origin)) {
