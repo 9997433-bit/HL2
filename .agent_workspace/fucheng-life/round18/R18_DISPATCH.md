@@ -24,3 +24,15 @@
 
 ## 分支
 `cursor/fucheng-r18-stale-contract-fa72`
+
+## Agent IDs
+- F1: bc-3428cb3f-819c-5945-83ef-0c9354f092bb
+- F2: bc-d7ec8404-d980-5c24-aece-b954e109e1a3
+- F3: bc-dfb75e55-f63f-5f32-8d1c-4ec3fb8b3b62
+- O1: bc-74a7fe73-8388-527f-91cf-3e9bc7ffce17
+- O2: bc-17d98ba6-7a62-565c-b00b-b981483ff456
+- O3: bc-a1d9a42f-698f-568c-acf1-bd3aceec8067
+- O4: bc-5dcb704c-18d3-526c-93a3-05c3c8de079e
+- O5: bc-31e5a15b-a032-5eff-bd7f-eea8f150eee7
+- G1: bc-0379ce1f-9e82-50fc-a836-853b7c94ae30
+- G2: bc-77f7330d-4311-58d5-a4e8-b6dfd7723bb5
