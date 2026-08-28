@@ -21,7 +21,7 @@ wealthy-merchant, humble-scholar, orphan, state-household, factory-youth
 ## Round Status
 | Round | Status | Agents |
 |-------|--------|--------|
-| R1 | in_progress | 6× cloud |
+| R1 | in_progress | 3× cloud + 3× local（云端并发上限 3） |
 | R2 | pending | — |
 | R3 | pending | — |
 
