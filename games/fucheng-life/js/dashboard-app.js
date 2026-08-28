@@ -641,11 +641,12 @@
   var FF_MONTHS = 3;
 
   /* R15 的三条护栏原样写进确认面板：问的人得先知道快进替他做什么、不做什么。 */
-  function ffConfirmBody() {
-    return "快进会自动花完行动点并连续推进 " + FF_MONTHS + " 个月。\n" +
-      "· 不会自动去探区：探区目标留着，要你自己点「探区」。\n" +
-      "· 现金紧时优先上班，不会拿行动点去进修 / 休息。\n" +
-      "· 遇到大事会停下。";
+  function ffConfirmItems() {
+    return [
+      "不会自动去探区：探区目标留着，要你自己点「探区」。",
+      "现金紧时优先上班，不会拿行动点去进修 / 休息。",
+      "遇到大事会停下。"
+    ];
   }
 
   /* FC.confirm 没加载时（旧缓存、或者直接双击开页）仍要问一句再走。 */
@@ -656,16 +657,20 @@
 
   function startFastForward() {
     if (fastForwarding || run.ended) return Promise.resolve(false);
-    var body = ffConfirmBody();
+    var items = ffConfirmItems();
     var ask = FC.confirm
       ? FC.confirm({
         title: "快进 " + FF_MONTHS + " 个月？",
-        body: body,
+        body: "会自动花完行动点并连续推进 " + FF_MONTHS + " 个月。",
+        items: items,
         confirmLabel: "开始快进",
         cancelLabel: "再等等",
         layer: "L" + layerOf()
       })
-      : Promise.resolve(nativeConfirm(body));
+      : Promise.resolve(nativeConfirm(
+        "快进会自动花完行动点并连续推进 " + FF_MONTHS + " 个月。\n· " +
+          items.join("\n· ") + "\n"
+      ));
     return ask.then(function (ok) {
       if (!ok) return false;
       return fastForwardMonths(FF_MONTHS);

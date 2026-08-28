@@ -24,7 +24,7 @@
 
    Public API
      FC.overlay.push(kind, el) / .pop(el) / .top() / .trap(el, event)
-     FC.confirm({title, body, confirmLabel, cancelLabel}) → Promise<boolean>
+     FC.confirm({title, body, items, confirmLabel, cancelLabel}) → Promise<boolean>
      FC.events.load()                → Promise<deck>
      FC.events.deck()                → array | null
      FC.events.pick({layer, avoid, allowRedline, era, months, done})
@@ -968,33 +968,39 @@
     var titleId = "fcConfirmTitle" + id;
     var bodyId = "fcConfirmBody" + id;
     var body = opts.body == null ? "" : String(opts.body);
+    var items = Array.isArray(opts.items) ? opts.items : null;
+    var listHtml = "";
+    if (items && items.length) {
+      listHtml = '<ul class="fc-confirm__list">' +
+        items.map(function (line) {
+          return '<li class="fc-confirm__item">' + esc(String(line)) + "</li>";
+        }).join("") +
+        "</ul>";
+    }
 
     var host = doc.createElement("div");
-    host.className = "fc-event fc-event--confirm";
-    host.setAttribute("data-layer", opts.layer || "L2");
-    host.setAttribute("data-type", opts.type || "relation");
+    host.className = "fc-confirm" + (opts.danger ? " fc-confirm--danger" : "");
     host.innerHTML =
-      '<div class="fc-event__scrim"></div>' +
-      '<div class="fc-event__card" role="alertdialog" aria-modal="true" tabindex="-1" ' +
+      '<div class="fc-confirm__scrim"></div>' +
+      '<div class="fc-confirm__panel" role="alertdialog" aria-modal="true" tabindex="-1" ' +
            'aria-labelledby="' + titleId + '"' +
-           (body ? ' aria-describedby="' + bodyId + '"' : "") + ">" +
-        '<i class="fc-event__accent" aria-hidden="true"></i>' +
-        '<div class="fc-event__face fc-event__face--ask">' +
-          '<h2 class="fc-event__title" id="' + titleId + '">' +
-            esc(opts.title || "确认") + "</h2>" +
-          (body ? '<p class="fc-event__body" id="' + bodyId + '">' + esc(body) + "</p>" : "") +
-          '<div class="fc-event__choices" role="group" aria-label="确认">' +
-            '<button type="button" class="fc-btn fc-btn--primary fc-confirm__yes">' +
-              esc(opts.confirmLabel || "确定") + "</button>" +
-            '<button type="button" class="fc-btn fc-btn--ghost fc-confirm__no">' +
-              esc(opts.cancelLabel || "取消") + "</button>" +
-          "</div>" +
+           (body || listHtml ? ' aria-describedby="' + bodyId + '"' : "") + ">" +
+        '<p class="fc-confirm__eyebrow">确认</p>' +
+        '<h2 class="fc-confirm__title" id="' + titleId + '">' +
+          esc(opts.title || "确认") + "</h2>" +
+        (body ? '<p class="fc-confirm__body" id="' + bodyId + '">' + esc(body) + "</p>" : "") +
+        listHtml +
+        '<div class="fc-confirm__acts" role="group" aria-label="确认">' +
+          '<button type="button" class="fc-confirm__btn fc-confirm__btn--cancel">' +
+            esc(opts.cancelLabel || "取消") + "</button>" +
+          '<button type="button" class="fc-confirm__btn fc-confirm__btn--ok">' +
+            esc(opts.confirmLabel || "确定") + "</button>" +
         "</div>" +
       "</div>";
 
-    var card = host.querySelector(".fc-event__card");
-    var yes = host.querySelector(".fc-confirm__yes");
-    var no = host.querySelector(".fc-confirm__no");
+    var panel = host.querySelector(".fc-confirm__panel");
+    var yes = host.querySelector(".fc-confirm__btn--ok");
+    var no = host.querySelector(".fc-confirm__btn--cancel");
 
     return new Promise(function (resolve) {
       var settled = false;
@@ -1023,15 +1029,16 @@
       host.style.zIndex = 400;
       FC.overlay.top().onKey = function (e) {
         if (e.key === "Escape") { e.preventDefault(); settle(false); return; }
-        if (e.key === "Tab") FC.overlay.trap(card, e);
+        if (e.key === "Tab") FC.overlay.trap(panel, e);
       };
 
       yes.addEventListener("click", function () { settle(true); });
       no.addEventListener("click", function () { settle(false); });
-      host.querySelector(".fc-event__scrim")
+      host.querySelector(".fc-confirm__scrim")
         .addEventListener("click", function () { settle(false); });
 
-      yes.focus();
+      /* 取消在左、确认在右：默认焦点放取消，避免误触快进。 */
+      no.focus();
 
       if (soft) host.classList.add("is-open");
       else global.requestAnimationFrame(function () { host.classList.add("is-open"); });
