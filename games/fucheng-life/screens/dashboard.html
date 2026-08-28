@@ -6,11 +6,15 @@
 <title>人生仪表盘 — 浮城人生</title>
 <meta name="description" content="浮城人生 · 人生仪表盘：金钱、健康、人脉、圈层、年龄与事件日志。">
 <meta name="theme-color" content="#05070f">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 44 44'%3E%3Crect width='44' height='44' rx='11' fill='%2305070f'/%3E%3Cg fill='%233ff0ff'%3E%3Crect x='9' y='21' width='4.4' height='12'/%3E%3Crect x='16.2' y='14' width='4' height='19'/%3E%3Crect x='23.4' y='18.5' width='4.2' height='14.5' fill='%23ff3fa4'/%3E%3Crect x='30.6' y='11' width='4.4' height='22'/%3E%3C/g%3E%3Crect x='7' y='35.6' width='30' height='1.6' rx='.8' fill='%23ffc861'/%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 44 44'%3E%3Crect width='44' height='44' rx='11' fill='%2305070f'/%3E%3Cg fill='%234fe3ff'%3E%3Crect x='9' y='21' width='4.4' height='12'/%3E%3Crect x='16.2' y='14' width='4' height='19'/%3E%3Crect x='23.4' y='18.5' width='4.2' height='14.5' fill='%23ff3fa4'/%3E%3Crect x='30.6' y='11' width='4.4' height='22'/%3E%3C/g%3E%3Crect x='7' y='35.6' width='30' height='1.6' rx='.8' fill='%23ffc861'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="../css/fc-tokens.css">
 <link rel="stylesheet" href="../css/screens.css">
+<link rel="stylesheet" href="../css/fc-ui.css">
+<link rel="stylesheet" href="../css/fc-events.css">
 </head>
 <body>
 <div class="fc-atmos"></div>
+<canvas class="fc-particle-canvas" data-fc-particles data-particle-count="84" aria-hidden="true"></canvas>
 <div class="fc-skyline"></div>
 
 <header class="fc-topbar">
@@ -57,22 +61,22 @@
     </div>
     <div class="fc-stat" style="--tint:var(--neon-jade)">
       <div class="fc-stat__label">♡ 健康</div>
-      <div class="fc-stat__value" id="sHealth">0<small>/100</small></div>
+      <div class="fc-stat__value"><span id="sHealth">0</span><small>/100</small></div>
       <div class="fc-stat__meter fc-meter fc-meter--jade"><i id="mHealth"></i></div>
     </div>
     <div class="fc-stat" style="--tint:var(--neon-violet)">
       <div class="fc-stat__label">◎ 人脉</div>
-      <div class="fc-stat__value" id="sSocial">0<small>/100</small></div>
+      <div class="fc-stat__value"><span id="sSocial">0</span><small>/100</small></div>
       <div class="fc-stat__meter fc-meter fc-meter--violet"><i id="mSocial"></i></div>
     </div>
     <div class="fc-stat" style="--tint:var(--neon-cyan)">
       <div class="fc-stat__label">✦ 声望</div>
-      <div class="fc-stat__value" id="sRep">0<small>/100</small></div>
+      <div class="fc-stat__value"><span id="sRep">0</span><small>/100</small></div>
       <div class="fc-stat__meter fc-meter fc-meter--cyan"><i id="mRep"></i></div>
     </div>
     <div class="fc-stat" style="--tint:var(--neon-rose)">
       <div class="fc-stat__label">⧗ 年龄</div>
-      <div class="fc-stat__value" id="sAge">22<small>岁</small></div>
+      <div class="fc-stat__value"><span id="sAge">22</span><small>岁</small></div>
       <div class="fc-stat__delta" id="dAge">已在城中 0 个月</div>
     </div>
     <div class="fc-stat" style="--tint:var(--neon-blood)">
@@ -138,7 +142,10 @@
 </main>
 
 <script src="../js/story-loader.js"></script>
+<script src="../js/fc-ui.js"></script>
 <script src="../js/screens.js"></script>
+<script src="../js/fc-motion.js"></script>
+<script src="../js/fc-events.js"></script>
 <script>
 (function () {
   var $ = function (id) { return document.getElementById(id); };
@@ -166,12 +173,22 @@
       debt: origin.layer >= 4 ? 0 : Math.round(money * 0.35),
       income: 0,
       gap: 0,
+      nextEvent: rollGap(),
       log: []
     };
   }
 
   var saved = FC.read().run;
   var run = saved && saved.key === era.id + "/" + origin.id ? saved : freshRun();
+
+  /* O1 事件弹窗 — the city knocks every few months, never on a schedule the
+     player can plan around. Older saves join the rotation on load. */
+  var eventDue = false;
+  if (typeof run.nextEvent !== "number") run.nextEvent = rollGap();
+
+  function rollGap() {
+    return 3 + Math.floor(Math.random() * 4);
+  }
 
   /* --------------------------------------------------------------- 经济模型
      Money is oxygen: bills eat most of the paycheque at every layer, and
@@ -285,8 +302,42 @@
     return pool[pool.length - 1];
   }
 
+  /* Deltas are written in units, not amounts: money moves in steps of roughly
+     a third of a month's income, so a choice costs the same share of a life
+     whichever layer the player is standing on. */
+  function applyDeltas(d) {
+    var scale = Math.max(400, Math.round(income() * 0.3));
+    var applied = {};
+    for (var k in d) {
+      if (!Object.prototype.hasOwnProperty.call(d, k)) continue;
+      if (k === "money") {
+        var amount = d[k] * scale;
+        run.money += amount;
+        applied.money = Math.round(amount / 100) * 100;
+      } else if (typeof run[k] === "number") {
+        run[k] = Math.max(0, Math.min(100, run[k] + d[k]));
+        applied[k] = d[k];
+      }
+    }
+    return applied;
+  }
+
   /* ----------------------------------------------------------- rendering */
   var fmt = function (n) { return n.toLocaleString("zh-CN"); };
+
+  /* Every HUD number rolls, the first paint included — arriving on the
+     dashboard should look like the city is counting you in. FCMotion sizes the
+     roll to the jump (400–800ms) and writes the value outright when the player
+     has asked for reduced motion. */
+  function paintNumber(id, value, prefix) {
+    var element = $(id);
+    value = Math.round(value);
+    if (window.FCMotion && FCMotion.countUp) {
+      FCMotion.countUp(element, value, { prefix: prefix || "" });
+    } else {
+      element.textContent = (prefix || "") + fmt(value);
+    }
+  }
 
   function bump(el) {
     el.classList.remove("fc-flash");
@@ -314,24 +365,24 @@
       "深冬 · 暖气与欠费", "早春 · 招聘季", "雨季 · 账单日临近", "盛夏 · 电费翻倍", "秋汛 · 年底考核"
     ][Math.floor(run.month / 2.5) % 5];
 
-    $("sMoney").textContent = "¥" + fmt(run.money);
+    paintNumber("sMoney", run.money, "¥");
     $("dMoney").textContent = run.gap > 0
       ? "空窗期 · 剩 " + run.gap + " 个月　月净流 " + (run.income >= 0 ? "+¥" : "−¥") + fmt(Math.abs(run.income))
       : "月净流 " + (run.income >= 0 ? "+¥" : "−¥") + fmt(Math.abs(run.income));
     $("dMoney").className = "fc-stat__delta " + (run.income >= 0 ? "up" : "down");
 
-    $("sHealth").innerHTML = Math.round(run.health) + "<small>/100</small>";
+    paintNumber("sHealth", run.health);
     $("mHealth").style.width = Math.max(0, Math.min(100, run.health)) + "%";
     $("mHealth").parentNode.className =
       "fc-stat__meter fc-meter " + (run.health < 30 ? "fc-meter--blood" : "fc-meter--jade");
-    $("sSocial").innerHTML = Math.round(run.social) + "<small>/100</small>";
+    paintNumber("sSocial", run.social);
     $("mSocial").style.width = Math.max(0, Math.min(100, run.social)) + "%";
-    $("sRep").innerHTML = Math.round(run.rep) + "<small>/100</small>";
+    paintNumber("sRep", run.rep);
     $("mRep").style.width = Math.max(0, Math.min(100, run.rep)) + "%";
 
-    $("sAge").innerHTML = run.age + "<small>岁</small>";
+    paintNumber("sAge", run.age);
     $("dAge").textContent = "已在城中 " + run.months + " 个月";
-    $("sDebt").textContent = "¥" + fmt(run.debt);
+    paintNumber("sDebt", run.debt, "¥");
     $("dDebt").textContent = run.debt > 0 ? "每月还本付息 ¥" + fmt(Math.round(run.debt * 0.015)) : "无未结清账目";
     $("dDebt").className = "fc-stat__delta " + (run.debt > 0 ? "down" : "up");
 
@@ -360,14 +411,16 @@
   }
 
   function renderLog() {
-    $("log").innerHTML = run.log.slice(0, 24).map(function (e) {
+    $("log").innerHTML = run.log.slice(0, 24).map(function (e, i) {
       var deltas = Object.keys(e.d).map(function (k) {
         var v = e.d[k];
         var nameMap = { money: "现金", health: "健康", social: "人脉", rep: "声望" };
         return '<span class="' + (v >= 0 ? "up" : "down") + '">' +
           nameMap[k] + " " + (v >= 0 ? "+" : "−") + Math.abs(v) + "</span>";
       }).join("");
-      return '<li class="fc-log__item">' +
+      // Only the visible head of the list is staggered; below the fold the
+      // delay would just be dead time before the reader ever gets there.
+      return '<li class="fc-log__item" style="--i:' + Math.min(i, 7) + '">' +
         '<div class="fc-log__time">' + e.t + "</div>" +
         '<div class="fc-log__body">' +
           '<span class="fc-log__tag" style="color:' + e.tint + '">' + esc(e.tag) + "</span>" +
@@ -385,25 +438,13 @@
     if (run.months % 12 === 0) run.age++;
 
     var e = pick();
-    var scale = Math.max(400, Math.round(income() * 0.3));
-    var applied = {};
     if (e.once) {
       run.done = run.done || {};
       run.done[e.id] = 1;
     }
     run.recent = (run.recent || []).concat(e.id).slice(-4);
 
-    for (var k in e.d) {
-      var v = e.d[k];
-      if (k === "money") {
-        var amount = v * scale;
-        run.money += amount;
-        applied.money = Math.round(amount / 100) * 100;
-      } else {
-        run[k] = Math.max(0, Math.min(100, run[k] + v));
-        applied[k] = v;
-      }
-    }
+    var applied = applyDeltas(e.d);
 
     if (e.gap) run.gap = e.gap;
     else if (run.gap > 0) run.gap--;
@@ -445,16 +486,50 @@
 
     if (run.log.length > 60) run.log.length = 60;
 
+    if (--run.nextEvent <= 0) eventDue = true;
+
     render(true);
     renderLog();
   }
 
-  $("tickBtn").addEventListener("click", function () { tick(); });
+  /* One interruption per click, even when half a year goes by at once —
+     the modal is a pause, not a queue. */
+  function maybeEvent() {
+    if (!eventDue || !FC.events || FC.events.isOpen()) return;
+
+    var ev = FC.events.pick({ layer: layerOf(), avoid: run.seen || [] });
+    if (!ev) return; /* deck still loading — the month rolls on, try the next */
+
+    eventDue = false;
+    run.nextEvent = rollGap();
+    run.seen = (run.seen || []).concat(ev.id).slice(-4);
+
+    FC.events.show(ev, { apply: applyDeltas }).then(function (result) {
+      if (!result) return;
+      run.log.unshift({
+        t: run.year + "." + (run.month < 10 ? "0" : "") + run.month,
+        tag: ev.category,
+        tint: "var(--l" + ev.layer + ")",
+        text: "【" + ev.title + "】" + result.choice.outcome,
+        d: result.deltas
+      });
+      if (run.log.length > 60) run.log.length = 60;
+      render(true);
+      renderLog();
+    });
+  }
+
+  $("tickBtn").addEventListener("click", function () {
+    tick();
+    maybeEvent();
+  });
   $("tick6Btn").addEventListener("click", function () {
     for (var i = 0; i < 6; i++) tick();
+    maybeEvent();
   });
   $("resetBtn").addEventListener("click", function () {
     run = freshRun();
+    eventDue = false;
     seed();
     render(true);
     renderLog();
@@ -471,6 +546,7 @@
   }
 
   if (!run.log.length) seed();
+  if (FC.events) FC.events.load();
   $("tickBtn").disabled = false;
   $("tick6Btn").disabled = false;
   $("resetBtn").disabled = false;

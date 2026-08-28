@@ -6,8 +6,10 @@
 <title>城市地图 · 五层剖面 — 浮城人生</title>
 <meta name="description" content="浮城人生 · 城市地图：L1 市井层到 L5 暗流，可交互的五层城市剖面。">
 <meta name="theme-color" content="#05070f">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 44 44'%3E%3Crect width='44' height='44' rx='11' fill='%2305070f'/%3E%3Cg fill='%233ff0ff'%3E%3Crect x='9' y='21' width='4.4' height='12'/%3E%3Crect x='16.2' y='14' width='4' height='19'/%3E%3Crect x='23.4' y='18.5' width='4.2' height='14.5' fill='%23ff3fa4'/%3E%3Crect x='30.6' y='11' width='4.4' height='22'/%3E%3C/g%3E%3Crect x='7' y='35.6' width='30' height='1.6' rx='.8' fill='%23ffc861'/%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 44 44'%3E%3Crect width='44' height='44' rx='11' fill='%2305070f'/%3E%3Cg fill='%234fe3ff'%3E%3Crect x='9' y='21' width='4.4' height='12'/%3E%3Crect x='16.2' y='14' width='4' height='19'/%3E%3Crect x='23.4' y='18.5' width='4.2' height='14.5' fill='%23ff3fa4'/%3E%3Crect x='30.6' y='11' width='4.4' height='22'/%3E%3C/g%3E%3Crect x='7' y='35.6' width='30' height='1.6' rx='.8' fill='%23ffc861'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="../css/fc-tokens.css">
 <link rel="stylesheet" href="../css/screens.css">
+<link rel="stylesheet" href="../css/fc-ui.css">
 </head>
 <body>
 <div class="fc-atmos"></div>
@@ -70,6 +72,7 @@
 
 <script src="../js/story-loader.js"></script>
 <script src="../js/screens.js"></script>
+<script src="../js/fc-motion.js"></script>
 <script>
 (function () {
   var $ = function (id) { return document.getElementById(id); };
@@ -162,10 +165,10 @@
   });
 
   /* --------------------------------------------------------------- build */
-  $("map").innerHTML = STRATA.map(function (s, i) {
+  $("map").innerHTML = STRATA.map(function (s) {
     return (
       '<section class="fc-strata tint-' + s.key + '" data-layer="' + s.id + '" ' +
-        'style="animation-delay:' + (i * 70) + 'ms">' +
+        'style="--stagger:70ms">' +
         '<div class="fc-strata__rail">' +
           '<div class="fc-strata__code">' + s.id + "</div>" +
           '<div class="fc-strata__name">' + esc(s.name) + "</div>" +
@@ -187,9 +190,9 @@
     );
   }).join("");
 
+  // The section builds downward, capital first, undercurrent last.
   requestAnimationFrame(function () {
-    var rows = document.querySelectorAll(".fc-strata");
-    for (var i = 0; i < rows.length; i++) rows[i].classList.add("fc-rise");
+    FCMotion.stagger(document.querySelectorAll(".fc-strata"));
   });
 
   $("legend").innerHTML = FC.LAYERS.map(function (l) {

@@ -6,8 +6,10 @@
 <title>浮城人生 · URBAN LIFE SIMULATOR</title>
 <meta name="description" content="浮城人生 — 现代都市高自由度人生模拟原型界面：年代登记、出身档案、人生仪表盘、五层城市地图。">
 <meta name="theme-color" content="#05070f">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 44 44'%3E%3Crect width='44' height='44' rx='11' fill='%2305070f'/%3E%3Cg fill='%233ff0ff'%3E%3Crect x='9' y='21' width='4.4' height='12'/%3E%3Crect x='16.2' y='14' width='4' height='19'/%3E%3Crect x='23.4' y='18.5' width='4.2' height='14.5' fill='%23ff3fa4'/%3E%3Crect x='30.6' y='11' width='4.4' height='22'/%3E%3C/g%3E%3Crect x='7' y='35.6' width='30' height='1.6' rx='.8' fill='%23ffc861'/%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 44 44'%3E%3Crect width='44' height='44' rx='11' fill='%2305070f'/%3E%3Cg fill='%234fe3ff'%3E%3Crect x='9' y='21' width='4.4' height='12'/%3E%3Crect x='16.2' y='14' width='4' height='19'/%3E%3Crect x='23.4' y='18.5' width='4.2' height='14.5' fill='%23ff3fa4'/%3E%3Crect x='30.6' y='11' width='4.4' height='22'/%3E%3C/g%3E%3Crect x='7' y='35.6' width='30' height='1.6' rx='.8' fill='%23ffc861'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="../css/fc-tokens.css">
 <link rel="stylesheet" href="../css/screens.css">
+<link rel="stylesheet" href="../css/fc-ui.css">
 </head>
 <body>
 <div class="fc-atmos"></div>
@@ -30,7 +32,7 @@
 <main class="fc-page">
   <section class="fc-rise" style="margin-bottom:34px">
     <p class="fc-eyebrow">URBAN LIFE SIMULATOR · 原型界面</p>
-    <h1 class="fc-title">浮城<em>人生</em></h1>
+    <h1 class="fc-title fc-neon-title" data-text="浮城人生">浮城<em>人生</em></h1>
     <p class="fc-lede">
       现代都市高自由度人生引擎。城市照常运转，你只是千万进程里的一个节点——
       运行需要钱，灯光、房租、关系都有价格。
@@ -45,7 +47,7 @@
   <h2 class="fc-sectiontitle">核心界面 <span>CORE SCREENS</span></h2>
   <div class="fc-grid fc-grid--3">
 
-    <a class="fc-card fc-rise" href="era-select.html" style="--tint:var(--neon-amber)">
+    <a class="fc-card fc-rise" href="era-select.html" style="--tint:var(--neon-amber);--i:0">
       <span class="fc-card__glyph" aria-hidden="true">代</span>
       <div class="fc-card__head">
         <span class="fc-card__code">01</span>
@@ -55,7 +57,7 @@
       <p class="fc-card__line">潮汐准时，灯牌照旧。</p>
     </a>
 
-    <a class="fc-card fc-rise" href="origin-select.html" style="--tint:var(--l3)">
+    <a class="fc-card fc-rise" href="origin-select.html" style="--tint:var(--l3);--i:1">
       <span class="fc-card__glyph" aria-hidden="true">身</span>
       <div class="fc-card__head">
         <span class="fc-card__code">02</span>
@@ -65,7 +67,7 @@
       <p class="fc-card__line">出身不是命，是初始汇率。</p>
     </a>
 
-    <a class="fc-card fc-rise" href="dashboard.html" style="--tint:var(--neon-violet)">
+    <a class="fc-card fc-rise" href="dashboard.html" style="--tint:var(--neon-violet);--i:2">
       <span class="fc-card__glyph" aria-hidden="true">生</span>
       <div class="fc-card__head">
         <span class="fc-card__code">03</span>
@@ -75,7 +77,7 @@
       <p class="fc-card__line">账单比闹钟准时。</p>
     </a>
 
-    <a class="fc-card fc-rise" href="city-map.html" style="--tint:var(--l5)">
+    <a class="fc-card fc-rise" href="city-map.html" style="--tint:var(--l5);--i:3">
       <span class="fc-card__glyph" aria-hidden="true">城</span>
       <div class="fc-card__head">
         <span class="fc-card__code">04</span>
@@ -92,5 +94,7 @@
     <a href="../../../index.html">返回原型总目录</a>
   </p>
 </main>
+
+<script src="../js/fc-motion.js"></script>
 </body>
 </html>

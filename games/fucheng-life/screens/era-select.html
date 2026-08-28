@@ -6,8 +6,10 @@
 <title>入城登记 · 选择年代 — 浮城人生</title>
 <meta name="description" content="浮城人生 · 入城登记：选择你进入这座城市的年代 E1—E7。">
 <meta name="theme-color" content="#05070f">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 44 44'%3E%3Crect width='44' height='44' rx='11' fill='%2305070f'/%3E%3Cg fill='%233ff0ff'%3E%3Crect x='9' y='21' width='4.4' height='12'/%3E%3Crect x='16.2' y='14' width='4' height='19'/%3E%3Crect x='23.4' y='18.5' width='4.2' height='14.5' fill='%23ff3fa4'/%3E%3Crect x='30.6' y='11' width='4.4' height='22'/%3E%3C/g%3E%3Crect x='7' y='35.6' width='30' height='1.6' rx='.8' fill='%23ffc861'/%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 44 44'%3E%3Crect width='44' height='44' rx='11' fill='%2305070f'/%3E%3Cg fill='%234fe3ff'%3E%3Crect x='9' y='21' width='4.4' height='12'/%3E%3Crect x='16.2' y='14' width='4' height='19'/%3E%3Crect x='23.4' y='18.5' width='4.2' height='14.5' fill='%23ff3fa4'/%3E%3Crect x='30.6' y='11' width='4.4' height='22'/%3E%3C/g%3E%3Crect x='7' y='35.6' width='30' height='1.6' rx='.8' fill='%23ffc861'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="../css/fc-tokens.css">
 <link rel="stylesheet" href="../css/screens.css">
+<link rel="stylesheet" href="../css/fc-ui.css">
 </head>
 <body>
 <div class="fc-atmos"></div>
@@ -65,6 +67,7 @@
 
 <script src="../js/story-loader.js"></script>
 <script src="../js/screens.js"></script>
+<script src="../js/fc-motion.js"></script>
 <script>
 (function () {
   var grid = document.getElementById("eraGrid");
@@ -85,10 +88,10 @@
     );
   }
 
-  grid.innerHTML = FC.ERAS.map(function (era, i) {
+  grid.innerHTML = FC.ERAS.map(function (era) {
     return (
       '<button type="button" class="fc-card" role="radio" aria-checked="false" ' +
-        'data-id="' + era.id + '" style="--tint:' + era.tint + ';animation-delay:' + (i * 55) + 'ms">' +
+        'data-id="' + era.id + '" style="--tint:' + era.tint + '">' +
         '<span class="fc-card__check">✓</span>' +
         '<span class="fc-card__glyph" aria-hidden="true">' + era.glyph + '</span>' +
         '<div class="fc-card__head">' +
@@ -116,12 +119,12 @@
     );
   }).join("");
 
-  // Fill the meters after paint so the widths animate in.
+  // Fill the meters after paint so the widths animate in; deal the cards out
+  // one after another rather than dropping all seven at once.
   requestAnimationFrame(function () {
     var bars = grid.querySelectorAll(".fc-meter > i");
     for (var i = 0; i < bars.length; i++) bars[i].style.width = bars[i].dataset.w + "%";
-    var cards = grid.querySelectorAll(".fc-card");
-    for (var j = 0; j < cards.length; j++) cards[j].classList.add("fc-rise");
+    FCMotion.stagger(grid.querySelectorAll(".fc-card"));
   });
 
   function select(id, persist) {
