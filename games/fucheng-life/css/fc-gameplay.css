@@ -480,6 +480,10 @@
   box-shadow: 0 0 20px rgba(255, 214, 102, 0.15);
 }
 
+/* 工具区里靠 hidden 开关的按钮（选轨入口等）：.fc-btn 自带 display，会盖掉
+   浏览器默认的 [hidden]{display:none}，不显式收起就永远露着。 */
+.fc-dash-tools .fc-btn[hidden] { display: none !important; }
+
 /* --------------------------------------------------------------------------
    Mobile sticky action dock — fixed to the bottom edge on ≤640px screens.
    AP dots + the four high-frequency actions (上班/休息/探区/饭局) + a「更多」
