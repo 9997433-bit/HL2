@@ -34,7 +34,7 @@ wealthy-merchant, humble-scholar, blended-family, orphan, transnational
 | R2-C fable 浏览器 | [bc-2cd9dcf5-4780-54c3-806d-a950e9984176](bc-2cd9dcf5-4780-54c3-806d-a950e9984176) | 进行中 | — |
 | R2-D opus-fast 润色 | [bc-54ad1477-9400-546c-ac35-690daa8bf6c1](bc-54ad1477-9400-546c-ac35-690daa8bf6c1) | ✅ | `12d247d` 10 O1 + 2 出身链 + ambient 修复 |
 | R2-E gpt-sol fixture | [bc-108dab2c-ecf2-5671-bb6f-54a2698a112a](bc-108dab2c-ecf2-5671-bb6f-54a2698a112a) | ✅ | `26b5ae1` life-sim origin id 修复 |
-| R2-F fable 平衡 | [bc-0a56940f-e4fe-5904-bcc3-4f57ec1a454e](bc-0a56940f-e4fe-5904-bcc3-4f57ec1a454e) | ✅ | `1cb34f5` pick-balance-report.md |
+| R2-F fable 平衡 | [bc-0a56940f-e4fe-5904-bcc3-4f57ec1a454e](bc-0a56940f-e4fe-5904-bcc3-4f57ec1a454e) | ✅ | `62dc15c` pick-balance-report（40 语境全 PASS，无需调权） |
 
 ## R1 子代理回执
 | 角色 | Agent | 交付 |
