@@ -496,6 +496,9 @@
     /** v2→v4：补合约/二级合约/资产/职业选轨字段。 */
     migrateContract: function (run) {
       if (run.contract === undefined) run.contract = null;
+      if (run.contract && run.contract.resolutionPending === undefined) {
+        run.contract.resolutionPending = false;
+      }
       if (run.secondaryContract === undefined) run.secondaryContract = null;
       if (!run.assets) run.assets = { property: null, vehicle: null, sideFund: 0, owned: [] };
       if (!run.assets.owned) run.assets.owned = [];
@@ -635,7 +638,8 @@
         deadlineMonths: def.deadline,
         chosenMonth: run.months || 0,
         deadlineMonth: (run.months || 0) + def.deadline,
-        status: "active"
+        status: "active",
+        resolutionPending: false
       };
       FC.Sim.refreshContract(run);
       return run.contract;
@@ -724,7 +728,27 @@
         /* R8：月度居住分约 0.4–0.6，36 月自然攒 ~18 分，其余靠进修与事件。 */
         FC.Sim.creditContract(run, 0.35 + (run.edu || 0) / 100 * 0.25);
       }
-      return FC.Sim.updateContract(run, era, origin);
+      var settled = FC.Sim.updateContract(run, era, origin);
+      /* R15：快进时结算弹窗可能被跳过。挂一个待办位，等 UI 补放再清。 */
+      if (settled && (settled.status === "won" || settled.status === "failed")) {
+        c.resolutionPending = true;
+      }
+      return settled;
+    },
+
+    /** R15：合约已结算但结算弹窗还没放过 —— 需要补一次。 */
+    needsContractResolution: function (run) {
+      var c = run && run.contract;
+      if (!c || !c.status || c.status === "active") return false;
+      return c.resolutionPending === true;
+    },
+
+    /** R15：补弹放完后销账。返回是否真的清掉了一笔待办。 */
+    markContractResolutionDone: function (run) {
+      var c = run && run.contract;
+      if (!c || c.resolutionPending !== true) return false;
+      c.resolutionPending = false;
+      return true;
     },
 
     /** 二级合约：主合约达成后 6 月内可选一张。 */
@@ -979,15 +1003,38 @@
       return (FC.Sim.pack && FC.Sim.pack.actions) || [];
     },
 
-    /** R9：本月最该干什么。返回 { actionId, reason, urgency } 或 null（该推进月份）。 */
-    suggestMonth: function (run, era, origin) {
+    /** R9：本月最该干什么。返回 { actionId, reason, urgency } 或 null（该推进月份）。
+        R15 可选 opts：
+          skipExplore —— 快进/无人值守时别把玩家推去探区（探区会开弹窗）；
+          preferWorkIfPoor —— 现金撑不过一个月时先去挣钱，休息线一并收紧到健康危机级。 */
+    suggestMonth: function (run, era, origin, opts) {
       if (!run) return null;
+      var o = opts || {};
+      var skipExplore = o.skipExplore === true;
+      var preferWorkIfPoor = o.preferWorkIfPoor === true;
+
       if ((run.ap || 0) <= 0) {
         return { actionId: null, reason: "行动点已用尽，点「推进一个月」结算。", urgency: "tick" };
       }
 
-      if ((run.health || 0) < 38) {
+      var restFloor = preferWorkIfPoor ? 30 : 38;
+      if ((run.health || 0) < restFloor) {
         return { actionId: "rest", reason: "健康偏低，先休息一口，别在工位上倒下。", urgency: "high" };
+      }
+
+      if (preferWorkIfPoor) {
+        var monthly = 0;
+        try {
+          if (era && origin) monthly = FC.Sim.income(run, era, origin) || 0;
+        } catch (e) { monthly = 0; }
+        if (!monthly) monthly = run.income || 0;
+        if (monthly > 0 && (run.money || 0) < monthly) {
+          return {
+            actionId: "work",
+            reason: "现金还不够一个月流水：先上班把账面稳住。",
+            urgency: "high"
+          };
+        }
       }
 
       var debtor = FC.Sim.debtNpc(run);
@@ -1047,7 +1094,7 @@
         }
       }
 
-      if (run.zoneQueue) {
+      if (run.zoneQueue && !skipExplore) {
         return {
           actionId: "explore",
           reason: "探区目标已设，点「探区」花 1 AP 去触发那里的事。",
@@ -1298,6 +1345,11 @@
         if (since < 5) return null;
         pool.push({ c: FC.Sim.MONTH_CRISES[FC.Sim.MONTH_CRISES.length - 1], w: 1 });
       }
+      if (!pool.length) return null;
+
+      /* R15：冷却到期不等于必然出事。压一道概率闸 —— 3 月起四成半，久旱（5 月以上）
+         抬到七成半。否则每三个月准点挨一记，节奏读起来像闹钟。 */
+      if (Math.random() >= (since >= 5 ? 0.75 : 0.45)) return null;
 
       var total = 0;
       pool.forEach(function (p) { total += p.w; });
