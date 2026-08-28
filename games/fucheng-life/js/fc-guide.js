@@ -5,8 +5,8 @@
   var doc = global.document;
   var FC = global.FC || (global.FC = {});
 
-  /* v2：旧版居中弹窗太容易被点掉，且桌面高亮了隐藏的手机底栏。 */
-  var KEY = "fucheng.guide.v2";
+  /* v3：补上「探区」这一步 —— 选地点 ≠ 立刻发生事件。 */
+  var KEY = "fucheng.guide.v3";
 
   var STEPS = [
     {
@@ -16,24 +16,30 @@
       fallback: "apDots"
     },
     {
-      title: "② 推进一个月",
+      title: "② 探区：先选地点",
+      body: "侧栏「当前位置」用来选你要去的街区。选好以后，再点行动里的「探区」才会消耗 1 点 AP，并在那里触发一件事。只选地点、不点「探区」，什么都不会发生。",
+      target: "locChip",
+      fallback: "locPanel"
+    },
+    {
+      title: "③ 推进一个月",
       body: "行动点用尽后，点这里结算收支、抽城市事件。没花完 AP 时它会是灰的。",
       target: "tickBtn"
     },
     {
-      title: "③ 人生合约",
+      title: "④ 人生合约",
       body: "入城头三个月会让你签一张合约（落户 / 首付 / 升职）。进度条一直挂在这里，到期城市会结算。",
       target: "contractHud",
       fallback: "vitalsPanel"
     },
     {
-      title: "④ 生命体征",
+      title: "⑤ 生命体征",
       body: "现金、健康、人脉、声望在这里跳动。现金见底会危险，健康掉光也会提前离场。",
       target: "vitalsPanel",
       fallback: "moneyStat"
     },
     {
-      title: "⑤ 事件日志",
+      title: "⑥ 事件日志",
       body: "城市敲门、人情账、合约结算，都会写进日志。选完选项后看这里，就能知道发生了什么。",
       target: "log"
     }
@@ -108,6 +114,7 @@
     dismiss: function () {
       try {
         global.localStorage.setItem(KEY, "1");
+        global.localStorage.setItem("fucheng.guide.v2", "1");
         global.localStorage.setItem("fucheng.guide.v1", "1");
       } catch (e) { /* ignore */ }
     },
@@ -115,6 +122,7 @@
     reset: function () {
       try {
         global.localStorage.removeItem(KEY);
+        global.localStorage.removeItem("fucheng.guide.v2");
         global.localStorage.removeItem("fucheng.guide.v1");
       } catch (e) { /* ignore */ }
     },

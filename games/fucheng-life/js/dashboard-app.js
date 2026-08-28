@@ -148,11 +148,13 @@
         '<i class="fc-sheet__grip" aria-hidden="true"></i>' +
         '<header class="fc-sheet__head">' +
           '<h2 class="fc-sheet__title">选择探区 <span class="fc-sheet__ym">ZONE</span></h2>' +
-          '<p class="fc-sheet__caption">点选地点设为探区目标，本月「探区」行动将在此触发事件。</p>' +
+          '<p class="fc-sheet__caption">左边 L1–L5 是城市圈层，右边是该层的具体地点。' +
+            '<b>点选一个地点只是设目标</b>；回到仪表盘再点行动「探区」，才会花 1 点 AP 去那里触发事件。</p>' +
         "</header>" +
         '<div class="fc-zone-picker__body"></div>' +
+        '<p class="fc-quote" style="margin:12px 0 0;font-size:12px">例：选「拍卖行」≠ 立刻进场；还要再点一次「探区」行动。</p>' +
         '<a class="fc-btn fc-btn--ghost fc-sheet__done" href="city-map.html" style="width:100%;margin-top:12px">打开完整城市地图</a>' +
-        '<button type="button" class="fc-btn fc-btn--primary fc-sheet__done" style="width:100%;margin-top:8px">取消</button>' +
+        '<button type="button" class="fc-btn fc-btn--primary fc-sheet__done" style="width:100%;margin-top:8px">选好了，回去点「探区」</button>' +
       "</div>";
 
     var panel = zonePickerHost.querySelector(".fc-sheet__panel");

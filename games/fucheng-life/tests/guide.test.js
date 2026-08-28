@@ -14,9 +14,10 @@ assert.ok(dashboardHtml.includes("fc-guide.js"), "dashboard must load fc-guide.j
 assert.ok(dashboardHtml.includes('id="guideBtn"'), "dashboard must expose a replay tutorial button");
 assert.ok(dashboardHtml.includes("fc-career.js"), "dashboard must load fc-career.js");
 assert.ok(dashboardHtml.includes("assetShop"), "assets tab must expose asset shop host");
-assert.ok(guideSrc.includes("fucheng.guide.v2"), "coach guide must use v2 storage key");
+assert.ok(guideSrc.includes("fucheng.guide.v3"), "coach guide must use v3 storage key");
 assert.ok(guideSrc.includes("fc-coach"), "guide must render coach-mark UI");
 assert.ok(guideSrc.includes("actionGrid"), "first teach step must target the desktop action grid");
+assert.ok(guideSrc.includes("locChip"), "guide must teach the zone / explore target");
 assert.ok(!guideSrc.includes('target: "mobileDock"'),
   "guide must not spotlight the mobile-only dock on first step");
 
@@ -68,10 +69,10 @@ context.FC.overlay = {
 vm.runInContext(guideSrc, context, { filename: "fc-guide.js" });
 
 assert.ok(context.FC.guide.shouldShow(), "guide must show on first visit");
-assert.equal(context.FC.guide.STEPS.length, 5, "coach guide must teach five steps");
+assert.equal(context.FC.guide.STEPS.length, 6, "coach guide must teach six steps including zone");
 context.FC.guide.dismiss();
 assert.ok(!context.FC.guide.shouldShow(), "guide must stay dismissed after dismiss");
 context.FC.guide.reset();
 assert.ok(context.FC.guide.shouldShow(), "reset must allow replaying the tutorial");
 
-console.log("Guide: coach-mark tutorial (v2, 5 steps) + replay button passed.");
+console.log("Guide: coach-mark tutorial (v3, 6 steps incl. zone) + replay button passed.");
