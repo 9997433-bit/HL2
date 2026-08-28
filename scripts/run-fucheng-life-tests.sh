@@ -46,6 +46,7 @@ run_test "R7 onboarding guide wiring" "$TEST_DIR/guide.test.js"
 run_test "R8 hukou pacing and NPC followup queue" "$TEST_DIR/r8-pacing.test.js"
 run_test "R9 month advice and zone blurbs" "$TEST_DIR/r9-guidance.test.js"
 run_test "R10 NPC interact and 60-month challenge" "$TEST_DIR/r10-npc-challenge.test.js"
+run_test "mobile one-screen play wiring" "$TEST_DIR/mobile-play.test.js"
 run_test "dashboard browser boot regression" "$TEST_DIR/page-boot.test.js"
 
 printf '\n浮城人生 test summary: %d passed, %d failed\n' "$passed" "$failed"
