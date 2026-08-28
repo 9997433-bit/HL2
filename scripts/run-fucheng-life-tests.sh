@@ -50,6 +50,7 @@ run_test "mobile one-screen play wiring" "$TEST_DIR/mobile-play.test.js"
 run_test "R11 challenge goals and scoring" "$TEST_DIR/r11-challenge-goals.test.js"
 run_test "R12 NPC ripples and face-turn costs" "$TEST_DIR/r12-npc-ripple.test.js"
 run_test "R13 month crisis and zone aftershock" "$TEST_DIR/r13-month-crisis.test.js"
+run_test "R14 flow fixes and goal bindings" "$TEST_DIR/r14-flow-fixes.test.js"
 run_test "dashboard browser boot regression" "$TEST_DIR/page-boot.test.js"
 
 printf '\n浮城人生 test summary: %d passed, %d failed\n' "$passed" "$failed"
