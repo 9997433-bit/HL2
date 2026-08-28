@@ -1153,6 +1153,27 @@
   transition-duration: 0.18s;
 }
 
+/* R21 · 吞掉 Esc 时的弱反馈：一次阻尼横向 shake，不发光、不换色。
+   约定类名挂 panel（`.fc-career-pick__panel.is-esc-pulse`）；host 上挂也吃。
+   要连点 Esc 重放，JS 需先摘类再下一帧补回。 */
+@keyframes fc-career-pick-esc {
+  20% { transform: translateX(-5px); }
+  55% { transform: translateX(4px); }
+  80% { transform: translateX(-2px); }
+  100% { transform: none; }
+}
+
+.fc-career-pick__panel.is-esc-pulse,
+.fc-career-pick.is-esc-pulse .fc-career-pick__panel {
+  animation: fc-career-pick-esc 0.2s var(--ease-out, ease);
+}
+
+/* 单独一块 reduce，避开下方 picker reduce 规则区的并行改动。 */
+@media (prefers-reduced-motion: reduce) {
+  .fc-career-pick__panel.is-esc-pulse,
+  .fc-career-pick.is-esc-pulse .fc-career-pick__panel { animation: none; }
+}
+
 .fc-career-pick__title {
   margin: 0 0 8px;
   font: 700 clamp(18px, 2.6vw, 22px)/1.3 var(--font-serif);
