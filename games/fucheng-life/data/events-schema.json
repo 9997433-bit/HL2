@@ -1,0 +1,169 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "fucheng-life/events-schema.json",
+  "title": "浮城人生 · story.json events SSOT（O1 弹窗事件）",
+  "description": "story.json 顶层 events[] 的结构草案（Round 1 · fable-o1-architecture）。执行性门禁在 tests/story-schema.test.js 的手写断言里，本文件是作者文档与可选机器校验源。金额单位约定：choices[].d 里的 money/debt 为 units 制，结算时经 FC.events.moneyOf(units, 月收入) 换算，1 unit = max(¥400, 月收入×30%)。",
+  "type": "array",
+  "minItems": 50,
+  "items": { "$ref": "#/definitions/event" },
+  "definitions": {
+    "event": {
+      "type": "object",
+      "required": ["id", "title", "body", "category", "type", "layerId", "weight", "choices"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^EV\\d{2,3}$",
+          "description": "全局唯一。EV01–EV10 保留给自 sampleEvents 迁移的事件（旧档 recentModal 兼容），新事件自 EV11 顺延。saga_ 前缀是 O1 渲染器的保留命名空间，deck 事件禁用。"
+        },
+        "title": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 12,
+          "description": "serif 大标题，名词性短语，不带句号。"
+        },
+        "body": {
+          "type": "string",
+          "minLength": 36,
+          "maxLength": 140,
+          "description": "一个具体场景，非人生总结；至少一个可触摸的实物名词。禁以「你决定/突然/命运」开头，结尾禁感叹号。"
+        },
+        "category": {
+          "type": "string",
+          "enum": ["生计", "居住", "职场", "教育", "机会", "人情", "关系", "风险", "金钱", "健康"],
+          "description": "展示与加权元数据（与 ambientEvents 类目习惯对齐），不再决定 type。"
+        },
+        "type": {
+          "type": "string",
+          "enum": ["opportunity", "bill", "relation", "redline"],
+          "description": "显式声明，驱动角标/accent/红线冷静期（overlay-spec §1.4）。"
+        },
+        "layerId": {
+          "type": "string",
+          "enum": ["L1", "L2", "L3", "L4", "L5"],
+          "description": "驱动层色与 pick() 层距加权。"
+        },
+        "weight": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 12,
+          "description": "基础权重。通用常驻 6–9；时代专属 5–7（pick 内另有 ×2 加成）；once 里程碑 5–7；redline 4–7。"
+        },
+        "scene": {
+          "type": "string",
+          "maxLength": 14,
+          "description": "场景 chip 覆盖，缺省自动拼接「L2 · 工薪层」。仅特殊事件用。"
+        },
+        "eras": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "type": "string", "enum": ["E1", "E2", "E3", "E4", "E5", "E6", "E7"] },
+          "description": "时代标签。缺省 = 全时代可触发；声明后仅在对应时代入池且加权 ×2。"
+        },
+        "once": {
+          "type": "boolean",
+          "description": "一生一次的里程碑事件，命中后记入 run.done[id]。"
+        },
+        "minMonths": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "入城月数下限。L4/L5 与大额事件建议 ≥12–18。"
+        },
+        "maxMonths": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "入城月数上限（如仅入城初期的事件）。"
+        },
+        "choices": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 3,
+          "items": { "$ref": "#/definitions/choice" },
+          "description": "选项之间互斥且都「说得出口」；至少两个选项互为 trade-off。"
+        }
+      },
+      "if": {
+        "properties": { "type": { "const": "redline" } }
+      },
+      "then": {
+        "properties": {
+          "choices": {
+            "contains": {
+              "type": "object",
+              "properties": { "risk": { "const": true } },
+              "required": ["risk"]
+            }
+          }
+        }
+      }
+    },
+    "choice": {
+      "type": "object",
+      "required": ["id", "label", "d", "result"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_-]{1,15}$",
+          "description": "事件内唯一，语义化英文 token（repay/stall/walk），进日志与 resolve 值。"
+        },
+        "label": {
+          "type": "string",
+          "minLength": 4,
+          "maxLength": 14,
+          "description": "按钮文案，动词开头，口语可说。"
+        },
+        "cost": {
+          "type": "string",
+          "maxLength": 10,
+          "description": "代价标注展示串（现金 −− / 人情 ▲）。风险选项固定用「风险 ▲」。"
+        },
+        "d": { "$ref": "#/definitions/deltas" },
+        "result": {
+          "type": "string",
+          "minLength": 20,
+          "maxLength": 80,
+          "description": "结果面叙事。写「选择之后的世界」，不复述 label，不给道德评判。文案不写死 ¥ 金额（结果面显示 moneyOf 换算值）。"
+        },
+        "risk": {
+          "type": "boolean",
+          "description": "标 fc-choice--risk 视觉。redline 事件至少 1 个 risk:true 选项。"
+        },
+        "preview": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 3,
+          "items": { "$ref": "#/definitions/previewDot" },
+          "description": "显式覆盖后果预览点；一般不写，交给 FC.events._bucket 自动分档。"
+        }
+      }
+    },
+    "deltas": {
+      "type": "object",
+      "minProperties": 1,
+      "maxProperties": 3,
+      "additionalProperties": false,
+      "description": "非零键 ≤ 3（预览点可读上限）。money/debt 为 units 制（±5 ≈ ±1.5 月收入，单事件天花板）；health/social/rep/edu 为属性点（applyDeltas clamp 0–100）；gap 为空窗月数。",
+      "properties": {
+        "money": { "type": "integer", "minimum": -5, "maximum": 5 },
+        "debt": { "type": "integer", "minimum": -5, "maximum": 5 },
+        "health": { "type": "integer", "minimum": -8, "maximum": 8 },
+        "social": { "type": "integer", "minimum": -8, "maximum": 8 },
+        "rep": { "type": "integer", "minimum": -8, "maximum": 8 },
+        "edu": { "type": "integer", "minimum": -8, "maximum": 8 },
+        "gap": { "type": "integer", "minimum": 0, "maximum": 6 }
+      }
+    },
+    "previewDot": {
+      "type": "object",
+      "required": ["stat", "size"],
+      "additionalProperties": false,
+      "properties": {
+        "stat": { "type": "string", "enum": ["money", "health", "social", "rep"] },
+        "size": { "type": "string", "enum": ["s", "m", "l"] }
+      }
+    }
+  }
+}
