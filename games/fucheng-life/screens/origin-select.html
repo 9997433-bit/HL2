@@ -58,6 +58,21 @@
     </div>
     <p class="fc-quote" style="margin-bottom:14px">每点 +4 体质/人脉/学业。出身已定，这点自由是你带进城的行李。</p>
     <div id="allocRows"></div>
+
+    <div class="fc-playmode" id="playModePanel">
+      <h3 class="fc-playmode__title">开局模式</h3>
+      <p class="fc-playmode__lede">完整人生不设硬时限；闯城档在第 60 月强制交卷，适合短局试玩。</p>
+      <div class="fc-playmode__grid" role="radiogroup" aria-label="开局模式">
+        <button type="button" class="fc-playmode__opt is-selected" role="radio" aria-checked="true" data-play-mode="full">
+          <b>完整人生</b>
+          <span>不设月限，走到落户、退休或破产为止。</span>
+        </button>
+        <button type="button" class="fc-playmode__opt" role="radio" aria-checked="false" data-play-mode="challenge">
+          <b>闯城 60 月</b>
+          <span>短局挑战：满 60 个月结算「闯城期满」。</span>
+        </button>
+      </div>
+    </div>
   </section>
 
   <div class="fc-actionbar fc-rise">
@@ -95,6 +110,18 @@
   var ALLOC_TOTAL = 8;
   var alloc = { health: 0, social: 0, edu: 0 };
   var pickedId = null;
+  var playMode = "full";
+
+  function setPlayMode(mode, persist) {
+    playMode = mode === "challenge" ? "challenge" : "full";
+    var opts = document.querySelectorAll("[data-play-mode]");
+    for (var i = 0; i < opts.length; i++) {
+      var on = opts[i].getAttribute("data-play-mode") === playMode;
+      opts[i].classList.toggle("is-selected", on);
+      opts[i].setAttribute("aria-checked", on ? "true" : "false");
+    }
+    if (persist) FC.write({ playMode: playMode });
+  }
 
   function renderAllocRows() {
     var stats = [
@@ -129,10 +156,19 @@
     renderAllocRows();
   });
 
+  document.getElementById("playModePanel").addEventListener("click", function (e) {
+    var opt = e.target.closest("[data-play-mode]");
+    if (!opt) return;
+    setPlayMode(opt.getAttribute("data-play-mode"), true);
+  });
+
   function init() {
   grid.removeAttribute("aria-busy");
 
   var save = FC.read();
+  if (save.playMode) setPlayMode(save.playMode, false);
+  else setPlayMode("full", false);
+
   if (save.eraId) {
     var era = FC.era();
     eraChip.textContent = era.id + " · " + era.name + "　" + era.years;
@@ -239,7 +275,7 @@
       label.textContent = left > 0 ? "请先分配完 8 点属性" : "请先选择一份出身档案";
       label.style.color = "var(--bad)";
     } else {
-      FC.write({ originAlloc: alloc });
+      FC.write({ originAlloc: alloc, playMode: playMode });
     }
   });
   }

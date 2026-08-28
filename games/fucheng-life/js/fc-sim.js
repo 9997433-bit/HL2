@@ -256,6 +256,14 @@
         log: [],
         talents: loadInheritedTalents(),
         zoneQueue: null,
+        npcActMonth: {},
+        challengeMonths: (function () {
+          var mode = null;
+          try {
+            if (FC.read) mode = FC.read().playMode;
+          } catch (e) { /* ignore */ }
+          return mode === "challenge" ? 60 : 0;
+        })(),
         ended: false
       };
     },
@@ -289,6 +297,12 @@
       }
       if (!run.talents || !run.talents.length) run.talents = loadInheritedTalents();
       if (!run.npcQueue) run.npcQueue = [];
+      if (!run.npcActMonth) run.npcActMonth = {};
+      if (run.challengeMonths == null) {
+        var mode = null;
+        try { if (FC.read) mode = FC.read().playMode; } catch (e) { /* ignore */ }
+        run.challengeMonths = mode === "challenge" ? 60 : 0;
+      }
       run.version = 4;
       return run;
     },
@@ -1082,6 +1096,7 @@
       var pack = FC.Sim.pack;
       var bal = (pack && pack.balance) || {};
       if (run.ended) return null;
+      if (run.challengeMonths > 0 && (run.months || 0) >= run.challengeMonths) return "challenge";
       if (run.health <= 0 && run.months >= 24) return "health";
       if (run.money <= 0 && run.debt > FC.Sim.income(run, FC.era(), origin) * 10 &&
           run.months >= (bal.minMonthsBeforeBankruptcy || 48)) return "bankruptcy";
@@ -1089,6 +1104,63 @@
       if (run.age >= 75) return "elder";
       if (run.age >= 62 && run.months >= 240 && run.months % 12 === 0) return "retire";
       return null;
+    },
+
+    /** R10：关系 Tab 主动互动。kind = repay | dine | ask */
+    npcInteractOptions: function (run, npcId) {
+      var npc = FC.Sim.npcById(run, npcId);
+      if (!npc) return [];
+      var opts = [];
+      var busy = run.npcActMonth && run.npcActMonth[npcId] === (run.months || 0);
+      if (busy) return [{ id: "busy", label: "本月已互动", disabled: true }];
+      if (npc.balance < 0 || (npc.flags && npc.flags.length)) {
+        opts.push({ id: "repay", label: "还人情", cost: "现金−−", hint: "结清一笔人情账" });
+      }
+      opts.push({ id: "dine", label: "约饭", cost: "现金−", hint: "花一点钱拉近距离" });
+      if (npc.balance >= 1) {
+        opts.push({ id: "ask", label: "求助", cost: "人情−−", hint: "开口借一程现金" });
+      }
+      return opts;
+    },
+
+    interactNpc: function (run, npcId, kind, era, origin) {
+      var npc = FC.Sim.npcById(run, npcId);
+      if (!npc || !run) return null;
+      if (!run.npcActMonth) run.npcActMonth = {};
+      if (run.npcActMonth[npcId] === (run.months || 0)) {
+        return { error: "这个月已经找过" + npc.name + "了，下个月再来。" };
+      }
+      var inc = FC.Sim.income(run, era, origin);
+      var applied = {};
+      var effects = [];
+      var text = "";
+
+      if (kind === "repay") {
+        applied = FC.Sim.applyDeltas(run, { money: -2, social: 1 }, inc);
+        effects = [{
+          id: npcId, balance: 2,
+          clearFlag: (npc.flags || []).filter(function (f) {
+            return String(f).indexOf("owe_") === 0 || f === "blacklist";
+          }),
+          note: "这笔账你主动结了"
+        }];
+        text = "你找" + npc.name + "把欠着的事了结了一部分。对方点头，账本上淡了一笔。";
+      } else if (kind === "dine") {
+        applied = FC.Sim.applyDeltas(run, { money: -1, social: 2, health: -1 }, inc);
+        effects = [{ id: npcId, balance: 1, note: "一起吃过一顿" }];
+        text = "你请" + npc.name + "吃了顿便饭。话题不多，但座位之间的距离近了一点。";
+      } else if (kind === "ask") {
+        if (npc.balance < 1) return { error: npc.name + "还不觉得欠你，开口会很尴尬。" };
+        applied = FC.Sim.applyDeltas(run, { money: 2, social: -1 }, inc);
+        effects = [{ id: npcId, balance: -2, note: "开口借过一回" }];
+        text = "你开口求" + npc.name + "帮一把。事成了，人情账也往下沉了两格。";
+      } else {
+        return null;
+      }
+
+      var ledger = FC.Sim.applyNpcEffects(run, effects);
+      run.npcActMonth[npcId] = run.months || 0;
+      return { text: text, applied: applied, ledger: ledger, npc: npc, kind: kind };
     },
 
     endingMeta: function (kind) {

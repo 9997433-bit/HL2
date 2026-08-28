@@ -407,6 +407,15 @@
           ? 'right:50%;width:' + barW + '%'
           : 'width:0';
       var score = n.balance > 0 ? "+" + n.balance : String(n.balance);
+      var acts = FC.Sim.npcInteractOptions
+        ? FC.Sim.npcInteractOptions(run, n.id)
+        : [];
+      var actHtml = acts.map(function (a) {
+        return '<button type="button" class="fc-npc-act' + (a.disabled ? " is-disabled" : "") +
+          '" data-npc="' + n.id + '" data-npc-act="' + a.id + '" ' +
+          (a.disabled ? "disabled" : "") + " title=\"" + esc(a.hint || a.cost || "") + "\">" +
+          esc(a.label) + "</button>";
+      }).join("");
       return '<li class="fc-npc-card" style="--ring:var(--l' + layer + ')">' +
         '<div class="fc-npc-card__avatar" aria-hidden="true"><span>' +
           esc(n.name.charAt(0)) + "</span></div>" +
@@ -417,8 +426,27 @@
           '<div class="fc-npc-card__balance" role="img" aria-label="人情结余 ' + n.balance + ' / 5">' +
             '<div class="fc-npc-card__bar"><i class="' + cls + '" style="' + barStyle + '"></i></div>' +
             '<span class="fc-npc-card__score ' + cls + '">' + score + "</span></div>" +
-          '<p class="fc-npc-card__flag">' + esc(npcFlagLine(n)) + "</p></div></li>";
+          '<p class="fc-npc-card__flag">' + esc(npcFlagLine(n)) + "</p>" +
+          (actHtml ? '<div class="fc-npc-card__acts">' + actHtml + "</div>" : "") +
+          "</div></li>";
     }).join("");
+  }
+
+  function onNpcInteract(npcId, kind) {
+    if (!FC.Sim.interactNpc) return;
+    var res = FC.Sim.interactNpc(run, npcId, kind, era, origin);
+    if (!res) return;
+    if (res.error) {
+      $("apHint").textContent = res.error;
+      return;
+    }
+    pushLog({
+      t: ts(), tag: res.npc.name, tint: "var(--neon-amber)",
+      text: res.text + npcNote(res.ledger), d: res.applied, kind: "npc"
+    });
+    render(true);
+    renderLog();
+    flyMoney([res.applied && res.applied.money], null);
   }
 
   /* 合约 HUD 常驻在圈层条下面：签了就一直挂着进度和剩余月数，没签就挂一个入口。 */
@@ -589,7 +617,13 @@
     paintNumber("sRep", run.rep);
     $("mRep").style.width = run.rep + "%";
     paintNumber("sAge", run.age);
-    $("dAge").textContent = "已在城中 " + run.months + " 个月 · " + FC.Sim.stage(run).label;
+    if (run.challengeMonths > 0) {
+      var left = Math.max(0, run.challengeMonths - (run.months || 0));
+      $("dAge").textContent = "闯城 " + run.months + "/" + run.challengeMonths +
+        " 月 · 剩 " + left + " · " + FC.Sim.stage(run).label;
+    } else {
+      $("dAge").textContent = "已在城中 " + run.months + " 个月 · " + FC.Sim.stage(run).label;
+    }
     paintNumber("sDebt", run.debt, "¥");
 
     $("bills").innerHTML = bills().map(function (b) {
@@ -657,12 +691,16 @@
   function logCardItem(e, i) {
     /* presentation: "inline" 的事件走 fc-events 画的那张卡；探区回执仍走本地
        这张。时间列和左侧轨道两者共用，时间线不会断。 */
+    var receiptCls = e.receipt || e.kind === "zone" ? " fc-log__card--receipt" : "";
     var body = e.inline
       ? inlineHtmlOf(e) + '<div class="fc-log__delta">' + logDeltas(e.d) + "</div>"
-      : '<article class="fc-log__card">' +
+      : '<article class="fc-log__card' + receiptCls + '">' +
+        (e.receipt || e.kind === "zone"
+          ? '<span class="fc-log__stamp" aria-hidden="true">ZONE RECEIPT</span>' : "") +
         '<span class="fc-log__tag" style="color:' + e.tint + '">' + esc(e.tag) + "</span>" +
         (e.title ? '<h3 class="fc-log__card-title">' + esc(e.title) + "</h3>" : "") +
-        '<p class="fc-log__card-text">' + esc(e.text) + '</p>' +
+        '<p class="fc-log__card-text">' + esc(e.text) + "</p>" +
+        (e.note ? '<p class="fc-log__card-note">' + esc(e.note) + "</p>" : "") +
         '<div class="fc-log__delta">' + logDeltas(e.d) + "</div></article>";
     return '<li class="fc-log__item fc-log__item--card is-new"' +
       (e.kind ? ' data-tag="' + e.kind + '"' : "") +
@@ -672,8 +710,8 @@
       body + "</div></li>";
   }
 
-  /* Timeline 分级：ambient 灰细条，O1/链式/人情/合约 走层色左边框 */
-  var LOG_MAJOR = { o1: 1, saga: 1, npc: 1, contract: 1 };
+  /* Timeline 分级：ambient 灰细条，O1/链式/人情/合约/探区 走层色左边框 */
+  var LOG_MAJOR = { o1: 1, saga: 1, npc: 1, contract: 1, zone: 1 };
 
   function logKindClass(e) {
     if (e.kind === "ambient") return " fc-log__item--muted";
@@ -737,18 +775,24 @@
     return entry;
   }
 
-  function zoneEventToLog(ev, applied) {
+  function zoneEventToLog(ev, applied, zoneKey) {
+    var name = zoneLabel(zoneKey) || (ev && ev.title) || "探区";
+    var blurb = zoneKey && FC.Sim.zoneBlurb ? FC.Sim.zoneBlurb(zoneKey) : null;
+    var preview = blurb
+      ? "风险" + blurb.risk + " · 收益" + blurb.reward + " — " + blurb.blurb
+      : "";
     var entry = {
       t: ts(),
-      tag: ev.category || "探区",
+      tag: "探区回执",
       tint: "var(--l" + layerNumOf(ev) + ")",
-      title: ev.title || "",
+      title: "探区回执 · " + name,
       text: ev.text || "",
+      note: preview,
+      receipt: true,
       card: true,
-      d: applied
+      d: applied,
+      kind: "zone"
     };
-    /* 探区回执默认还是 R5-C 那张本地卡；zone 数据一旦标了 inline，就换成
-       fc-events 的呈现壳，不必再改这里。 */
     if (FC.events && FC.events.presentationOf(ev) === "inline") {
       entry.id = ev.id;
       entry.layerId = ev.layerId || "L2";
@@ -1064,6 +1108,7 @@
   }
 
   function onAction(id) {
+    var pendingZone = id === "explore" ? run.zoneQueue : null;
     var res = FC.Sim.doAction(run, id, era, origin);
     if (!res) return;
     if (FC.contract) FC.contract.creditAction(run, id, res);
@@ -1071,7 +1116,7 @@
     if (res.zoneEvent) {
       var zd = FC.Sim.applyDeltas(run, res.zoneEvent.d || {}, income());
       var zLedger = FC.Sim.applyNpcEffects(run, res.zoneEvent.npcEffects);
-      pushLog(zoneEventToLog(res.zoneEvent, zd));
+      pushLog(zoneEventToLog(res.zoneEvent, zd, pendingZone));
       if (zLedger.length) {
         pushLog({
           t: ts(), tag: "人情", tint: "var(--neon-amber)",
@@ -1180,6 +1225,16 @@
       var btn = e.target.closest("[data-action]");
       if (btn && !btn.disabled) onAction(btn.dataset.action);
     });
+
+    if ($("relList")) {
+      $("relList").addEventListener("click", function (e) {
+        var act = e.target.closest("[data-npc-act]");
+        if (!act || act.disabled || act.classList.contains("is-disabled")) return;
+        var kind = act.getAttribute("data-npc-act");
+        var npcId = act.getAttribute("data-npc");
+        if (kind && npcId && kind !== "busy") onNpcInteract(npcId, kind);
+      });
+    }
 
     $("tickBtn").addEventListener("click", function () { tick(false); });
     $("tick6Btn").addEventListener("click", function () {
