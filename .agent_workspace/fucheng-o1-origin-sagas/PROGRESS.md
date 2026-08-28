@@ -4,7 +4,7 @@
 | Round | Status | Notes |
 |-------|--------|-------|
 | R4 | complete | NPC + 合约 + pacing；12/12 |
-| **R5** | **in_progress** | 2/6 已交付（R5-A2、R5-C）；R5-B/A1/D/E 进行中 |
+| **R5** | **in_progress** | 3/6 已交付（A2/C/D）；R5-B/A1/E 进行中 |
 
 | R6 | planned | 职业/资产/NPC 扩展 |
 | R7 | planned | 引导 + 上线 |
