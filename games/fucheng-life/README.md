@@ -149,6 +149,10 @@ scripts/build-gameplay-data.js          # 生成 gameplay-pack.json
 - `story.json → events[]` 收录 56 条手写弹窗事件，每条自带 `layerId`、`category`、`weight` 与
   2–3 个 `choices[]{label, d, result}`；风险类另带 `type: "redline"`。`fc-events.js` 只做适配与抽取，
   不再持有分支文案。
+- 可选的 `presentation` 决定城市用哪种口气说这条事件：`modal`（缺省，现有 O1 卡）、
+  `toast`（顶部 4 秒通知，落地自动结算首选项）、`letter`（信纸全屏，首选项签字、末选项撕掉）、
+  `inline`（不弹窗，返回一张插进日志流的卡）。ambient 事件也读这个字段。四种壳解析出同一形状的
+  结果，选目表在 `scripts/curated/presentation.js`。
 - 游戏存档键是 `fucheng.save.v1`。完成年代或出身选择后，主入口的「继续人生」解锁并显示档案摘要。
 - 出身页 `originAlloc` 保存 8 点属性分配；终局页 `fucheng.inheritedTalent.v1` 保存天赋印记。
 - 主入口设置保存在 `fucheng-life.settings.v1`：画质、雨幕、霓虹、环境音/音量及减弱动效。
