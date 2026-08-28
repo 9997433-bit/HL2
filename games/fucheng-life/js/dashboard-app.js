@@ -378,7 +378,18 @@
 
   function npcFlagLine(n) {
     var flag = n.flags && n.flags.length ? n.flags[n.flags.length - 1] : null;
-    if (flag) return "「" + FC.Sim.flagLabel(flag) + " · 第" + run.months + "月」";
+    var arc = run.npcArc && run.npcArc[n.id];
+    var arcMeta = FC.Sim.NPC_ARCS && FC.Sim.NPC_ARCS[n.id];
+    var arcLine = "";
+    if (arcMeta && arc) {
+      if (arc.done) arcLine = "短线「" + arcMeta.title + "」已完结";
+      else if (arc.step > 0) arcLine = "短线「" + arcMeta.title + "」" + arc.step + "/" + arcMeta.steps.length;
+    }
+    if (flag) {
+      return "「" + FC.Sim.flagLabel(flag) + " · 第" + run.months + "月」" +
+        (arcLine ? " · " + arcLine : "");
+    }
+    if (arcLine) return "「" + arcLine + "」";
     if (n.last) return "「" + n.last + " · 第" + run.months + "月」";
     return "「暂时两不相欠」";
   }
@@ -447,7 +458,8 @@
     }
     pushLog({
       t: ts(), tag: res.npc.name, tint: "var(--neon-amber)",
-      text: res.text + npcNote(res.ledger), d: res.applied, kind: "npc"
+      text: res.text + npcNote(res.ledger) + "（余波可能下月上门。）",
+      d: res.applied, kind: "npc"
     });
     render(true);
     renderLog();
@@ -819,10 +831,17 @@
 
   function buildLedgerPayload() {
     var RENT = ["城中村单间", "合租主卧", "一室一厅", "江景两居", "临时落脚"];
+    var chenjie = FC.Sim.npcById(run, "chenjie");
+    var blacklisted = chenjie && chenjie.flags && chenjie.flags.indexOf("blacklist") >= 0;
     return {
       ym: ts(),
       rows: bills().map(function (b) {
-        var note = b.k === "房租" ? RENT[layerOf() - 1] || "" : b.k === "还贷" ? "月供利息" : "";
+        var note = "";
+        if (b.k === "房租") {
+          note = blacklisted ? "陈姐拉黑 · 上浮" : (RENT[layerOf() - 1] || "");
+        } else if (b.k === "还贷") {
+          note = "月供利息";
+        }
         return { label: b.k, note: note, amount: -b.v };
       }),
       income: income(),
@@ -1104,6 +1123,25 @@
   }
 
   function finishMonth(moves, silent) {
+    /* R12：人情余波先落账，再走城市 ambient —— 人比天气先敲门。 */
+    var ripple = FC.Sim.dueNpcRipple ? FC.Sim.dueNpcRipple(run) : null;
+    if (ripple && FC.Sim.resolveNpcRipple) {
+      var rip = FC.Sim.resolveNpcRipple(run, ripple, era, origin);
+      if (rip) {
+        if (rip.applied && rip.applied.money) moves.push(rip.applied.money);
+        pushLog({
+          t: ts(),
+          tag: "人情余波",
+          tint: "var(--neon-amber)",
+          title: (rip.npc && rip.npc.name) ? ("余波 · " + rip.npc.name) : "人情余波",
+          text: rip.text + npcNote(rip.ledger),
+          card: true,
+          d: rip.applied || {},
+          kind: "npc"
+        });
+      }
+    }
+
     var amb = FC.Sim.pickAmbient(run, era, origin);
     if (amb) {
       var apAmb = FC.Sim.applyDeltas(run, amb.d || {}, income());

@@ -211,6 +211,207 @@
       });
     },
 
+    /* R12：主动互动后的人情余波（日志回响，不额外弹窗）。 */
+    NPC_RIPPLE_KINDS: {
+      dine: ["dine_thanks", "dine_invite"],
+      ask: ["ask_collect", "ask_awkward"],
+      repay: ["repay_nod"]
+    },
+
+    NPC_ARCS: {
+      chenjie: {
+        title: "门锁与口风",
+        steps: [
+          {
+            id: "keys",
+            text: "陈姐把备用钥匙塞给你：「晚点回来自己开。」门锁轻了一点，房租的口气也软了一点。",
+            d: { social: 2 },
+            effects: [{ id: "chenjie", balance: 1, flag: "handy", note: "有过备用钥匙" }]
+          },
+          {
+            id: "refer",
+            text: "陈姐把你介绍给楼上换房的人。介绍费她没收，只说：「别给我丢人。」",
+            d: { money: 1, rep: 2 },
+            effects: [{ id: "chenjie", balance: 1, flag: "neighbor", note: "替你说过一句好话" }]
+          }
+        ]
+      },
+      laozhou: {
+        title: "班次与烟",
+        steps: [
+          {
+            id: "cover",
+            text: "老周替你顶了半个晚班，只留一句：「下次我抽烟，你别打报告。」",
+            d: { health: -1, social: 2 },
+            effects: [{ id: "laozhou", balance: 1, note: "顶过一次班" }]
+          },
+          {
+            id: "route",
+            text: "老周把一条不容易撞上领导的路线画给你。走廊里的脚步声，忽然没那么响了。",
+            d: { rep: 3 },
+            effects: [{ id: "laozhou", balance: 1, flag: "trusted", note: "教过你一条路" }]
+          }
+        ]
+      },
+      amin: {
+        title: "同乡的夜",
+        steps: [
+          {
+            id: "bowl",
+            text: "阿敏请你吃了一碗几乎不赚钱的面。「出门在外，别老算。」",
+            d: { health: 2, social: 2 },
+            effects: [{ id: "amin", balance: 1, note: "请过一碗面" }]
+          },
+          {
+            id: "loan",
+            text: "阿敏把一笔小钱转到你账上：「先顶着，别问利息。」人情账又沉了一格。",
+            d: { money: 2 },
+            effects: [{ id: "amin", balance: -1, flag: "lent_amin", note: "转过一笔应急" }]
+          }
+        ]
+      },
+      wangzong: {
+        title: "饭局的座位",
+        steps: [
+          {
+            id: "seat",
+            text: "王总让你坐到他右手边。这一晚你没怎么说话，但名片夹厚了一点。",
+            d: { social: 3, rep: 1 },
+            effects: [{ id: "wangzong", balance: 1, note: "给过一个好座位" }]
+          },
+          {
+            id: "intro",
+            text: "王总在酒桌上点了你的名。有人加你微信，备注写着「王总的人」。",
+            d: { social: 2, money: 1 },
+            effects: [{ id: "wangzong", balance: 1, flag: "trusted", note: "酒桌上点过名" }]
+          }
+        ]
+      },
+      xiaoyu: {
+        title: "楼道里的灯",
+        steps: [
+          {
+            id: "bulb",
+            text: "小余修好了楼道灯。黑暗少了一截，闲话也少了一截。",
+            d: { health: 1, social: 1 },
+            effects: [{ id: "xiaoyu", balance: 1, note: "一起修过灯" }]
+          },
+          {
+            id: "watch",
+            text: "你出差那周，小余帮你看了快递和绿植。「没事，顺手。」",
+            d: { social: 2 },
+            effects: [{ id: "xiaoyu", balance: 1, flag: "trusted", note: "帮你看过家" }]
+          }
+        ]
+      }
+    },
+
+    queueNpcRipple: function (run, npcId, kind) {
+      if (!run || !npcId || !kind) return;
+      if (!run.npcRipple) run.npcRipple = [];
+      var pool = FC.Sim.NPC_RIPPLE_KINDS[kind];
+      if (!pool || !pool.length) return;
+      var rippleId = pool[Math.floor(Math.random() * pool.length)];
+      var delay = 1 + Math.floor(Math.random() * 2);
+      if (kind === "ask") delay = 2 + Math.floor(Math.random() * 2);
+      run.npcRipple.push({
+        id: rippleId,
+        npc: npcId,
+        from: kind,
+        dueMonth: (run.months || 0) + delay,
+        fired: false
+      });
+
+      /* 约饭可推进该 NPC 短线：未完成时排队下一步。 */
+      if (kind === "dine") {
+        var arc = FC.Sim.NPC_ARCS[npcId];
+        if (!run.npcArc) run.npcArc = {};
+        if (!run.npcArc[npcId]) run.npcArc[npcId] = { step: 0 };
+        var st = run.npcArc[npcId];
+        if (arc && !st.done && st.step < arc.steps.length) {
+          var pending = false;
+          run.npcRipple.forEach(function (q) {
+            if (q && !q.fired && q.npc === npcId && String(q.id).indexOf("arc_") === 0) pending = true;
+          });
+          if (!pending) {
+            run.npcRipple.push({
+              id: "arc_" + st.step,
+              npc: npcId,
+              from: "arc",
+              dueMonth: (run.months || 0) + 1,
+              fired: false
+            });
+          }
+        }
+      }
+    },
+
+    dueNpcRipple: function (run) {
+      if (!run || !run.npcRipple || !run.npcRipple.length) return null;
+      var months = run.months || 0;
+      var hit = null;
+      run.npcRipple.forEach(function (q) {
+        if (!q || q.fired || months < q.dueMonth) return;
+        if (!hit || q.dueMonth < hit.dueMonth) hit = q;
+      });
+      return hit;
+    },
+
+    resolveNpcRipple: function (run, item, era, origin) {
+      if (!run || !item) return null;
+      item.fired = true;
+      var npc = FC.Sim.npcById(run, item.npc);
+      if (!npc) return null;
+      var inc = FC.Sim.income(run, era, origin);
+      var name = npc.name;
+      var text = "";
+      var d = {};
+      var effects = [];
+
+      if (String(item.id).indexOf("arc_") === 0) {
+        var arc = FC.Sim.NPC_ARCS[item.npc];
+        if (!run.npcArc) run.npcArc = {};
+        if (!run.npcArc[item.npc]) run.npcArc[item.npc] = { step: 0 };
+        var st = run.npcArc[item.npc];
+        var idx = st.step;
+        if (!arc || st.done || idx >= arc.steps.length) {
+          return { text: name + "这边暂时没新动静。", applied: {}, ledger: [], npc: npc, kind: "ripple" };
+        }
+        var step = arc.steps[idx];
+        text = "【" + arc.title + " · " + (idx + 1) + "/" + arc.steps.length + "】" + step.text;
+        d = step.d || {};
+        effects = step.effects || [];
+        st.step = idx + 1;
+        if (st.step >= arc.steps.length) st.done = true;
+      } else if (item.id === "dine_thanks") {
+        text = name + "隔天发来一句「上次那顿我请下回」。账本上淡淡多了一笔人情。";
+        d = { social: 1 };
+        effects = [{ id: item.npc, balance: 1, note: "说要回请" }];
+      } else if (item.id === "dine_invite") {
+        text = name + "把你拉进一个小群：「有空露个面。」座位比饭局本身更贵。";
+        d = { social: 2, health: -1 };
+        effects = [{ id: item.npc, balance: 1, note: "拉过你进群" }];
+      } else if (item.id === "ask_collect") {
+        text = name + "来收人情了：「上次那事，你心里有数。」你得吐出一点，或者再欠一笔。";
+        d = { money: -2, social: -1 };
+        effects = [{ id: item.npc, balance: -1, note: "来收过人情" }];
+      } else if (item.id === "ask_awkward") {
+        text = name + "在楼道里看见你，点头比以前短半拍。开口借过的人，走路会轻一点。";
+        d = { social: -2 };
+        effects = [{ id: item.npc, balance: -1, note: "楼道里短了一拍" }];
+      } else if (item.id === "repay_nod") {
+        text = name + "后来跟人提起你：「这人还算明白。」闲话偶尔也能当通行证。";
+        d = { rep: 2, social: 1 };
+        effects = [{ id: item.npc, balance: 1, note: "对外说过好话" }];
+      } else {
+        text = name + "那边有一点余波，但风很快过去了。";
+      }
+
+      var applied = FC.Sim.applyDeltas(run, d, inc);
+      var ledger = FC.Sim.applyNpcEffects(run, effects);
+      return { text: text, applied: applied, ledger: ledger, npc: npc, kind: "ripple" };
+    },
+
     /** requires: { npc, minBalance, maxBalance, flag, notFlag }，或它们的数组（全部满足）。
         判定唯一实现在 fc-events.js（pick 才是消费方）；抽卡器缺席时按「无法核账即不放行」处理。 */
     npcRequiresMet: function (run, requires) {
@@ -257,6 +458,8 @@
         talents: loadInheritedTalents(),
         zoneQueue: null,
         npcActMonth: {},
+        npcRipple: [],
+        npcArc: {},
         challengeMonths: (function () {
           var mode = null;
           try {
@@ -299,6 +502,8 @@
       if (!run.talents || !run.talents.length) run.talents = loadInheritedTalents();
       if (!run.npcQueue) run.npcQueue = [];
       if (!run.npcActMonth) run.npcActMonth = {};
+      if (!run.npcRipple) run.npcRipple = [];
+      if (!run.npcArc) run.npcArc = {};
       if (run.challengeMonths == null) {
         var mode = null;
         try { if (FC.read) mode = FC.read().playMode; } catch (e) { /* ignore */ }
@@ -667,6 +872,9 @@
         careerBonus * (0.7 + layer * 0.16);
       if (run.gap > 0) gross *= 0.18;
       if (run.talents.indexOf("hustle") >= 0) gross *= 1.08;
+      /* R12：老周翻脸（drifted）——班次上处处不顺，收入缩一截。 */
+      var laozhou = FC.Sim.npcById(run, "laozhou");
+      if (laozhou && laozhou.flags && laozhou.flags.indexOf("drifted") >= 0) gross *= 0.92;
       return Math.round(gross);
     },
 
@@ -676,8 +884,14 @@
       var inc = FC.Sim.income(run, era, origin);
       var base = inc * burden;
       if (run.talents.indexOf("frugal") >= 0) base *= 0.95;
+      var rent = Math.round(base * 0.46);
+      /* R12：陈姐拉黑 —— 房租上浮，账单里写得清清楚楚。 */
+      var chenjie = FC.Sim.npcById(run, "chenjie");
+      if (chenjie && chenjie.flags && chenjie.flags.indexOf("blacklist") >= 0) {
+        rent = Math.round(rent * 1.2);
+      }
       var rows = [
-        { k: "房租", v: Math.round(base * 0.46) },
+        { k: "房租", v: rent },
         { k: "通勤", v: Math.round(base * 0.08) },
         { k: "伙食", v: Math.round(base * 0.22) },
         { k: "人情", v: Math.round(base * 0.14) },
@@ -1324,6 +1538,7 @@
 
       var ledger = FC.Sim.applyNpcEffects(run, effects);
       run.npcActMonth[npcId] = run.months || 0;
+      FC.Sim.queueNpcRipple(run, npcId, kind);
       return { text: text, applied: applied, ledger: ledger, npc: npc, kind: kind };
     },
 
