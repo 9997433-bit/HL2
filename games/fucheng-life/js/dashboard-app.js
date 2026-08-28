@@ -661,6 +661,7 @@
 
     renderActions();
     renderContract();
+    renderGoalHud();
     renderLocationChip();
     renderTabsExtra();
     if (lastLayer !== null && lastLayer !== L && window.FCMotion && FCMotion.layerPulse) {
@@ -937,6 +938,77 @@
       renderLog();
       return true;
     });
+  }
+
+  function maybeOfferChallengeGoal() {
+    if (!FC.Sim.needsChallengeGoal || !FC.Sim.needsChallengeGoal(run)) {
+      return Promise.resolve(false);
+    }
+    var goals = FC.Sim.challengeGoals();
+    if (!goals || !goals.length || !FC.overlay) return Promise.resolve(false);
+    return new Promise(function (resolve) {
+      var host = document.createElement("div");
+      host.className = "fc-career-pick";
+      host.innerHTML =
+        '<div class="fc-career-pick__scrim"></div>' +
+        '<div class="fc-career-pick__panel" role="dialog" aria-modal="true" tabindex="-1">' +
+          '<p class="fc-eyebrow">CHALLENGE · 闯城 60 月</p>' +
+          '<h2 class="fc-career-pick__title">这六十个月，你赌哪一张牌？</h2>' +
+          '<p class="fc-career-pick__lede">选一个主目标。期满按完成度与生存质量打分，不是混满月数就算赢。</p>' +
+          '<div class="fc-career-pick__grid">' +
+            goals.map(function (g) {
+              return '<button type="button" class="fc-career-card" data-goal="' + esc(g.id) + '">' +
+                "<b>" + esc(g.name) + "</b><span>" + esc(g.blurb) + "</span></button>";
+            }).join("") +
+          "</div></div>";
+      document.body.appendChild(host);
+      FC.overlay.push("modal", host);
+      var settled = false;
+      function finish(id) {
+        if (settled) return;
+        settled = true;
+        FC.Sim.pickChallengeGoal(run, id || goals[0].id, era, origin);
+        var def = FC.Sim.goalDef(run.goal.id);
+        pushLog({
+          t: ts(), tag: "闯城", tint: "var(--neon-gold)",
+          text: "主目标定为「" + ((def && def.name) || run.goal.id) + "」。六十个月后按此交卷。",
+          d: {}, kind: "saga"
+        });
+        if (host.parentNode) host.parentNode.removeChild(host);
+        FC.overlay.pop(host);
+        render(true);
+        renderLog();
+        resolve(true);
+      }
+      host.addEventListener("click", function (e) {
+        var btn = e.target.closest("[data-goal]");
+        if (btn) finish(btn.getAttribute("data-goal"));
+      });
+    });
+  }
+
+  function renderGoalHud() {
+    var hud = $("goalHud");
+    if (!hud) return;
+    if (!(run.challengeMonths > 0) || !run.goal) {
+      hud.hidden = true;
+      return;
+    }
+    hud.hidden = false;
+    var pct = FC.Sim.goalProgress(run, era, origin);
+    var def = FC.Sim.goalDef(run.goal.id);
+    $("goalName").textContent = (def && def.name) || run.goal.name || run.goal.id;
+    $("goalPct").textContent = Math.round(pct) + "%";
+    $("goalBar").style.width = Math.max(0, Math.min(100, pct)) + "%";
+    var left = Math.max(0, run.challengeMonths - (run.months || 0));
+    if (pct >= 100) {
+      $("goalHint").textContent = "目标已达成。剩余 " + left + " 月用来抬评分，或稳稳交卷。";
+    } else if (run.goal.id === "downpay" && run.goal.downpayGoal) {
+      $("goalHint").textContent = "首付目标约 ¥" + fmt(run.goal.downpayGoal) +
+        " · 剩 " + left + " 月";
+    } else {
+      $("goalHint").textContent = (def && def.blurb ? def.blurb + " · " : "") + "剩 " + left + " 月";
+    }
   }
 
   /* 一条事件解析完之后进日志。modal / toast / letter 都留一行「【标题】结果」，
@@ -1330,6 +1402,7 @@
     /* 选轨 → 合约 → 教学：教学要指着已经挂上的合约 HUD 与行动区，
        所以放在两张选卡之后；点遮罩不会关掉，必须「下一步 / 跳过」。 */
     maybeOfferCareerTrack()
+      .then(function () { return maybeOfferChallengeGoal(); })
       .then(function () { return maybeOfferContract(); })
       .then(function () {
         if (FC.guide && FC.guide.shouldShow()) return FC.guide.show();
