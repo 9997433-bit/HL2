@@ -22,4 +22,8 @@ Model slug: gpt-sol-r3-pages-readme
 ## 验证
 
 - 文档中的数量、路由、存档键和公开 API 已对照 Round 3 上下文及现有实现。
-- 自动化结果以 `./scripts/run-fucheng-life-tests.sh` 的本分支运行记录为准。
+- `./scripts/run-fucheng-life-tests.sh`：**4 passed, 0 failed**
+  - JavaScript syntax：11 files passed
+  - story schema：7 eras / 10 origins / 5 layers / 10 events
+  - HTML links：88 local links resolved
+  - browser exports：`FCMotion` / `FC.overlay` / `FC.events` passed
