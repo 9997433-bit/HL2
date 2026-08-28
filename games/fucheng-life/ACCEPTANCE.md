@@ -193,8 +193,8 @@ python3 -m http.server 8000
     桌面与手机端「快进三月」共用游戏内确认面板，不调用浏览器 `window.confirm`，并完整展示三条快进护栏。  
     `node games/fucheng-life/tests/r16-crisis-replay.test.js` 与 `./scripts/run-fucheng-life-tests.sh` 全绿。
 
-40. [ ] **R17 · 合约 O1 刷新补弹 + 开局连弹收敛**
-    带 `contract` 字段的合约门禁 O1 也会写入 `pendingModal` 并可在刷新后补弹；仅显式 `{ pending: false }` 的合约结算卡与 `resolutionEvent` 产物不挂起，确认结果只入账一次。
-    开局若已完成合约结算或 `pendingModal` 补弹，当次推迟自动选轨、签约与聚光灯教学；闯城档缺少主目标时仍会询问，手动教学入口继续可用。
-    本月危机池新增写实二选一，并继续遵守概率闸、近期去重与每月一个强弹窗上限。
+40. [ ] **R17 · 合约 O1 刷新补弹 + 开局连弹收敛**  
+    带 `contract` 字段的合约门禁 O1 也会写入 `pendingModal` 并可在刷新后补弹；仅显式 `{ pending: false }` 的合约结算卡与 `resolutionEvent` 产物不挂起，确认结果只入账一次。  
+    开局若已完成合约结算或 `pendingModal` 补弹，当次推迟自动选轨、签约与聚光灯教学；闯城档缺少主目标时仍会询问，手动教学入口继续可用。  
+    本月危机池新增写实二选一，并继续遵守概率闸、近期去重与每月一个强弹窗上限。  
     `node games/fucheng-life/tests/r17-pending-contract.test.js` 与 `./scripts/run-fucheng-life-tests.sh` 全绿。
