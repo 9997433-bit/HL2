@@ -13,6 +13,7 @@
 <link rel="stylesheet" href="../css/fc-events.css">
 <link rel="stylesheet" href="../css/fc-ledger.css">
 <link rel="stylesheet" href="../css/fc-gameplay.css">
+<link rel="stylesheet" href="../css/fc-contract.css">
 </head>
 <body>
 <div class="fc-atmos"></div>
@@ -88,6 +89,24 @@
       <div class="fc-stat__value" id="sDebt">0</div>
       <div class="fc-stat__delta" id="dDebt">无未结清账目</div>
     </div>
+  </section>
+
+  <!-- Mid-term life contract -->
+  <section class="fc-contract-hud fc-rise" id="contractHud" hidden>
+    <div class="fc-contract-hud__main">
+      <div class="fc-contract-hud__head">
+        <span class="fc-contract-hud__eyebrow">Life Contract</span>
+        <b class="fc-contract-hud__name" id="contractName">尚未签约</b>
+        <span class="fc-contract-hud__state" id="contractState">未签</span>
+      </div>
+      <div class="fc-contract-hud__meter"><i id="contractBar"></i></div>
+      <div class="fc-contract-hud__foot">
+        <span id="contractProgress">—</span>
+        <span id="contractDeadline">—</span>
+      </div>
+    </div>
+    <button type="button" class="fc-btn fc-btn--ghost fc-contract-hud__btn"
+            id="contractPickBtn" hidden>签一张合约</button>
   </section>
 
   <!-- Bottom tabs -->
@@ -201,6 +220,7 @@
 <script src="../js/fc-motion.js"></script>
 <script src="../js/fc-events.js"></script>
 <script src="../js/fc-ledger.js"></script>
+<script src="../js/fc-contract.js"></script>
 <script src="../js/fc-ending.js"></script>
 <script src="../js/dashboard-app.js"></script>
 </body>

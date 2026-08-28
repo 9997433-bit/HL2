@@ -1900,6 +1900,106 @@
           "npcEffects": [{ "id": "xiaoyu", "balance": 1, "note": "陪你查了一下午监控" }],
           "result": "录像看了一下午，最后调出半张模糊侧脸。东西没回来，人倒是熟了。" }
       ]
+    },
+    {
+      "id": "EV93",
+      "title": "积分窗口",
+      "layerId": "L2",
+      "category": "教育",
+      "weight": 12,
+      "once": true,
+      "contract": "hukou",
+      "body": "政务大厅贴出今年的积分细则，居住年限那一栏被红笔圈了两道。队伍从取号机排到台阶下面，每个人怀里都抱着一沓复印件。",
+      "choices": [
+        { "id": "queue", "label": "排到叫号，把材料补齐", "cost": "一整天 −", "d": { "health": -3, "rep": 2 },
+          "contractProgress": 8,
+          "result": "叫到号已经傍晚。工作人员在回执上盖了章，说材料算齐，剩下的交给系统慢慢累。" },
+        { "id": "agent", "label": "花钱找代办跑一趟", "cost": "现金 −−", "d": { "money": -2, "social": 2 },
+          "contractProgress": 5,
+          "result": "代办把袋子接过去，拍了拍胸口。三天后他发来照片，回执上的日期比你自己去要早一周。" },
+        { "id": "later", "label": "细则年年改，先不动", "cost": "积分 −", "d": { "health": 2, "rep": -2 },
+          "result": "你把复印件塞回抽屉最底层。半年后细则果然改了，改的是把年限从三年提到五年。" }
+      ]
+    },
+    {
+      "id": "EV94",
+      "title": "在职学位的报名页",
+      "layerId": "L3",
+      "category": "教育",
+      "weight": 12,
+      "once": true,
+      "contract": "hukou",
+      "requires": { "progressMin": 40 },
+      "body": "报名系统半夜零点开放。加分明细里写着二十分，学费那一栏写着两年的房租。你在结算页面上停了很久，光标一直在闪。",
+      "choices": [
+        { "id": "enroll", "label": "报了，两年换二十分", "cost": "现金 −−−", "d": { "money": -3, "health": -2, "rep": 3 },
+          "contractProgress": 15,
+          "result": "第一堂课排在周六早八点。教室里坐满白天上班、夜里写作业的人，没有人互相交换姓名。" },
+        { "id": "cert", "label": "只考一张职业证书", "cost": "现金 −", "d": { "money": -1, "rep": 2 },
+          "contractProgress": 6,
+          "result": "证书三个月就拿到手，在明细里只值六分。够不够用，要等到最后一天才知道。" },
+        { "id": "skip", "label": "把学费留在账户里", "cost": "积分 −", "d": { "money": 1, "health": 2 },
+          "result": "你退出了报名页，余额数字没有变。那天夜里你算了一遍，发现自己算的是另一件事。" }
+      ]
+    },
+    {
+      "id": "EV95",
+      "title": "三年定期",
+      "layerId": "L2",
+      "category": "金钱",
+      "weight": 12,
+      "once": true,
+      "contract": "home",
+      "body": "银行 App 推来一个新页面：把这笔钱锁进三年定期，利率多出零点八，中途取出来要跑一趟柜台。手指停在确认键上方，没有落下去。",
+      "choices": [
+        { "id": "fix", "label": "锁进定期", "cost": "流动性 −", "d": { "money": 2, "health": -1 },
+          "result": "确认之后余额被划到另外一栏。数字看起来一样多，只是不再属于随手能花掉的那一种。" },
+        { "id": "fund", "label": "分一半买进基金", "cost": "风险 ▲", "d": { "money": 3, "health": -2, "rep": -1 },
+          "result": "净值曲线开始每天来看你一次。绿色的日子睡得着，红色的日子你把手机倒扣在桌面。" },
+        { "id": "cash", "label": "留在活期，随时能取", "cost": "利息 −", "d": { "money": -1, "health": 3 },
+          "result": "你退出那个页面。钱还在原处，随时可以取，也随时会被别的事情用掉一点。" }
+      ]
+    },
+    {
+      "id": "EV96",
+      "title": "家里凑的那一笔",
+      "layerId": "L2",
+      "category": "人情",
+      "weight": 12,
+      "once": true,
+      "contract": "home",
+      "requires": { "monthsLeftMax": 18 },
+      "body": "母亲在电话里报了一个数，说这是家里能拿出来的全部，不用还。你听见父亲在旁边补了一句，房本写你一个人的名字就行。",
+      "choices": [
+        { "id": "take", "label": "收下", "cost": "亏欠 ▲", "d": { "money": 4, "social": -2, "rep": 1 },
+          "result": "转账当天你没有回消息。夜里把存款截图发过去，母亲只回了四个字：够了就好。" },
+        { "id": "half", "label": "只收一半", "cost": "首付 −", "d": { "money": 2, "social": 2 },
+          "result": "你说另一半自己想办法。父亲在那头沉默两秒，说行，那你少熬点夜，钱慢慢来。" },
+        { "id": "none", "label": "一分不要", "cost": "现金 −", "d": { "health": -3, "rep": 4, "social": 2 },
+          "result": "你说这件事你扛得住。挂断以后把还差的数字写在便签上，贴在冰箱门的内侧。" }
+      ]
+    },
+    {
+      "id": "EV97",
+      "title": "晋升答辩",
+      "layerId": "L3",
+      "category": "职场",
+      "weight": 12,
+      "once": true,
+      "contract": "promote",
+      "requires": { "progressMin": 45 },
+      "body": "答辩排在下午三点，会议室里坏了一台投影。十五页材料要在十分钟里讲完，评委席上有一位是上个月刚从对家挖过来的。",
+      "choices": [
+        { "id": "full", "label": "按原稿讲满十分钟", "cost": "健康 −", "d": { "health": -3, "rep": 3 },
+          "kpi": 8,
+          "result": "讲到第九分半被打断，问题问在最后一页。答完没有人抬头，记录员却多写了两行。" },
+        { "id": "cut", "label": "砍到五页，只讲结果", "cost": "细节 −", "d": { "rep": 2, "social": 2 },
+          "kpi": 5,
+          "result": "你把过程全部略掉，只留三个数字。散会时那位新来的评委走过来，要了你的联系方式。" },
+        { "id": "credit", "label": "把功劳分给团队", "cost": "个人 −", "d": { "social": 5, "rep": -1 },
+          "kpi": 2,
+          "result": "最后一页你放了六个人的名字。名单公布之前，那六个人先替你在别处说了话。" }
+      ]
     }
   ],
   "uiCopy": {

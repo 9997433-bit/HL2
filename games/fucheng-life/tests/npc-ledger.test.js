@@ -149,8 +149,10 @@ async function main() {
   context.FC.Sim.applyNpcEffects(run, { id: target.id, balance: -99 });
   assert.equal(target.balance, -5, "applyNpcEffects must clamp balances at -5");
 
+  /* Life-contract events reuse `requires` for their own gate (progress, months
+     left) rather than the ledger, so they are not part of this census. */
   const linkedEvents = story.events.filter((event) =>
-    eventNumber(event) >= 83 &&
+    eventNumber(event) >= 83 && !event.contract &&
     (event.requires || (event.choices || []).some((choice) => npcEffectsOf(choice).length)));
   assert.ok(linkedEvents.length >= 10,
     `story.json must contain at least 10 EV83+ NPC-linked events, got ${linkedEvents.length}`);

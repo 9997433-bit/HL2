@@ -144,6 +144,7 @@
       minMonths: raw.minMonths || 0,
       maxMonths: raw.maxMonths || 0,
       requires: raw.requires || null,
+      contract: raw.contract || null,
       choices: raw.choices || []
     };
   }
@@ -241,6 +242,8 @@
   function ruleMet(npcs, rule) {
     if (!rule) return true;
     var id = rule.npc || rule.id;
+    /* 不点名 NPC 的规则不是人情账的事（合约进度就走 meetsContract），放行给它自己的门禁。 */
+    if (id == null) return true;
     var npc = null, i;
     for (i = 0; i < npcs.length; i++) {
       if (npcs[i] && npcs[i].id === id) { npc = npcs[i]; break; }
@@ -264,16 +267,35 @@
 
   function meetsNpc(npcs, requires) {
     if (!requires) return true;
-    if (!npcs || !npcs.length) return false;
     var rules = [].concat(requires);
     for (var i = 0; i < rules.length; i++) {
-      if (!ruleMet(npcs, rules[i])) return false;
+      if (!ruleMet(npcs || [], rules[i])) return false;
     }
     return true;
   }
 
-  /* opts: { layer, avoid, allowRedline, era, months, done, npcs } — all optional,
-     so a caller that knows nothing about the run still gets an event. */
+  /* ------------------------------------------------------------ 合约门禁
+     `contract: "hukou"` 的事件只在你正握着那张合约时入池 —— 没签落户的人，
+     社区窗口的通知不会贴到他门上。`requires` 里的
+       { progressMin, progressMax, monthsLeftMin, monthsLeftMax }
+     读的是合约进度本身：家里那通「凑首付」的电话，要等期限逼近了才打过来。 */
+  function meetsContract(ctx, ev) {
+    if (!ev.contract) return true;
+    if (!ctx || ctx.id !== ev.contract || ctx.status !== "active") return false;
+    var rules = [].concat(ev.requires || []);
+    for (var i = 0; i < rules.length; i++) {
+      var r = rules[i];
+      if (!r) continue;
+      if (r.progressMin != null && ctx.progress < r.progressMin) return false;
+      if (r.progressMax != null && ctx.progress > r.progressMax) return false;
+      if (r.monthsLeftMin != null && ctx.monthsLeft < r.monthsLeftMin) return false;
+      if (r.monthsLeftMax != null && ctx.monthsLeft > r.monthsLeftMax) return false;
+    }
+    return true;
+  }
+
+  /* opts: { layer, avoid, allowRedline, era, months, done, npcs, contract } —
+     all optional, so a caller that knows nothing about the run still gets an event. */
   function pick(opts) {
     opts = opts || {};
     if (!deck || !deck.length) return null;
@@ -288,11 +310,15 @@
       if (!fitsEra(deck[i], opts.era)) continue;
       if (!fitsMonths(deck[i], opts.months)) continue;
       if (deck[i].once && done && done[deck[i].id]) continue;
-      if (deck[i].requires && !meetsNpc(opts.npcs, deck[i].requires)) continue;
+      if (!meetsContract(opts.contract, deck[i])) continue;
+      if (deck[i].requires && !deck[i].contract &&
+          !meetsNpc(opts.npcs, deck[i].requires)) continue;
       var w = weightOf(deck[i], layer);
       if (deck[i].eras) w *= 2;
       /* A debt that has come due should be heard over the ambient city. */
       if (deck[i].requires) w *= 2.4;
+      /* 主线也一样：签下的那张合约要盖过背景噪音。 */
+      if (deck[i].contract) w *= 2.2;
       pool.push(deck[i]);
       weights.push(w);
       total += w;
@@ -596,6 +622,7 @@
     moneyOf: moneyOf,
     toPayload: toPayload,
     meetsNpc: meetsNpc,
+    meetsContract: meetsContract,
     STAT_LABEL: STAT_LABEL,
     TYPE_LABEL: TYPE_LABEL,
     _bucket: bucket

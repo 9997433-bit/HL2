@@ -199,6 +199,95 @@ function buildOriginSagas() {
   return out;
 }
 
+/** 中期人生合约：入城头三个月三选一，整局只签一张。
+    `goal` 是原始口径（积分 / 首付线 / 合成分），引擎再把它归一到 0–100。 */
+const CONTRACTS = [
+  {
+    id: "hukou",
+    name: "落户积分",
+    en: "RESIDENCY POINTS",
+    tint: "var(--neon-cyan)",
+    deadline: 36,
+    goal: 100,
+    pitch: "把学历、社保和居住年限换成一张准迁证。",
+    detail: "36 个月内攒满 100 分。学历分打底，进修行动、居住年限和加分项补差额。",
+    source: "进度来源 · 学历 + 进修行动 + 落户事件",
+    reward: { rep: 8, social: 4, health: 3 },
+    penalty: { rep: -5, health: -4 },
+    won: {
+      title: "准迁证",
+      body: "窗口把回执推出来，纸角还带着打印机的余温。上面印着你的名字、你的编号，" +
+        "以及一个排了三年才排到的行政事实。",
+      label: "收下这张纸",
+      result: "你把回执折好塞进内袋。走出大厅时外面正下雨，你第一次没有去算这场雨要多花多少钱。"
+    },
+    failed: {
+      title: "窗口关上了",
+      body: "细则又改了一版，年限那一栏往后挪。轮到你的时候，工作人员说这批已经截止，" +
+        "让你明年再来——明年这句话，你听过三次了。",
+      label: "认下这笔账",
+      result: "你把材料袋抱回出租屋，塞进床底。它还在，只是从今天起不再是一件正在进行的事。"
+    }
+  },
+  {
+    id: "home",
+    name: "攒首付",
+    en: "DOWN PAYMENT",
+    tint: "var(--neon-gold)",
+    deadline: 48,
+    goal: 0,
+    goalMonthsOfIncome: 30,
+    goalMin: 60000,
+    goalMax: 800000,
+    pitch: "用四年时间，把一个地址从租来的变成写自己名字的。",
+    detail: "48 个月内让现金加副业基金越过首付线。首付线按签约当月的收入折算。",
+    source: "进度来源 · 现金余额 + 副业基金",
+    reward: { rep: 8, health: 5, social: 3 },
+    penalty: { health: -6, social: -3 },
+    won: {
+      title: "首付线",
+      body: "余额界面上的数字第一次越过那条线。你截了图，又删掉，又重新截一次，" +
+        "像是怕它自己缩回去。",
+      label: "把它变成地址",
+      result: "签约那天售楼处放着很吵的音乐。你在合同末页写下名字，笔尖顿了顿，然后一笔到底。"
+    },
+    failed: {
+      title: "又涨了一轮",
+      body: "四年过去，你攒钱的速度没有输给自己，只输给了挂在中介橱窗里的那张价目表。" +
+        "同一个户型，如今多出一辆车的钱。",
+      label: "认下这笔账",
+      result: "你把那个账户改了名字，从「首付」改成「备用」。改完之后它还是原来的数字。"
+    }
+  },
+  {
+    id: "promote",
+    name: "升职",
+    en: "PROMOTION",
+    tint: "var(--neon-violet)",
+    deadline: 24,
+    goal: 100,
+    pitch: "两年之内挤进能签字的那一层。",
+    detail: "24 个月内做到职级 2 且 KPI 不低于 70。进度由职级（55）与 KPI（45）合成。",
+    source: "进度来源 · 职级 + KPI",
+    reward: { rep: 7, social: 5, money: 3 },
+    penalty: { rep: -4, health: -4 },
+    won: {
+      title: "新的工位",
+      body: "任命邮件发在周五下午，抄送整个部门。你的名字后面多了两个字，" +
+        "座位从窗边挪进走廊尽头那间有门的屋子。",
+      label: "收下这一页",
+      result: "第一次以新身份主持会议，你讲得很慢。散会后有人留下来问你要不要喝咖啡，你说好。"
+    },
+    failed: {
+      title: "名单上没有你",
+      body: "名单贴出来那天你正在改第七版方案。你从头看到尾，又从尾看到头，" +
+        "确认自己没有看漏——两年就这样结算完毕。",
+      label: "认下这笔账",
+      result: "你把方案存成最终版，关掉电脑。楼下便利店的关东煮还冒着热气，你买了一份站着吃完。"
+    }
+  }
+];
+
 const CAREER_TRACKS = [
   { id: "staff", name: "职员线", levels: ["实习生", "专员", "主管", "总监", "副总裁"] },
   { id: "tech", name: "技术线", levels: ["码农", "工程师", "架构师", "专家", "首席"] },
@@ -220,6 +309,7 @@ const pack = {
     originSagaMonthlyOdds: 0.2
   },
   actions: ACTION_DEFS,
+  contracts: CONTRACTS,
   ambientEvents: buildAmbientEvents(),
   zoneEvents: buildZoneEvents(),
   sagas: BASE_SAGAS.concat(sagasExtra),

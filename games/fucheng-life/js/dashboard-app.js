@@ -122,6 +122,77 @@
     }).join("");
   }
 
+  /* 合约 HUD 常驻在圈层条下面：签了就一直挂着进度和剩余月数，没签就挂一个入口。 */
+  function renderContract() {
+    var hud = $("contractHud");
+    if (!hud || !FC.contract) return;
+    var c = run.contract;
+    var btn = $("contractPickBtn");
+    var state = $("contractState");
+    var canPick = FC.contract.canPick(run);
+
+    hud.hidden = false;
+    hud.classList.toggle("is-idle", !c);
+    if (btn) btn.hidden = !canPick;
+
+    if (!c) {
+      hud.style.setProperty("--tint", "var(--text-dim)");
+      $("contractName").textContent = "尚未签约";
+      state.textContent = canPick ? "可签" : "已错过";
+      state.className = "fc-contract-hud__state" + (canPick ? " is-urgent" : "");
+      $("contractBar").style.width = "0%";
+      $("contractProgress").textContent = canPick
+        ? "落户 / 首付 / 升职，三选一"
+        : "这一局没有签下任何合约";
+      $("contractDeadline").textContent = canPick
+        ? "第 " + FC.contract.PICK_WINDOW + " 月前有效"
+        : "签约窗口已关闭";
+      return;
+    }
+
+    var def = FC.contract.def(c.id) || {};
+    var pct = FC.Sim.refreshContract(run);
+    var monthsLeft = FC.Sim.contractMonthsLeft(run);
+    hud.style.setProperty("--tint", def.tint || "var(--neon-cyan)");
+    $("contractName").textContent = def.name || c.id;
+    $("contractBar").style.width = Math.min(100, pct) + "%";
+    $("contractProgress").textContent = FC.contract.progressLabel(run);
+    $("contractDeadline").textContent = FC.contract.deadlineLabel(run);
+
+    state.textContent = c.status === "won" ? "已达成"
+      : c.status === "failed" ? "已失效"
+        : monthsLeft <= 6 ? "倒计时" : "进行中";
+    state.className = "fc-contract-hud__state" +
+      (c.status === "won" ? " is-won"
+        : c.status === "failed" ? " is-failed"
+          : monthsLeft <= 6 ? " is-urgent" : "");
+  }
+
+  /* 签约窗口只有头三个月。「再想想」记下当月，下个月才会再问一次。 */
+  function maybeOfferContract() {
+    if (!run.done) run.done = {};
+    if (!FC.contract || !FC.contract.canPick(run)) return Promise.resolve(false);
+    if (run.done.contractSkipped === run.months) return Promise.resolve(false);
+    return FC.contract.showPicker({ run: run, era: era, origin: origin }).then(function (id) {
+      if (!id) {
+        run.done.contractSkipped = run.months;
+        render(false);
+        return false;
+      }
+      FC.Sim.selectContract(run, id, era, origin);
+      var def = FC.contract.def(id) || {};
+      pushLog({
+        t: ts(), tag: "合约", tint: "var(--neon-gold)",
+        text: "你签下了「" + def.name + "」。" + def.pitch +
+          "　期限 " + def.deadline + " 个月，从这个月开始算。",
+        d: {}
+      });
+      render(true);
+      renderLog();
+      return true;
+    });
+  }
+
   function renderTabsExtra() {
     var trName = "职员线";
     if (FC.Sim.pack && FC.Sim.pack.careerTracks) {
@@ -207,6 +278,7 @@
     }
 
     renderActions();
+    renderContract();
     renderTabsExtra();
     if (lastLayer !== null && lastLayer !== L && window.FCMotion && FCMotion.layerPulse) {
       FCMotion.layerPulse($("elevatorPanel"), L);
@@ -293,7 +365,8 @@
       era: era.id,
       months: run.months,
       done: run.done,
-      npcs: run.npcs
+      npcs: run.npcs,
+      contract: FC.Sim.contractCtx(run)
     };
     var ev = FC.events.pick(draw);
     if (!ev) return null;
@@ -311,14 +384,30 @@
     return ev;
   }
 
+  /* 合约事件的选项可以直接动 KPI、房产和落户加分 —— 这三样都不在
+     story.json 允许的 d 里（那里只有现金/健康/人脉/声望），只能单独走一趟。 */
+  function applyContractChoice(choice) {
+    if (!choice) return;
+    if (choice.kpi) {
+      run.career.kpi = Math.max(0, Math.min(100, run.career.kpi + choice.kpi));
+    }
+    if (choice.property) run.assets.property = choice.property;
+    if (choice.contractProgress) FC.Sim.creditContract(run, choice.contractProgress);
+  }
+
   function openEvent(ev, silent) {
     return FC.events.show(ev, { moneyRef: income() }).then(function (res) {
       if (res.dismissed) return true;
       var applied = FC.Sim.applyDeltas(run, res.deltas, income());
       var ledger = FC.Sim.applyNpcEffects(run, res.choice && res.choice.npcEffects);
+      applyContractChoice(res.choice);
+      if (FC.contract) FC.contract.creditDeltas(run, applied);
       pushLog({
-        t: ts(), tag: ledger.length ? ledger[0].name : (FC.events.TYPE_LABEL[ev.type] || ev.category),
-        tint: ledger.length ? "var(--neon-amber)" : "var(--l" + ev.layerIndex + ")",
+        t: ts(),
+        tag: ev.contract ? "合约"
+          : ledger.length ? ledger[0].name : (FC.events.TYPE_LABEL[ev.type] || ev.category),
+        tint: ev.contract ? "var(--neon-gold)"
+          : ledger.length ? "var(--neon-amber)" : "var(--l" + ev.layerIndex + ")",
         text: "【" + ev.title + "】" + ((res.choice && res.choice.result) || "") + npcNote(ledger),
         d: applied
       });
@@ -398,6 +487,10 @@
       pushLog({ t: ts(), tag: "透支", tint: "var(--bad)", text: "你在工位上失去意识。身体的账单，最后一起结。", d: { money: -fee, health: 22 } });
     }
 
+    /* 合约每月只结算一次，在月结之后、抽卡之前：到期那天城市先把账算完，
+       再决定今晚还要不要敲门。 */
+    var settled = FC.Sim.tickContract(run, era, origin);
+
     FC.Sim.resetMonthAp(run, era);
     render(true);
     renderLog();
@@ -405,6 +498,13 @@
 
     return checkEnding().then(function (ended) {
       if (ended) return true;
+      if (settled && FC.contract) {
+        var resolution = FC.contract.resolutionEvent(run);
+        if (resolution) return openEvent(resolution, silent);
+      }
+      return maybeOfferContract();
+    }).then(function (hit) {
+      if (hit) return true;
       var ev = drawModalEvent();
       if (!ev) { maybeShowLedger(silent); return false; }
       return openEvent(ev, silent);
@@ -440,6 +540,7 @@
   function onAction(id) {
     var res = FC.Sim.doAction(run, id, era, origin);
     if (!res) return;
+    if (FC.contract) FC.contract.creditAction(run, id, res);
     pushLog({ t: ts(), tag: "行动", tint: "var(--neon-cyan)", text: res.text, d: res.applied });
     if (res.zoneEvent) {
       var zd = FC.Sim.applyDeltas(run, res.zoneEvent.d || {}, income());
@@ -497,10 +598,17 @@
       run.log = [];
       pushLog({ t: ts(), tag: "入城", tint: "var(--neon-amber)", text: "你在" + era.name + "走出车站。", d: {} });
       render(true); renderLog();
+      maybeOfferContract();
     });
     $("log").addEventListener("animationend", function (ev) {
       if (ev.animationName === "fc-logslide") ev.target.classList.remove("is-new");
     });
+    if ($("contractPickBtn")) {
+      $("contractPickBtn").addEventListener("click", function () {
+        run.done.contractSkipped = -1;
+        maybeOfferContract();
+      });
+    }
 
     bindTabs();
     if (FC.events) FC.events.load();
@@ -514,6 +622,8 @@
     $("ledgerBtn").disabled = !FC.ledger;
     render(false);
     renderLog();
+    /* 入城第一屏就把合约摆上：这是整局唯一一次三选一，不该被埋在按钮后面。 */
+    maybeOfferContract();
   }
 
   FC.ready.then(init, function () {

@@ -76,13 +76,26 @@ function npcsSatisfying(requires) {
   }));
 }
 
+/* Same idea one rail over: an event tagged to a life contract needs a run that
+   actually holds that contract, at a progress its `requires` admits. */
+function contractSatisfying(event) {
+  const rule = [].concat(event.requires || [{}])[0] || {};
+  return {
+    id: event.contract,
+    status: "active",
+    progress: rule.progressMin ?? rule.progressMax ?? 50,
+    monthsLeft: rule.monthsLeftMax ?? rule.monthsLeftMin ?? 24
+  };
+}
+
 function optionsForOnly(event, deck) {
   return {
     layer: Number(event.layerId.slice(1)),
     avoid: deck.filter((candidate) => candidate.id !== event.id).map((candidate) => candidate.id),
     era: Array.isArray(event.eras) ? event.eras[0] : story.eras[0].id,
     months: event.minMonths === undefined ? 0 : event.minMonths,
-    npcs: event.requires ? npcsSatisfying(event.requires) : undefined
+    npcs: event.requires && !event.contract ? npcsSatisfying(event.requires) : undefined,
+    contract: event.contract ? contractSatisfying(event) : undefined
   };
 }
 
@@ -90,7 +103,8 @@ function assertPickFilters(deck) {
   const eraEvents = story.events.filter((event) => Array.isArray(event.eras) && event.eras.length);
   const minMonthEvents = story.events.filter((event) => event.minMonths > 0);
   const onceEvents = story.events.filter((event) => event.once === true);
-  const requiresEvents = story.events.filter((event) => event.requires);
+  const requiresEvents = story.events.filter((event) => event.requires && !event.contract);
+  const contractEvents = story.events.filter((event) => event.contract);
   const storyEraIds = story.eras.map((era) => era.id);
 
   /* R2-A authors the gated events and lands the picker implementation in
@@ -127,6 +141,23 @@ function assertPickFilters(deck) {
       `pick must exclude ${event.id} while its NPC requirement is unmet`);
   }
 
+  for (const event of contractEvents) {
+    const options = optionsForOnly(event, deck);
+    const picked = context.FC.events.pick(options);
+    assert.equal(picked && picked.id, event.id,
+      `pick must admit ${event.id} while its ${event.contract} contract is running`);
+    assert.equal(context.FC.events.pick({ ...options, contract: undefined }), null,
+      `pick must exclude ${event.id} when no life contract is signed`);
+    assert.equal(
+      context.FC.events.pick({
+        ...options,
+        contract: { ...options.contract, status: "won" }
+      }),
+      null,
+      `pick must exclude ${event.id} once its contract is settled`
+    );
+  }
+
   for (const event of onceEvents) {
     const options = optionsForOnly(event, deck);
     const picked = context.FC.events.pick({ ...options, done: {} });
@@ -140,7 +171,8 @@ function assertPickFilters(deck) {
     eras: eraEvents.length,
     minMonths: minMonthEvents.length,
     once: onceEvents.length,
-    requires: requiresEvents.length
+    requires: requiresEvents.length,
+    contract: contractEvents.length
   };
 }
 
@@ -231,7 +263,8 @@ async function main() {
   const gatedCount = Object.values(pickCoverage).reduce((total, count) => total + count, 0);
   console.log(gatedCount
     ? `Pick filter smoke: ${pickCoverage.eras} era, ${pickCoverage.minMonths} minMonths, ` +
-      `${pickCoverage.once} once, and ${pickCoverage.requires} NPC-gated fixtures passed.`
+      `${pickCoverage.once} once, ${pickCoverage.requires} NPC-gated, and ` +
+      `${pickCoverage.contract} contract-gated fixtures passed.`
     : "Pick filter smoke: skipped gracefully; R2-A gated fixtures have not landed.");
 
   await assertOfflineMirror();
