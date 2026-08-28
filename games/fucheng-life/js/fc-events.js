@@ -124,7 +124,9 @@
         );
         if (!items.length) return;
         var first = items[0], last = items[items.length - 1];
-        if (e.shiftKey && doc.activeElement === first) { e.preventDefault(); last.focus(); }
+        /* 开卡后焦点落在 panel 自身（tabindex="-1"，不在 items 内），此时不接管就会漏到背后的仪表盘 */
+        if (items.indexOf(doc.activeElement) < 0) { e.preventDefault(); if (e.shiftKey) last.focus(); else first.focus(); }
+        else if (e.shiftKey && doc.activeElement === first) { e.preventDefault(); last.focus(); }
         else if (!e.shiftKey && doc.activeElement === last) { e.preventDefault(); first.focus(); }
       }
     };
