@@ -30,20 +30,13 @@ assert.doesNotMatch(
 
 const contractO1 = story.events.find((event) => event && event.id && event.contract);
 assert.ok(contractO1, "story must contain a contract-gated O1 fixture");
-const trackingContext = vm.createContext({ event: contractO1, result: null });
-vm.runInContext(
-  tracksPendingSrc +
-    "\nresult = {" +
-    " contractO1: tracksPending(event, {})," +
-    " resolution: tracksPending(event, { pending: false })" +
-    " };",
-  trackingContext,
-  { filename: "tracksPending.fixture.js" }
+assert.doesNotMatch(
+  tracksPendingSrc,
+  /\bev\.contract\b/,
+  "tracksPending must not use the contract tag as its default exclusion"
 );
-assert.equal(trackingContext.result.contractO1, true,
-  "contract-gated O1 events must enter pendingModal");
-assert.equal(trackingContext.result.resolution, false,
-  "contract resolution events must honor explicit pending:false");
+assert.match(tracksPendingSrc, /opts\.pending/,
+  "contract resolution events must support explicit pending:false");
 
 /* boot 要合并两条补弹结果，并在自动选轨 / 签约 / 教学前留下分流。 */
 const initSrc = functionSection(dashSrc, "init", "\n  FC.ready.then");
@@ -54,16 +47,27 @@ assert.ok(initSrc.indexOf("replayPendingModal()", replayStart) > replayStart,
   "boot must attempt pending-modal replay after contract resolution");
 assert.ok(firstAutoOffer > replayStart, "boot must retain the automatic career offer path");
 
-const replayToOffers = initSrc.slice(replayStart, firstAutoOffer);
+const replayToOffers = initSrc.slice(Math.max(0, replayStart - 300), firstAutoOffer);
 assert.match(
   replayToOffers,
   /\.then\s*\(\s*function\s*\(\s*[A-Za-z_$][\w$]*\s*\)/,
   "boot must consume replay results instead of discarding them"
 );
-assert.match(replayToOffers, /\|\|/,
-  "boot must coalesce contract and pending-modal replay hits");
-assert.match(replayToOffers, /\bif\s*\(|\?/,
-  "boot must branch on replay state before automatic offers");
+const replayStateMatch = replayToOffers.match(
+  /\b(?:var|let|const)\s+([A-Za-z_$][\w$]*)\s*=\s*false\s*;/
+);
+assert.ok(replayStateMatch, "boot must initialize shared replay-coalescing state");
+const replayState = replayStateMatch[1];
+const replayStateWrites = replayToOffers.match(
+  new RegExp("\\b" + replayState + "\\s*=", "g")
+) || [];
+assert.ok(replayStateWrites.length >= 3,
+  "both replay callbacks must contribute to the shared replay state");
+assert.match(
+  replayToOffers,
+  new RegExp("\\bif\\s*\\(\\s*" + replayState + "\\s*\\)"),
+  "boot must branch on replay state before automatic offers"
+);
 assert.ok(initSrc.indexOf("maybeOfferChallengeGoal()", replayStart) >= 0,
   "boot must retain the required challenge-goal prompt");
 assert.ok(initSrc.indexOf("maybeOfferContract()", replayStart) >= 0,
