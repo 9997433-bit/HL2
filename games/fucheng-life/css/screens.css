@@ -1638,6 +1638,25 @@ button {
     grid-template-columns: 1fr;
     gap: 4px;
   }
+
+  /* At this width the label and the button need the room more than the
+     pull-quote does — three of them side by side left the selection reading
+     one character per line. */
+  .fc-actionbar {
+    gap: 10px;
+    padding: 12px 14px;
+  }
+  .fc-actionbar__info {
+    flex: 1 1 100%;
+  }
+  .fc-actionbar .fc-quote {
+    display: none;
+  }
+  .fc-actionbar .fc-btn {
+    flex: 1 1 auto;
+    padding-left: 14px;
+    padding-right: 14px;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

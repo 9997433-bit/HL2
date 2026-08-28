@@ -9,7 +9,6 @@
   var doc = global.document;
   var LOCALE = "zh-CN";
   var WIPE_OUT = 300;
-  var WIPE_IN = 340;
   var FLAG = "fucheng.wipe";
 
   function reduced() {
