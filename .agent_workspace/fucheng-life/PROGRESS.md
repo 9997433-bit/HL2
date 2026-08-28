@@ -37,7 +37,7 @@
 ## Round Status
 | Round | Status |
 |-------|--------|
-| Round 1 | in_progress — 5/6 done |
+| Round 1 | complete — 6/6 done |
 | Round 2 | pending |
 | Round 3 | pending |
 
@@ -47,7 +47,7 @@
 | [fable-r1-ui-arch](bc-e1fcf7fb-cf9f-5787-8931-17c7bd1f6395) | fable | ✅ done → `67ea417` |
 | [fable-r1-sota-ui](bc-23b25f5e-5910-5a77-ab2d-5b6465eb0f01) | fable | ✅ done → `08ccc8e` |
 | [opus-r1-main-shell](bc-ed2ea4bd-4931-5c4e-ac56-be6c153e7c3d) | opus-fast | ✅ done → `d3f49ab` |
-| [opus-r1-core-screens](bc-17288417-4671-5100-8d00-dd6d2a791b83) | opus-fast | running |
+| [opus-r1-core-screens](bc-17288417-4671-5100-8d00-dd6d2a791b83) | opus-fast | ✅ done → `b5a191c` |
 | [gpt-sol-r1-story-data](bc-70d30f4d-83ae-5ff5-b7fb-a4ab2d3dc8b4) | gpt-sol | ✅ done → `7ed14fb` |
 | [gpt-sol-r1-effects](bc-0d1ab85e-b22e-5d1c-93e0-73224a65fe87) | gpt-sol | ✅ done → `bc1c247` |
 
