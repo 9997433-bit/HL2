@@ -216,3 +216,9 @@ python3 -m http.server 8000
     闯城选择卡按 Escape 不可取消关闭；按 Tab 或 Shift+Tab 时，焦点保持在卡内循环（Tab trap）。  
     `prefers-reduced-motion: reduce` 下开合即时完成、面板保持可见，选卡与放行不受影响。  
     `node games/fucheng-life/tests/r20-picker-motion.test.js` 与 `./scripts/run-fucheng-life-tests.sh` 全绿。
+
+44. [x] **R21 · 焦点 trap 闭合 + 闯城 Esc 反馈**  
+    事件、选轨与闯城三张卡的焦点保持闭合：开卡后的首击 Shift+Tab 不泄焦；焦点位于卡根节点或卡内可聚焦项之外时，Shift+Tab 回到末项、Tab 进入首项。  
+    闯城选择卡按 Escape 仍不可取消关闭，但面板给出一次弱反馈，lede 明示「必须选定才继续」；`prefers-reduced-motion: reduce` 下无动画，提示仍保留。  
+    选轨日志使用 `careerTracks` 的中文 `name`，不再显示英文 slug。  
+    `node games/fucheng-life/tests/r21-focus-trap.test.js` 与 `./scripts/run-fucheng-life-tests.sh` 全绿。

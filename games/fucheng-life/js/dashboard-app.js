@@ -1116,9 +1116,13 @@
     return FC.career.showPicker(pick).then(function (id) {
       if (!id) return false;
       FC.career.applyTrack(run, id);
+      var trackName = id;
+      ((FC.Sim.pack && FC.Sim.pack.careerTracks) || []).forEach(function (t) {
+        if (t.id === id && t.name) trackName = t.name;
+      });
       pushLog({
         t: ts(), tag: "职场", tint: "var(--neon-violet)",
-        text: "你选择了「" + id + "」轨道作为起点。", d: {}, kind: "saga"
+        text: "你选择了「" + trackName + "」轨道作为起点。", d: {}, kind: "saga"
       });
       render(true);
       renderLog();
@@ -1140,7 +1144,7 @@
         '<div class="fc-career-pick__panel" role="dialog" aria-modal="true" tabindex="-1">' +
           '<p class="fc-eyebrow">CHALLENGE · 闯城 60 月</p>' +
           '<h2 class="fc-career-pick__title">这六十个月，你赌哪一张牌？</h2>' +
-          '<p class="fc-career-pick__lede">选一个主目标。期满按完成度与生存质量打分，不是混满月数就算赢。</p>' +
+          '<p class="fc-career-pick__lede">选一个主目标。期满按完成度与生存质量打分，不是混满月数就算赢。必须选定一张才能往下走。</p>' +
           '<div class="fc-career-pick__grid">' +
             goals.map(function (g) {
               return '<button type="button" class="fc-career-card" data-goal="' + esc(g.id) + '">' +
@@ -1169,10 +1173,27 @@
         }, 180);
       }
 
+      /* 吞掉的按键要有回音，否则玩家只会以为键盘没进来、接着一路猛敲 Esc。
+         连按得能重新起拍：先摘类、强制回流，再挂上去；旧的那次回调靠 gen 比对
+         自己作废，不用 clearTimeout —— onKey 跑在 overlay 的分发里，多依赖一个
+         全局就多一个把整条键盘链炸掉的机会。摸不到 classList 就干脆不抖。 */
+      var escPulses = 0;
+      function pulseEsc() {
+        if (settled || !panel || !panel.classList) return;
+        var gen = ++escPulses;
+        panel.classList.remove("is-esc-pulse");
+        void panel.offsetWidth;
+        panel.classList.add("is-esc-pulse");
+        setTimeout(function () {
+          if (gen !== escPulses) return;
+          panel.classList.remove("is-esc-pulse");
+        }, 320);
+      }
+
       /* 主目标不可取消：Esc 只吞掉按键，不当作「随便给你一张」也不放行，
          否则这局没有目标可以计分 —— 宁可让玩家再看一眼这三张牌。 */
       function onKey(e) {
-        if (e.key === "Escape") { e.preventDefault(); return; }
+        if (e.key === "Escape") { e.preventDefault(); pulseEsc(); return; }
         if (e.key === "Tab" && panel) { FC.overlay.trap(panel, e); return; }
       }
 
