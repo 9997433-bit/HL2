@@ -14,7 +14,7 @@
 | # | 决策 | 一句话理由 |
 |---|------|-----------|
 | D1 | SSOT 键 = `story.json` 顶层 **`events[]`**，同 commit 删除 `sampleEvents` | `story-loader.js` 与 `fc-events.js` 的读取链已写成 `raw.events \|\| raw.sampleEvents`，`events` 天然优先，零运行时改造成本 |
-| D2 | 每条事件**必带** `choices[2–3]` 与显式 `type`，`category` 降级为展示/加权元数据 | 类型推断表 `CATEGORY_TYPE` 只保留兼容职责，作者意图不再靠猜 |
+| D2 | 每条事件**必带** `choices[2–3]`；`type` 仅风险类强制显式（`风险 → redline`），其余可缺省由 `CATEGORY_TYPE` 推断 | 与已落地门禁口径一致（§0.5）；`category` 是展示/加权元数据 |
 | D3 | `d` 金额沿用 **units 制**（1 unit = `max(¥400, 月收入×30%)`，经 `moneyOf` 换算），不写死 ¥ | 1984 与 2026 的人生量级不同，一个选择应花掉同等比例的月收入；这是已实现代码的现行约定（fc-events.js §剧本 注释） |
 | D4 | `SCRIPT` 硬编码表**删除**；choices 内联进 `SEED` 十条镜像；ack 模式是唯一结构性兜底 | story.json 成为唯一数据源；SEED 只服务 file:// 降级，冻结 10 条禁止扩容 |
 | D5 | `pick()` 扩展 `era / months / done` 三个过滤位，向后兼容 | 50+ 事件需要时代标签与 once 里程碑，抽取层必须能筛 |
@@ -22,9 +22,24 @@
 | D7 | 与 ambientEvents 边界：**要表态的进 O1，只需要被看见的进 ambient**；ID 命名空间硬隔离 | 两池永不混装、永不互引；详见 §6 |
 | D8 | 测试门禁重写 `story-schema.test.js` 事件段 + 更新 `exports-smoke.test.js`；schema 草案落 `data/events-schema.json` | 门禁从"恰好 10 条"翻转为"≥50 条且每条结构完整、文案不复读" |
 
+### 0.5 落地核对（本文档 push 时 rebase 所见，以此节为准读全文）
+
+并行 R1 代理已在本分支落地了 D1/D3/D4 的实现，本文与之核对无方向性冲突：
+
+- `c444136`：story.json `events[]` **56 条已落地**（EV01–EV56，L1×12 / L2×15 / L3×12 /
+  L4×10 / L5×7），choices 内联，`sampleEvents` 已删除；`story-schema.test.js`（events ≥ 50 +
+  choices 结构校验）与 `exports-smoke.test.js` 已重写，测试链 9 项全绿。
+- `5adc222`：`SCRIPT` 表已删除；`SEED` 镜像 EV01–EV10 内联 choices，并新增"镜像逐字对齐
+  story.json、源码禁止出现 `SCRIPT[...]` 索引"的门禁。
+- 落地口径与本文初稿的三处差异（**以落地为准**，§2 字段表与 `events-schema.json` 已按此校订）：
+  ① `type` 仅 `风险` 类强制显式 `redline`，其余缺省走 `CATEGORY_TYPE` 推断；
+  ② `body` 为 29–42 字短句风格（草案下限放宽到 24）；③ `label` 允许 2 字（如「拒绝」）。
+- **尚未落地 = 下轮 opus 的真实缺口**：`eras/once/minMonths` 门控字段与 §3.3 `pick()` 过滤、
+  §3.5 dashboard 触发面传参与 `recentModal` 3→8、时代专属事件配额（§5.2）、§6 剩余门禁。
+
 ---
 
-## 1. 现状与迁移动机
+## 1. 迁移前现状与动机（历史快照；迁移已落地，见 §0.5）
 
 - `story.json.sampleEvents`：10 条（EV01–EV10），只有 `id/title/layerId/category/text`，**没有 choices**。
 - `fc-events.js` 内 `SCRIPT` 表：EV01–EV10 的 choices 硬编码（每条 2–3 项，units 制 d，含 `cost/risk/result`），
@@ -58,9 +73,9 @@ story.json.events (SSOT, 52 条, 含 choices)
 |------|------|:---:|------|------|
 | `id` | string | ✓ | `/^EV\d{2,3}$/`，全局唯一 | EV01–EV10 保留给迁移事件（旧档 `recentModal` 里存有这些 id，不可改名）；新事件 EV11 起顺延 |
 | `title` | string | ✓ | 2–12 字 | serif 大标题，名词性短语，不带句号 |
-| `body` | string | ✓ | 36–140 字 | 一个具体场景，文案守则见 §5.4 |
-| `category` | string | ✓ | 枚举：生计 居住 职场 教育 机会 人情 关系 风险 金钱 健康 | 展示与加权元数据（originBias/eraTag 复用 ambient 的类目习惯）；**不再决定 type** |
-| `type` | string | ✓ | `opportunity` \| `bill` \| `relation` \| `redline` | 驱动角标/accent/冷静期（overlay-spec §1.4）；显式声明，`CATEGORY_TYPE` 推断表仅作缺省兜底保留 |
+| `body` | string | ✓ | 24–140 字（落地实测 29–42 的短句风格） | 一个具体场景，文案守则见 §5.4 |
+| `category` | string | ✓ | 枚举：生计 居住 职场 教育 机会 人情 关系 风险 金钱 健康 | 展示与加权元数据（originBias/eraTag 复用 ambient 的类目习惯） |
+| `type` | string | 风险类✓ | `opportunity` \| `bill` \| `relation` \| `redline` | 驱动角标/accent/冷静期（overlay-spec §1.4）。**`category: 风险` 必须显式 `redline`**（门禁已落地）；其余可缺省，由 `CATEGORY_TYPE` 推断（机会→opportunity；金钱/生计/居住→bill；人情/关系→relation；职场/教育等→opportunity 兜底） |
 | `layerId` | string | ✓ | `L1`–`L5` | 驱动层色与 `weightOf` 层距加权 |
 | `weight` | int | ✓ | 1–12 | 基础权重；建议值见 §5.3 |
 | `scene` | string | | ≤ 14 字 | 场景 chip 覆盖（缺省 = `"L2 · 工薪层"` 自动拼接），仅特殊事件用 |
@@ -76,9 +91,9 @@ story.json.events (SSOT, 52 条, 含 choices)
 | 字段 | 类型 | 必填 | 约束 | 说明 |
 |------|------|:---:|------|------|
 | `id` | string | ✓ | `/^[a-z][a-z0-9_-]{1,15}$/`，事件内唯一 | 进日志与 resolve 值；语义化英文 token（`repay`/`stall`/`walk`） |
-| `label` | string | ✓ | 4–14 字，动词开头 | 按钮文案 |
+| `label` | string | ✓ | 2–14 字，动词开头为主 | 按钮文案（落地允许「拒绝」式 2 字短令） |
 | `d` | object | ✓ | 非空；键 ⊆ `{money, debt, health, social, rep, edu, gap}`；**非零键 ≤ 3** | 结算增量。**canonical 键名是 `d`**（与 SCRIPT/ambient/saga 一致）；`toPayload` 同时接受别名 `deltas`（overlay-spec §3.2 的历史命名），但 story.json 内统一写 `d` |
-| `result` | string | ✓ | 20–80 字 | 结果面叙事；写"选择之后的世界"，不复述 label |
+| `result` | string | ✓ | 16–80 字 | 结果面叙事；写"选择之后的世界"，不复述 label |
 | `cost` | string | | ≤ 10 字 | 代价标注展示串（`现金 −−` / `人情 ▲` / `风险 ▲`）；风险选项固定用 `风险 ▲` |
 | `risk` | bool | | | 标 `fc-choice--risk` 视觉；**redline 事件至少 1 个 risk 选项**（schema 强制） |
 | `preview` | {stat,size}[] | | stat ∈ money/health/social/rep，size ∈ s/m/l | 显式覆盖后果预览点；一般不写，交给 `_bucket()` 自动分档 |
@@ -122,11 +137,14 @@ story.json.events (SSOT, 52 条, 含 choices)
 ```
 
 注意迁移细节：旧 `text` 字段更名 **`body`**（`toPayload` 里 `raw.body || raw.text` 两者都收，
-但 SSOT 统一写 `body`）；`type` 按现行 `CATEGORY_TYPE` 映射显式写出（职场/教育/城市 → opportunity 兜底）。
+但 SSOT 统一写 `body`）；`type` 只在风险类显式写 `redline`，其余交给 `CATEGORY_TYPE` 推断（落地口径）。
 
 ---
 
 ## 3. fc-events.js 改造
+
+> 状态标注：§3.1 无需改动；§3.2 choices 直通**已落地**、gating 字段直通**待落地**；
+> §3.3 **待落地**；§3.4 **已落地**（SCRIPT 已删、SEED 已内联并有对齐门禁）；§3.5 **待落地**。
 
 ### 3.1 `load()` — 不改
 
@@ -272,27 +290,26 @@ ambient（gameplay-pack.ambientEvents）。**
 
 ---
 
-## 5. 52 条事件分层策略
+## 5. 56+ 条事件分层策略
 
-### 5.1 层 × 类型配额矩阵（含 10 条迁移件）
+### 5.1 层 × 类型分布（56 条已落地，实测快照）
 
-| | opportunity 机遇 | bill 账单 | relation 人情 | redline 红线 | 合计 |
-|---|---|---|---|---|---|
-| **L1 市井层** | 3 | 4 ⁽含EV01,EV10⁾ | 2 | 2 | **11** |
-| **L2 工薪层** | 4 ⁽含EV03,EV05⁾ | 5 ⁽含EV02⁾ | 3 | 1 | **13** |
-| **L3 上升通道** | 5 ⁽含EV04,EV06⁾ | 2 | 2 | 1 | **10** |
-| **L4 资本名利** | 3 | 1 | 4 ⁽含EV07,EV08⁾ | 2 | **10** |
-| **L5 暗流** | 1 | 1 | 1 | 5 ⁽含EV09⁾ | **8** |
-| **合计** | **16** | **13** | **12** | **11** | **52** |
+| 维度 | 落地分布 |
+|------|---------|
+| 层 | L1×12 · L2×15 · L3×12 · L4×10 · L5×7 |
+| 有效类型（含推断） | opportunity×21 · bill×17 · relation×9 · redline×9 |
+| 类目 | 职场8 · 风险9 · 机会7 · 金钱7 · 居住6 · 教育6 · 人情6 · 生计4 · 关系3 |
 
-设计意图：L2 最厚（玩家最常驻层）；L5 供给虽 8 条但被层距 ×0.3 与 redline 闸门限流，
-实际出场率仍最低；redline 总量 11 条中 5 条在 L5、其余分布在各层的"体面人的红线"
-（刷单、阴阳合同、学历造假式），避免"红线 = 只有黑社会"。
+判断：L2 最厚（玩家最常驻层）、L5 最薄且被层距 ×0.3 与 redline 闸门双重限流、
+redline 占比 16%——符合设计意图，**层 × 类型配额不需要再动**。
+relation 偏薄（9/56），下轮补时代事件时优先落在 relation/L4（人情是第二货币，
+L4 的叙事全靠它），并保持"体面人的红线"分布（redline 不只在 L5）。
 
-### 5.2 时代标签配额
+### 5.2 时代标签配额（下轮缺口：当前 56 条全部无 `eras` 字段）
 
-- **31 条通用**（无 `eras` 字段，全时代可触发）——城市的常量：房租、加班、人情、看病。
-- **21 条时代专属**（`eras` 单元素为主，允许跨相邻时代如 `["E4","E5"]`），每时代 3 条：
+- **通用池**（无 `eras`，全时代可触发）——城市的常量：房租、加班、人情、看病。落地 56 条即此池。
+- **21 条时代专属**（`eras` 单元素为主，允许跨相邻时代如 `["E4","E5"]`），每时代 3 条。
+  两种补齐方式都合法：文案已含时代锚点的既有事件**补 `eras` 标签**；不足的**新写**（ID 自 EV57 顺延）：
 
 | 时代 | 3 条题材种子（方向，非文案） |
 |------|------------------------------|
@@ -327,13 +344,13 @@ ambient（gameplay-pack.ambientEvents）。**
 5. 现实锚点用具体名词但避免可诉商标：写"外卖平台/短视频/网约车"，不写具体公司名。
 6. `d.money` 用 units（§2.3），文案不写死 ¥ 金额。
 
-### 5.5 三条示范事件（成品质量标尺，随迁移一并入 story.json）
+### 5.5 三条时代专属示范事件（成品质量标尺；下轮随 `eras` 门控一并入 story.json，ID 自 EV57 顺延）
 
-**EV11 · L2 × bill × E7 · 时代专属**
+**EV57 · L2 × bill × E7 · 时代专属**
 
 ```json
 {
-  "id": "EV11",
+  "id": "EV57",
   "title": "断缴提醒",
   "category": "金钱",
   "type": "bill",
@@ -355,11 +372,11 @@ ambient（gameplay-pack.ambientEvents）。**
 }
 ```
 
-**EV12 · L3 × opportunity × E4/E5 · 跨时代 + minMonths**
+**EV58 · L3 × opportunity × E4/E5 · 跨时代 + minMonths**
 
 ```json
 {
-  "id": "EV12",
+  "id": "EV58",
   "title": "内推截止前夜",
   "category": "机会",
   "type": "opportunity",
@@ -382,11 +399,11 @@ ambient（gameplay-pack.ambientEvents）。**
 }
 ```
 
-**EV13 · L5 × redline × 通用 · once + minMonths**
+**EV59 · L5 × redline × 通用 · once + minMonths**
 
 ```json
 {
-  "id": "EV13",
+  "id": "EV59",
   "title": "过桥",
   "category": "风险",
   "type": "redline",
@@ -409,37 +426,43 @@ ambient（gameplay-pack.ambientEvents）。**
 }
 ```
 
-三条分别示范：时代专属 + 三方 trade-off（EV11）、跨时代 + minMonths + risk 单点（EV12）、
-once 里程碑 + redline 双 risk + 全身而退有代价（EV13）。
+三条分别示范：时代专属 + 三方 trade-off（EV57）、跨时代 + minMonths + risk 单点（EV58）、
+once 里程碑 + redline 双 risk + 全身而退有代价（EV59）。落地时若 EV57–EV59 已被占用则顺延，
+文案与结构不变。
 
 ---
 
 ## 6. 测试门禁改造
 
-### 6.1 `tests/story-schema.test.js`（重写事件段）
+### 6.1 `tests/story-schema.test.js`
+
+**已落地**（`c444136`）：events ≥ 50、id/title/category/body 非空、category 枚举、layerId 引用、
+weight 正数、`风险 ⇒ type: redline`、choices ∈ [2,3]、choice.id 事件内唯一、label/result 非空、
+d 键 ⊆ 已知维度且非零、五层全覆盖。
+
+**剩余待加断言**（下轮）：
 
 ```
 - assert !("sampleEvents" in story)                    ← 防双源回潮
-- story.events：数组，length ≥ 50
-- id 唯一，/^EV\d{2,3}$/；EV01…EV10 必须在场（旧档 recentModal 兼容）
-- 每条：title(2–12) / body(36–140) / category(枚举10) / type(枚举4) /
-        layerId(引用 cityLayers) / weight(int 1–12)
+- id 匹配 /^EV\d{2,3}$/；EV01…EV10 必须在场（旧档 recentModal 兼容）
+- d 幅度域：money/debt ∈ [−5,5]、其余 ∈ [−8,8]、非零键 ≤ 3
+- type === "redline" → choices 里 ≥1 个 risk:true（落地数据已满足，补断言防回归）
 - eras ⊆ E1..E7 且非空数组（若存在）；minMonths ≤ maxMonths（若都存在）
-- choices.length ∈ [2,3]；choice.id 事件内唯一且匹配 token 格式；
-  label/result 非空且 result ≠ label；d 非空、键 ⊆ {money,debt,health,social,rep,edu,gap}、
-  money/debt ∈ [−5,5]、其余 ∈ [−8,8]、非零键 ≤ 3
-- type === "redline" → choices 里 ≥1 个 risk:true
 - 文案防复读：任意两条 event.body 之间无 ≥10 连续字符的公共子串（10-gram 集合求交）
-- 统计断言：redline 总数 ≤ 12；带 eras 的事件每时代 ≥ 2（保证时代覆盖不塌）
+- 统计断言：带 eras 的事件每时代 ≥ 2（时代覆盖不塌）；once 事件全部带 minMonths
 ```
 
-### 6.2 `tests/exports-smoke.test.js`（三处更新）
+### 6.2 `tests/exports-smoke.test.js`
+
+**已落地**（`c444136`+`5adc222`）：deck 按 story.events 长度校验、choices 随行、
+SEED 镜像逐字对齐 story.json、源码禁止 `SCRIPT[...]` 索引。
+
+**剩余待加**（下轮）：
 
 ```
-- story.sampleEvents[0] → story.events 里查 EV01；choices 断言改为"来自 raw 而非 SCRIPT"
-- deck.length === 10 → deck.length >= 50
-- 新增 pick 过滤冒烟：pick({layer:2, era:"E1", months:1}) 返回的事件
+- pick 过滤冒烟：pick({layer:2, era:"E1", months:1}) 返回的事件
   要么无 eras、要么含 "E1"，且 minMonths ≤ 1
+- once 冒烟：done 表含某 once 事件 id 时，pick 不再返回它
 ```
 
 ### 6.3 `data/events-schema.json`
@@ -457,22 +480,21 @@ JSON Schema draft-07 草案（本轮已交付，见文件）。定位：**作者
 
 ---
 
-## 7. 下轮 opus 任务清单
+## 7. 下轮 opus 任务清单（已按 §0.5 落地状态收敛为真实缺口）
 
 按依赖顺序，单 PR 内建议 commit 粒度如下：
 
-1. **`data/story.json`**：新增顶层 `events[]` 52 条 —— EV01–EV10 迁移（`text`→`body`、
-   显式 `type`、choices 从 SCRIPT 原样搬入）+ EV11–EV13 采用本文 §5.5 成品 +
-   **39 条新写**（严格按 §5.1 矩阵与 §5.2 时代配额补格子，文案守则 §5.4）；
-   同 commit 删除 `sampleEvents` 键。
-2. **`js/fc-events.js`**：§3.2 `toPayload`/`normalizeChoices`、§3.3 `pick` 过滤与时代加权、
-   §3.4 删除 SCRIPT、SEED 内联 choices 并冻结注释。
-3. **`js/dashboard-app.js`**：§3.5 `drawModalEvent` 传 `era/months/done`、once 落账、
-   `recentModal` 窗口 3→8。
-4. **`tests/story-schema.test.js` + `tests/exports-smoke.test.js`**：按 §6.1/§6.2 重写；
+1. **`data/story.json` 时代覆盖**：21 条时代专属（每时代 3 条；文案已含时代锚点的既有事件
+   补 `eras` 标签，不足新写，ID 自 EV57 顺延，§5.5 三条成品直接采用）+ 4–6 条 `once`
+   里程碑（全部带 `minMonths`）；新写优先 relation/L4（§5.1 判断）；文案守则 §5.4。
+2. **`js/fc-events.js`**：§3.2 `toPayload` 直通 `eras/once/minMonths/maxMonths` +
+   §3.3 `pick` 三过滤位与时代 ×2 加权（向后兼容，opts 全可选）。
+3. **`js/dashboard-app.js`**：§3.5 `drawModalEvent` 传 `era/months/done`、`once` 落账进
+   `run.done`、`recentModal` 窗口 3→8。
+4. **测试**：§6.1/§6.2 的"剩余待加断言"（含 n-gram 复读检查与 d 幅度域）；
    跑 `./scripts/run-fucheng-life-tests.sh` 全绿后提交。
-5. **自查脚本**（不入库也行）：n-gram 复读检查、每条新事件抽 2 个名词 grep
-   `gameplay-pack.json` 防题材双写（§4 规则 2）。
+5. **自查脚本**（不入库也行）：每条新事件抽 2 个名词 grep `gameplay-pack.json`
+   防题材双写（§4 规则 2）。
 6. 手测清单：§6.4 四项 + 390px 无横向溢出（overlay-spec §7 既有项不回归）。
 
 红线（做错会返工）：不改 `MODAL_ODDS`/redline 冷却/`weightOf` 层距曲线；不动 overlay-spec
