@@ -516,6 +516,8 @@ button {
   background: color-mix(in srgb, currentColor 12%, transparent);
 }
 
+/* The badge paints its own colour from --lc: inside a pseudo-element
+   `currentColor` would resolve to the pseudo's own (dark) colour. */
 .fc-layer::before {
   content: attr(data-l);
   font-family: var(--font-mono);
@@ -524,15 +526,15 @@ button {
   letter-spacing: 0;
   padding: 1px 6px;
   border-radius: 99px;
-  background: currentColor;
+  background: var(--lc, #fff);
   color: var(--ink-900);
 }
 
-.l1 { color: var(--l1); }
-.l2 { color: var(--l2); }
-.l3 { color: var(--l3); }
-.l4 { color: var(--l4); }
-.l5 { color: var(--l5); }
+.l1 { color: var(--l1); --lc: var(--l1); }
+.l2 { color: var(--l2); --lc: var(--l2); }
+.l3 { color: var(--l3); --lc: var(--l3); }
+.l4 { color: var(--l4); --lc: var(--l4); }
+.l5 { color: var(--l5); --lc: var(--l5); }
 
 /* --------------------------------------------------------------------------
    8. Buttons
@@ -992,9 +994,16 @@ button {
 .fc-log {
   list-style: none;
   margin: 0;
-  padding: 0;
-  max-height: 460px;
+  padding: 0 6px 0 0;
+  max-height: 620px;
   overflow-y: auto;
+}
+
+.fc-log__empty {
+  padding: 26px 4px;
+  font-family: var(--font-serif);
+  color: var(--text-faint);
+  font-size: 13px;
 }
 
 .fc-log__item {
@@ -1420,6 +1429,10 @@ button {
   from {
     opacity: 0;
     transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
   }
 }
 

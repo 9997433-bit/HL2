@@ -85,14 +85,14 @@
     <!-- Event log -->
     <section class="fc-panel fc-rise">
       <h2 class="fc-sectiontitle">事件日志 <span>EVENT LOG</span></h2>
-      <ul class="fc-log" id="log"></ul>
-      <hr class="fc-hr">
       <div class="fc-rowgap">
         <button class="fc-btn fc-btn--primary" id="tickBtn">推进一个月 ▸</button>
         <button class="fc-btn fc-btn--ghost" id="tick6Btn">快进半年 ▸▸</button>
         <button class="fc-btn fc-btn--ghost" id="resetBtn">重开人生</button>
         <a class="fc-btn fc-btn--ghost" href="city-map.html">打开城市地图</a>
       </div>
+      <hr class="fc-hr">
+      <ul class="fc-log" id="log"></ul>
     </section>
 
     <!-- Side rail -->
@@ -267,8 +267,10 @@
 
   function pick() {
     var pool = [], total = 0, i;
+    var recent = run.recent || [];
     for (i = 0; i < POOL.length; i++) {
       if (POOL[i].once && run.done && run.done[POOL[i].id]) continue;
+      if (recent.indexOf(POOL[i].id) >= 0) continue;
       pool.push(POOL[i]);
       total += POOL[i].w;
     }
@@ -327,7 +329,7 @@
     $("sAge").innerHTML = run.age + "<small>岁</small>";
     $("dAge").textContent = "已在城中 " + run.months + " 个月";
     $("sDebt").textContent = "¥" + fmt(run.debt);
-    $("dDebt").textContent = run.debt > 0 ? "每月还本付息 ¥" + fmt(Math.round(run.debt * 0.018)) : "无未结清账目";
+    $("dDebt").textContent = run.debt > 0 ? "每月还本付息 ¥" + fmt(Math.round(run.debt * 0.015)) : "无未结清账目";
     $("dDebt").className = "fc-stat__delta " + (run.debt > 0 ? "down" : "up");
 
     $("bills").innerHTML = bills().map(function (b) {
@@ -392,6 +394,7 @@
       run.done = run.done || {};
       run.done[e.id] = 1;
     }
+    run.recent = (run.recent || []).concat(e.id).slice(-4);
 
     for (var k in e.d) {
       var v = e.d[k];
