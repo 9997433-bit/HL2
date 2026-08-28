@@ -8,10 +8,17 @@ const vm = require("node:vm");
 
 const gameRoot = path.resolve(__dirname, "..");
 const dashboardHtml = fs.readFileSync(path.join(gameRoot, "screens/dashboard.html"), "utf8");
+const guideSrc = fs.readFileSync(path.join(gameRoot, "js/fc-guide.js"), "utf8");
 
 assert.ok(dashboardHtml.includes("fc-guide.js"), "dashboard must load fc-guide.js");
+assert.ok(dashboardHtml.includes('id="guideBtn"'), "dashboard must expose a replay tutorial button");
 assert.ok(dashboardHtml.includes("fc-career.js"), "dashboard must load fc-career.js");
 assert.ok(dashboardHtml.includes("assetShop"), "assets tab must expose asset shop host");
+assert.ok(guideSrc.includes("fucheng.guide.v2"), "coach guide must use v2 storage key");
+assert.ok(guideSrc.includes("fc-coach"), "guide must render coach-mark UI");
+assert.ok(guideSrc.includes("actionGrid"), "first teach step must target the desktop action grid");
+assert.ok(!guideSrc.includes('target: "mobileDock"'),
+  "guide must not spotlight the mobile-only dock on first step");
 
 const storage = {
   _m: new Map(),
@@ -29,19 +36,25 @@ const sandbox = {
     getElementById() { return null; },
     createElement() {
       return {
-        classList: { add() {} },
+        classList: { add() {}, remove() {} },
         querySelector() { return { addEventListener() {}, textContent: "", focus() {} }; },
         querySelectorAll() { return []; },
         addEventListener() {},
         className: "",
-        innerHTML: ""
+        innerHTML: "",
+        style: {},
+        setAttribute() {}
       };
     }
   },
   window: null,
+  innerWidth: 1280,
+  innerHeight: 800,
   matchMedia() { return { matches: false, addEventListener() {} }; },
   setTimeout(fn) { fn(); return 0; },
-  requestAnimationFrame(fn) { fn(0); }
+  requestAnimationFrame(fn) { fn(0); },
+  addEventListener() {},
+  removeEventListener() {}
 };
 sandbox.window = sandbox;
 const context = vm.createContext(sandbox);
@@ -52,10 +65,13 @@ context.FC.overlay = {
   top() { return { onKey: null }; },
   trap() {}
 };
-vm.runInContext(fs.readFileSync(path.join(gameRoot, "js/fc-guide.js"), "utf8"), context, { filename: "fc-guide.js" });
+vm.runInContext(guideSrc, context, { filename: "fc-guide.js" });
 
 assert.ok(context.FC.guide.shouldShow(), "guide must show on first visit");
+assert.equal(context.FC.guide.STEPS.length, 5, "coach guide must teach five steps");
 context.FC.guide.dismiss();
 assert.ok(!context.FC.guide.shouldShow(), "guide must stay dismissed after dismiss");
+context.FC.guide.reset();
+assert.ok(context.FC.guide.shouldShow(), "reset must allow replaying the tutorial");
 
-console.log("Guide: fc-guide.js wired and localStorage gate passed.");
+console.log("Guide: coach-mark tutorial (v2, 5 steps) + replay button passed.");

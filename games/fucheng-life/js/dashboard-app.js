@@ -1163,6 +1163,12 @@
     if ($("locChip")) {
       $("locChip").addEventListener("click", openZonePicker);
     }
+    if ($("guideBtn") && FC.guide) {
+      $("guideBtn").addEventListener("click", function () {
+        if (FC.guide.isOpen && FC.guide.isOpen()) return;
+        FC.guide.show({ force: true });
+      });
+    }
 
     bindVitals();
     bindDock();
@@ -1192,12 +1198,14 @@
     $("ledgerBtn").disabled = !FC.ledger;
     render(false);
     renderLog();
-    maybeOfferCareerTrack().then(function () {
-      if (FC.guide && FC.guide.shouldShow()) return FC.guide.show();
-      return false;
-    }).then(function () {
-      maybeOfferContract();
-    });
+    /* 选轨 → 合约 → 教学：教学要指着已经挂上的合约 HUD 与行动区，
+       所以放在两张选卡之后；点遮罩不会关掉，必须「下一步 / 跳过」。 */
+    maybeOfferCareerTrack()
+      .then(function () { return maybeOfferContract(); })
+      .then(function () {
+        if (FC.guide && FC.guide.shouldShow()) return FC.guide.show();
+        return false;
+      });
   }
 
   FC.ready.then(init, function () {
