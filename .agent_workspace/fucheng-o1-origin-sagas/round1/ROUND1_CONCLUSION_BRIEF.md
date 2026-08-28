@@ -39,8 +39,8 @@
 - `exports-smoke.test.js` 扩展：无 SCRIPT 索引、SEED 对齐 story.json。
 
 ### fable 架构
-- `round1/fable-o1-architecture.md`：O1 SSOT 数据流、load/pick/show 契约、SEED 镜像策略。
-- `data/events-schema.json`：events/choices 字段 JSON Schema 草案，供 R2 校验与文档对齐。
+- `round1/fable-o1-architecture.md`（@ `ea6b1c0` 校订版）：O1 SSOT 数据流、load/pick/show 契约、SEED 镜像策略；与落地 56 条实现逐字段对齐，标注三处口径差异与 R2 真实缺口。
+- `data/events-schema.json`：JSON Schema draft-07，对落地 56 条零违例。
 
 ---
 
@@ -58,10 +58,12 @@
 
 ## 4. 已知债务（R2 靶向）
 
-1. **ORIGIN_BIAS 悬空 id**：`build-gameplay-data.js` 仍引用 `state-household`/`factory-youth` 等不存在 id — 不影响 originSagas 打包，但应清理或补测试。
-2. **文案抽检**：G-E9 占位符/英文残留 AUTO 已绿，人工 §25 抽检未做。
-3. **浏览器 MANUAL**：§21 Network SSOT、§22 五层色+红线冷静期、§23–25 金钱换算与实玩 — 全部待 R2。
-4. **ambient 历史 artifact**：fable-sota-gates 点名 `E4_09`/`E3_15` 中英混杂 — 属 ambient 池，R2 可顺带修。
+1. **O1 时代维度缺口**（[fable O1 架构](bc-be113d08-856a-5e07-909b-586d478f7865) §7）：21 条时代专属 + 4–6 条 `once` 里程碑；`pick()` 需 `era/months/done` 过滤与时代加权；dashboard 传参 + `recentModal` 3→8。
+2. **ORIGIN_BIAS 悬空 id**：`build-gameplay-data.js` 仍引用不存在 id — 不影响 originSagas，应清理或补测试。
+3. **文案抽检**：G-E9 AUTO 已绿，人工 §25 抽检未做。
+4. **浏览器 MANUAL**：§21–25 全部待 R2。
+5. **ambient 历史 artifact**：`E4_09`/`E3_15` 中英混杂 — R2 可顺带修。
+6. **测试剩余断言**：d 幅度域、redline⇒risk、eras 校验、n-gram 防复读、pick/once 冒烟（见 `fable-o1-architecture.md` §6）。
 
 ---
 
@@ -69,12 +71,12 @@
 
 | 代理类型 | 任务 |
 |----------|------|
-| fable | 对照 §4 表格 MANUAL 16–18，浏览器走 ACCEPTANCE §21–25 并登记结果 |
-| opus | 随机抽 10 条 O1 + 2 条出身链文案润色；修 ORIGIN_BIAS 悬空 id |
-| gpt-sol | 补 G-S6 单链 money 净值域断言（若未覆盖）；负向回归探针 |
-| fable | ambient artifact 清理（E4_09/E3_15 等） |
-| opus-fast | 平衡微调：pick 权重与同层占比实抽验证 |
-| gpt-sol | life-sim fixture 改用真实 origin id（urban-white-collar → story id） |
+| **opus** | 按 `fable-o1-architecture.md` §7：时代专属 21 条 + once 里程碑；`fc-events.js` pick 过滤；`dashboard-app.js` 传参/落账 |
+| **gpt-sol** | §6 剩余测试断言（pick/once 冒烟、n-gram、d 幅度域）；G-S6 单链 money 净值域 |
+| **fable** | MANUAL §21–25 浏览器走查并登记；ambient artifact 清理 |
+| **opus-fast** | 文案润色抽检 10 条 O1 + 2 条出身链；ORIGIN_BIAS 悬空 id 清理 |
+| **gpt-sol** | life-sim fixture 改用真实 origin id |
+| **fable** | 平衡实抽：pick 权重与同层占比验证 |
 
 ---
 

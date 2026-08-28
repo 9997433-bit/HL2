@@ -33,9 +33,9 @@ wealthy-merchant, humble-scholar, blended-family, orphan, transnational
 | opus 出身 Saga | [bc-dc83ce53-e4b9-5791-81aa-81e0bf754022](bc-dc83ce53-e4b9-5791-81aa-81e0bf754022) | `origin-sagas.js` 10 链 |
 | gpt-sol O1 测试 | [bc-38862c67-2304-5e00-8fc1-c18686ea09a6](bc-38862c67-2304-5e00-8fc1-c18686ea09a6) | `o1-events.test.js` |
 | gpt-sol Saga 探针 | [bc-62fdad0f-fdc9-5bf6-a815-d48b491f3a1e](bc-62fdad0f-fdc9-5bf6-a815-d48b491f3a1e) | `origin-sagas.test.js`、`origin-saga-sim.test.js` |
-| fable 架构 | [bc-be113d08-856a-5e07-909b-586d478f7865](bc-be113d08-856a-5e07-909b-586d478f7865) | `fable-o1-architecture.md`、`events-schema.json` |
+| fable 架构 | [bc-be113d08-856a-5e07-909b-586d478f7865](bc-be113d08-856a-5e07-909b-586d478f7865) | `fable-o1-architecture.md`（`ea6b1c0` 校订）、`events-schema.json` |
 
-## 验收快照（@ `5adc222`）
+## 验收快照（@ `ea6b1c0`）
 - `./scripts/run-fucheng-life-tests.sh` → **9 passed, 0 failed**
 - story.json `events.length` = **56**；`originSagas` = **10**
 - G-E7 SCRIPT 已删；SEED 与 story.json 逐字对齐
