@@ -1542,6 +1542,17 @@
   /* ---------------------------------------------------------
      9. 菜单
      --------------------------------------------------------- */
+  // screens.js 若已载入就用它的中文名，否则退回 id
+  function nameOf(collection, id, fallback) {
+    const list = window.FC && window.FC[collection];
+    if (list) {
+      for (let i = 0; i < list.length; i++) {
+        if (list[i].id === id) return list[i].name;
+      }
+    }
+    return fallback || id;
+  }
+
   function loadSave() {
     for (let i = 0; i < SAVE_KEYS.length; i++) {
       const v = readStore(SAVE_KEYS[i], null);
@@ -1562,9 +1573,11 @@
       if (meta) meta.textContent = 'CONTINUE · 尚无存档';
     } else if (save && meta) {
       const bits = [];
-      if (save.eraId) bits.push(save.eraId);
-      if (save.originId) bits.push(save.originId);
-      meta.textContent = bits.length ? 'CONTINUE · ' + bits.join(' · ') + ' 的人生' : 'CONTINUE · 读取上次存档';
+      if (save.eraId) bits.push(save.eraId + ' ' + nameOf('ERAS', save.eraId, ''));
+      if (save.originId) bits.push(nameOf('ORIGINS', save.originId, '出身'));
+      meta.textContent = bits.length
+        ? 'CONTINUE · ' + bits.join(' · ').replace(/\s+/g, ' ').trim()
+        : 'CONTINUE · 读取上次存档';
     }
 
     function act(action, el) {
