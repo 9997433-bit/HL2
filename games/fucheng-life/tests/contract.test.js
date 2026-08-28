@@ -102,6 +102,10 @@ function main() {
   assert.ok(settlement, "contracts must include 落户");
   assert.ok(deposit, "contracts must include 首付");
   assert.ok(promotion, "contracts must include 升职");
+  assert.equal(typeof Sim.contractProgress, "function",
+    "FC.Sim.contractProgress must expose contract progress math");
+  assert.equal(typeof Sim.creditContract, "function",
+    "FC.Sim.creditContract must expose settlement point gains");
 
   for (const [definition, deadline, label] of [
     [settlement, 36, "落户"],
@@ -124,28 +128,39 @@ function main() {
     return updateContract.call(Sim, run, era, origin);
   }
 
-  for (const [definition, kind] of [
-    [settlement, "settlement"],
-    [deposit, "deposit"],
-    [promotion, "promotion"]
-  ]) {
-    const run = Sim.freshRun(era, origin);
-    select(run, definition);
-    setLowState(run, kind);
-    update(run);
-    const low = progressOf(run);
-    setHighState(run, kind);
-    update(run);
-    const high = progressOf(run);
-    assert.ok(low >= 0 && low <= 100,
-      `${contractName(definition)} low-state progress must stay within 0–100`);
-    assert.ok(high >= 0 && high <= 100,
-      `${contractName(definition)} high-state progress must stay within 0–100`);
-    assert.ok(high > low,
-      `${contractName(definition)} progress must increase when its goal stat improves`);
-    assert.equal(high, 100,
-      `${contractName(definition)} progress must reach 100 at a clearly sufficient goal state`);
-  }
+  const settlementRun = Sim.freshRun(era, origin);
+  settlementRun.edu = 40;
+  select(settlementRun, settlement);
+  assert.equal(progressOf(settlementRun), 40,
+    "落户 progress must start from the education score");
+  assert.equal(Sim.creditContract(settlementRun, 12.5), 12.5,
+    "落户 creditContract must report the credited points");
+  assert.equal(progressOf(settlementRun), 52.5,
+    "落户 progress must add education and credited points");
+
+  const depositRun = Sim.freshRun(era, origin);
+  select(depositRun, deposit);
+  depositRun.money = 0;
+  depositRun.assets.sideFund = depositRun.contract.goal * 0.25;
+  updateContract.call(Sim, depositRun, era, origin);
+  assert.equal(progressOf(depositRun), 25,
+    "首付 progress must count side-fund savings against the goal");
+  depositRun.money = depositRun.contract.goal * 0.75;
+  updateContract.call(Sim, depositRun, era, origin);
+  assert.equal(progressOf(depositRun), 100,
+    "首付 progress must combine cash and side fund to reach 100");
+
+  const promotionRun = Sim.freshRun(era, origin);
+  promotionRun.career.level = 1;
+  promotionRun.career.kpi = 35;
+  select(promotionRun, promotion);
+  assert.equal(progressOf(promotionRun), 50,
+    "升职 progress must weight level and KPI at 55/45");
+  promotionRun.career.level = 2;
+  promotionRun.career.kpi = 70;
+  updateContract.call(Sim, promotionRun, era, origin);
+  assert.equal(progressOf(promotionRun), 100,
+    "升职 progress must reach 100 at level 2 and KPI 70");
 
   const winRun = Sim.freshRun(era, origin);
   select(winRun, settlement);

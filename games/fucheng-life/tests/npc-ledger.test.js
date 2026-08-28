@@ -75,7 +75,7 @@ function validateRequirement(requires, npcIds, label) {
     assert.equal(typeof requires.flag, "string", `${label}.flag must be a string`);
     assert.ok(requires.flag.trim(), `${label}.flag must not be empty`);
   }
-  for (const key of ["balanceMin", "balanceMax"]) {
+  for (const key of ["minBalance", "maxBalance", "balanceMin", "balanceMax"]) {
     if (requires[key] === undefined) continue;
     assert.ok(Number.isFinite(requires[key]), `${label}.${key} must be finite`);
     assert.ok(requires[key] >= -5 && requires[key] <= 5,
@@ -190,8 +190,14 @@ async function main() {
   pickerRun.npcs.forEach((npc) => {
     npc.flags = [];
     if (npc.id !== flagEvent.requires.npc) return;
-    if (flagEvent.requires.balanceMax !== undefined) npc.balance = flagEvent.requires.balanceMax;
-    if (flagEvent.requires.balanceMin !== undefined) npc.balance = flagEvent.requires.balanceMin;
+    const maximum = flagEvent.requires.maxBalance === undefined
+      ? flagEvent.requires.balanceMax
+      : flagEvent.requires.maxBalance;
+    const minimum = flagEvent.requires.minBalance === undefined
+      ? flagEvent.requires.balanceMin
+      : flagEvent.requires.minBalance;
+    if (maximum !== undefined) npc.balance = maximum;
+    if (minimum !== undefined) npc.balance = minimum;
   });
   const pickOptions = {
     layer: Number((flagEvent.layerId || "L2").slice(1)),
