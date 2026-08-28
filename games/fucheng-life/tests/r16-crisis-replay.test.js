@@ -46,6 +46,7 @@ const run = Sim.freshRun(era, origin);
 assert.equal(run.pendingModal, null, "new runs must initialize pendingModal");
 assert.equal(typeof Sim.setPendingModal, "function", "Sim.setPendingModal must be public");
 assert.equal(typeof Sim.clearPendingModal, "function", "Sim.clearPendingModal must be public");
+assert.equal(typeof Sim.hasPendingModal, "function", "Sim.hasPendingModal must be public");
 
 const crisisPayload = {
   id: "crisis_replay_fixture",
@@ -58,14 +59,18 @@ const crisisPayload = {
     { id: "answer", label: "应门", d: { health: -1 }, result: "账已落下。" }
   ]
 };
-Sim.setPendingModal(run, crisisPayload);
+Sim.setPendingModal(run, { kind: "crisis", event: crisisPayload });
 assert.doesNotThrow(
   () => JSON.stringify(run.pendingModal),
   "pendingModal must remain serializable for FC.write"
 );
-assert.equal(run.pendingModal.id, crisisPayload.id, "setPendingModal must retain the event payload");
+assert.equal(run.pendingModal.kind, "crisis", "setPendingModal must retain the replay kind");
+assert.equal(run.pendingModal.event.id, crisisPayload.id,
+  "setPendingModal must retain the event payload");
+assert.equal(Sim.hasPendingModal(run), true, "hasPendingModal must detect a saved event");
 Sim.clearPendingModal(run);
 assert.equal(run.pendingModal, null, "clearPendingModal must retire the replay after confirmation");
+assert.equal(Sim.hasPendingModal(run), false, "hasPendingModal must clear with the payload");
 
 const migrated = Sim.freshRun(era, origin);
 delete migrated.pendingModal;
