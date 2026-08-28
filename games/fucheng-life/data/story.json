@@ -1819,7 +1819,7 @@
       "title": "带本子的人",
       "layerId": "L2",
       "category": "居住",
-      "weight": 7,
+      "weight": 16,
       "requires": { "npc": "chenjie", "flag": "owe_rent" },
       "body": "宽限的日子过完了。陈姐拿着一本卷边的账簿上门，翻到写你名字的那页，用手指压住不放。",
       "choices": [
@@ -1839,8 +1839,8 @@
       "title": "王总的回电",
       "layerId": "L3",
       "category": "关系",
-      "weight": 7,
-      "requires": { "npc": "wangzong", "flag": "owe_dinner", "maxBalance": -1 },
+      "weight": 16,
+      "requires": { "npc": "wangzong", "flag": "owe_dinner" },
       "body": "隔了两个月，王总打来电话，寒暄三句就说到正题：外甥想进你们这行，让你带一带简历和门路。",
       "choices": [
         { "id": "help", "label": "认真带他一程", "cost": "健康 −−", "d": { "health": -3, "rep": 3 },
@@ -1859,7 +1859,7 @@
       "title": "老周要走了",
       "layerId": "L2",
       "category": "职场",
-      "weight": 7,
+      "weight": 16,
       "requires": { "npc": "laozhou", "flag": "owe_shift" },
       "body": "老周把工牌收进抽屉，说下周去另一家。他需要一份熟人背书，名字要填在推荐人那一栏里。",
       "choices": [
@@ -1879,7 +1879,7 @@
       "title": "阿敏的喜酒",
       "layerId": "L1",
       "category": "人情",
-      "weight": 6,
+      "weight": 14,
       "once": true,
       "minMonths": 12,
       "requires": { "npc": "amin", "minBalance": 2, "notFlag": "missed_wedding" },
@@ -1901,7 +1901,7 @@
       "title": "代收那箱货",
       "layerId": "L1",
       "category": "生计",
-      "weight": 6,
+      "weight": 14,
       "requires": { "npc": "xiaoyu", "minBalance": 1 },
       "body": "小余替你签收的那箱东西，搁在门口被人拎走了。监控只照到一个背影，物业说很难再查。",
       "choices": [
@@ -1927,10 +1927,10 @@
       "body": "政务大厅贴出今年的积分细则，居住年限那一栏被红笔圈了两道。队伍从取号机排到台阶下面，每个人怀里都抱着一沓复印件。",
       "choices": [
         { "id": "queue", "label": "排到叫号，把材料补齐", "cost": "一整天 −", "d": { "health": -3, "rep": 2 },
-          "contractProgress": 8,
+          "contractProgress": 5,
           "result": "叫到号已经傍晚。工作人员在回执上盖了章，说材料算齐，剩下的交给系统慢慢累。" },
         { "id": "agent", "label": "花钱找代办跑一趟", "cost": "现金 −−", "d": { "money": -2, "social": 2 },
-          "contractProgress": 5,
+          "contractProgress": 3,
           "result": "代办把袋子接过去，拍了拍胸口。三天后他发来照片，回执上的日期比你自己去要早一周。" },
         { "id": "later", "label": "细则年年改，先不动", "cost": "积分 −", "d": { "health": 2, "rep": -2 },
           "result": "你把复印件塞回抽屉最底层。半年后细则果然改了，改的是把年限从三年提到五年。" }
@@ -1948,10 +1948,10 @@
       "body": "报名系统半夜零点开放。加分明细里写着二十分，学费那一栏写着两年的房租。你在结算页面上停了很久，光标一直在闪。",
       "choices": [
         { "id": "enroll", "label": "报了，两年换二十分", "cost": "现金 −−−", "d": { "money": -3, "health": -2, "rep": 3 },
-          "contractProgress": 15,
+          "contractProgress": 8,
           "result": "第一堂课排在周六早八点。教室里坐满白天上班、夜里写作业的人，没有人互相交换姓名。" },
         { "id": "cert", "label": "只考一张职业证书", "cost": "现金 −", "d": { "money": -1, "rep": 2 },
-          "contractProgress": 6,
+          "contractProgress": 4,
           "result": "证书三个月就拿到手，在明细里只值六分。够不够用，要等到最后一天才知道。" },
         { "id": "skip", "label": "把学费留在账户里", "cost": "积分 −", "d": { "money": 1, "health": 2 },
           "result": "你退出了报名页，余额数字没有变。那天夜里你算了一遍，发现自己算的是另一件事。" }

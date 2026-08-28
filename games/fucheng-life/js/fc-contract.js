@@ -123,18 +123,19 @@
     return FC.events && FC.events.toPayload ? FC.events.toPayload(raw) : raw;
   }
 
-  /* 落户是唯一的累加型合约，所以只有它需要行动与事件的入账口。 */
+  /* 落户是唯一的累加型合约，所以只有它需要行动与事件的入账口。
+     R8：进修加分从「一次顶半年」压到「一次顶几周」。 */
   function creditAction(run, actionId, res) {
     var gain = 0;
-    if (actionId === "study") gain += 2;
-    if (res && res.applied && res.applied.edu) gain += res.applied.edu * 0.25;
+    if (actionId === "study") gain += 0.8;
+    if (res && res.applied && res.applied.edu) gain += res.applied.edu * 0.12;
     if (!gain) return 0;
     return FC.Sim.creditContract(run, gain);
   }
 
   function creditDeltas(run, applied) {
     if (!applied || !applied.edu) return 0;
-    return FC.Sim.creditContract(run, applied.edu * 0.3);
+    return FC.Sim.creditContract(run, applied.edu * 0.15);
   }
 
   /* ------------------------------------------------------------ 签约弹窗 */

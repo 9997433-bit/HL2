@@ -43,6 +43,7 @@ run_test "static HTML link integrity" "$TEST_DIR/html-links.test.js"
 run_test "fc-events and fc-motion browser exports" "$TEST_DIR/exports-smoke.test.js"
 run_test "R6 system depth (career/assets/debt/secondary)" "$TEST_DIR/r6-system.test.js"
 run_test "R7 onboarding guide wiring" "$TEST_DIR/guide.test.js"
+run_test "R8 hukou pacing and NPC followup queue" "$TEST_DIR/r8-pacing.test.js"
 run_test "dashboard browser boot regression" "$TEST_DIR/page-boot.test.js"
 
 printf '\n浮城人生 test summary: %d passed, %d failed\n' "$passed" "$failed"
