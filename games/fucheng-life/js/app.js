@@ -1702,6 +1702,11 @@
     };
   }
 
-  if (D.readyState === 'loading') D.addEventListener('DOMContentLoaded', boot);
-  else boot();
+  function start() {
+    if (window.FC && window.FC.ready) window.FC.ready.then(boot, boot);
+    else boot();
+  }
+
+  if (D.readyState === 'loading') D.addEventListener('DOMContentLoaded', start);
+  else start();
 })();

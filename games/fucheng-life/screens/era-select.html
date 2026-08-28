@@ -42,7 +42,9 @@
     </div>
   </section>
 
-  <div class="fc-grid fc-grid--3" id="eraGrid" role="radiogroup" aria-label="选择年代"></div>
+  <div class="fc-grid fc-grid--3" id="eraGrid" role="radiogroup" aria-label="选择年代" aria-busy="true">
+    <div class="fc-panel fc-rise">正在读取城市年代档案……</div>
+  </div>
 
   <div class="fc-actionbar fc-rise">
     <div class="fc-actionbar__info">
@@ -61,6 +63,7 @@
   </p>
 </main>
 
+<script src="../js/story-loader.js"></script>
 <script src="../js/screens.js"></script>
 <script>
 (function () {
@@ -69,6 +72,9 @@
   var quote = document.getElementById("pickQuote");
   var next = document.getElementById("nextBtn");
   var esc = FC.esc;
+
+  function init() {
+  grid.removeAttribute("aria-busy");
 
   function meter(name, value, mod) {
     return (
@@ -150,6 +156,14 @@
       label.textContent = "请先选择一个年代";
       label.style.color = "var(--bad)";
     }
+  });
+  }
+
+  FC.ready.then(init, function () {
+    grid.removeAttribute("aria-busy");
+    grid.innerHTML = '<div class="fc-panel">年代档案读取失败。请通过本地服务器打开，或检查 data/story.json。</div>';
+    label.textContent = "数据加载失败";
+    label.style.color = "var(--bad)";
   });
 })();
 </script>

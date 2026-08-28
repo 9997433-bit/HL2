@@ -37,7 +37,9 @@
   </section>
 
   <div class="fc-split fc-split--map">
-    <section class="fc-map" id="map" aria-label="五层城市地图"></section>
+    <section class="fc-map" id="map" aria-label="五层城市地图" aria-busy="true">
+      <div class="fc-panel fc-rise">正在读取五层城市剖面……</div>
+    </section>
 
     <aside class="fc-stack">
       <div class="fc-panel fc-detail" id="detail">
@@ -66,17 +68,20 @@
   </p>
 </main>
 
+<script src="../js/story-loader.js"></script>
 <script src="../js/screens.js"></script>
 <script>
 (function () {
   var $ = function (id) { return document.getElementById(id); };
   var esc = FC.esc;
 
+  function init() {
+  $("map").removeAttribute("aria-busy");
+
   /* Displayed top-to-bottom: capital above, undercurrent below street level. */
-  var STRATA = [
+  var STRATA_LAYOUT = [
     {
-      id: "L5", key: "l5", name: "暗流", elev: "地下 · UNDERCURRENT",
-      mood: "没有路牌，也没有回声。走过的人都不说话。",
+      id: "L5", elev: "地下 · UNDERCURRENT",
       zones: [
         { n: "地下钱庄", d: "利息按天算，规矩按人算。没有合同，只有名字。",
           th: 88, cost: 74, risk: 96, tags: ["高回报", "红线"], locked: false },
@@ -89,8 +94,7 @@
       ]
     },
     {
-      id: "L4", key: "l4", name: "资本名利层", elev: "顶层 · CAPITAL",
-      mood: "玻璃幕墙把城市反射回城市自己。你看得见里面，也看得见自己。",
+      id: "L4", elev: "顶层 · CAPITAL",
       zones: [
         { n: "CBD 顶层会所", d: "会员制。名片在这里没用，介绍人才有用。",
           th: 94, cost: 96, risk: 42, tags: ["资源", "门槛极高"], locked: true },
@@ -103,8 +107,7 @@
       ]
     },
     {
-      id: "L3", key: "l3", name: "上升通道", elev: "中段 · ASCENT",
-      mood: "通道很窄，且只在特定的几年开着。",
+      id: "L3", elev: "中段 · ASCENT",
       zones: [
         { n: "重点中学", d: "灯到十一点才熄。走廊的排名榜每月更新一次。",
           th: 66, cost: 54, risk: 22, tags: ["学历", "长周期"], locked: false },
@@ -119,8 +122,7 @@
       ]
     },
     {
-      id: "L2", key: "l2", name: "工薪层", elev: "地面 · SALARIED",
-      mood: "地铁准点，房租准点，你也得准点。",
+      id: "L2", elev: "地面 · SALARIED",
       zones: [
         { n: "写字楼", d: "工位一米二宽，KPI 挂在墙上。空调常年 24 度。",
           th: 48, cost: 42, risk: 28, tags: ["稳定收入", "消耗"], locked: false },
@@ -135,8 +137,7 @@
       ]
     },
     {
-      id: "L1", key: "l1", name: "市井层", elev: "街面 · STREET",
-      mood: "灯是暖的，钱是冷的。这里什么都便宜，除了机会。",
+      id: "L1", elev: "街面 · STREET",
       zones: [
         { n: "城中村", d: "握手楼之间只有一线天。灯牌亮到凌晨三点。",
           th: 8, cost: 14, risk: 34, tags: ["最低房租", "人多眼杂"], locked: false },
@@ -151,6 +152,14 @@
       ]
     }
   ];
+
+  var STRATA = STRATA_LAYOUT.map(function (layout) {
+    var layer = FC.byId(FC.LAYERS, layout.id);
+    layout.key = layer.key;
+    layout.name = layer.name;
+    layout.mood = layer.description;
+    return layout;
+  });
 
   /* --------------------------------------------------------------- build */
   $("map").innerHTML = STRATA.map(function (s, i) {
@@ -245,6 +254,14 @@
   });
 
   show("L1", 0, true);
+  }
+
+  FC.ready.then(init, function () {
+    $("map").removeAttribute("aria-busy");
+    $("map").innerHTML = '<div class="fc-panel">城市剖面读取失败。请通过本地服务器打开，或检查 data/story.json。</div>';
+    $("dTitle").textContent = "数据加载失败";
+    $("dTitle").style.color = "var(--bad)";
+  });
 })();
 </script>
 </body>

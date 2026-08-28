@@ -33,7 +33,7 @@
     <div class="fc-rowgap" style="justify-content:space-between;align-items:flex-start">
       <div style="min-width:0">
         <p class="fc-eyebrow" style="margin-bottom:8px">LIFE DASHBOARD · 人生仪表盘</p>
-        <h1 class="fc-title" style="font-size:clamp(24px,3.4vw,34px);margin-bottom:8px" id="identity">市民档案</h1>
+        <h1 class="fc-title" style="font-size:clamp(24px,3.4vw,34px);margin-bottom:8px" id="identity">正在读取市民档案……</h1>
         <div class="fc-rowgap">
           <span class="fc-chip fc-chip--accent" id="eraChip">E7 · 当前时代</span>
           <span class="fc-chip" id="originChip">普通工薪</span>
@@ -88,9 +88,9 @@
     <section class="fc-panel fc-rise">
       <h2 class="fc-sectiontitle">事件日志 <span>EVENT LOG</span></h2>
       <div class="fc-rowgap">
-        <button class="fc-btn fc-btn--primary" id="tickBtn">推进一个月 ▸</button>
-        <button class="fc-btn fc-btn--ghost" id="tick6Btn">快进半年 ▸▸</button>
-        <button class="fc-btn fc-btn--ghost" id="resetBtn">重开人生</button>
+        <button class="fc-btn fc-btn--primary" id="tickBtn" disabled>推进一个月 ▸</button>
+        <button class="fc-btn fc-btn--ghost" id="tick6Btn" disabled>快进半年 ▸▸</button>
+        <button class="fc-btn fc-btn--ghost" id="resetBtn" disabled>重开人生</button>
         <a class="fc-btn fc-btn--ghost" href="city-map.html">打开城市地图</a>
       </div>
       <hr class="fc-hr">
@@ -137,15 +137,16 @@
   </p>
 </main>
 
+<script src="../js/story-loader.js"></script>
 <script src="../js/screens.js"></script>
 <script>
 (function () {
   var $ = function (id) { return document.getElementById(id); };
   var esc = FC.esc;
+
+  function init() {
   var era = FC.era();
   var origin = FC.origin();
-
-  var ERA_START_YEAR = { E1: 1981, E2: 1990, E3: 1998, E4: 2005, E5: 2012, E6: 2017, E7: 2021 };
 
   /* ------------------------------------------------------------ run state */
   var START_MONEY = parseInt(String(origin.start).replace(/[^\d]/g, ""), 10) || 1000;
@@ -154,7 +155,7 @@
     var money = START_MONEY;
     return {
       key: era.id + "/" + origin.id,
-      year: ERA_START_YEAR[era.id] || 2021,
+      year: era.startYear || era.yearAnchor || 2021,
       month: 3,
       age: 22,
       months: 0,
@@ -349,13 +350,7 @@
       return '<div class="fc-elevator__step ' + (here ? "is-here" : "") + '" style="--tint:var(--' + l.key + ')">' +
         "<b>" + l.id + "</b><span>" + l.name + "</span></div>";
     }).join("");
-    $("layerNote").textContent = [
-      "灯是暖的，钱是冷的。市井层什么都便宜，除了机会。",
-      "地铁准点，房租准点，你也得准点。工薪层没有意外，只有消耗。",
-      "上升通道很窄，且只在特定的几年开着。",
-      "资本名利层的门是玻璃的：看得见里面，也看得见自己。",
-      "暗流之下没有路牌。走过的人都不说话。"
-    ][L - 1];
+    $("layerNote").textContent = layer.description;
 
     if (flash) {
       bump($("sMoney"));
@@ -476,8 +471,18 @@
   }
 
   if (!run.log.length) seed();
+  $("tickBtn").disabled = false;
+  $("tick6Btn").disabled = false;
+  $("resetBtn").disabled = false;
   render(false);
   renderLog();
+  }
+
+  FC.ready.then(init, function () {
+    $("identity").textContent = "市民档案读取失败";
+    $("identity").style.color = "var(--bad)";
+    $("season").textContent = "请通过本地服务器打开，或检查 data/story.json";
+  });
 })();
 </script>
 </body>
