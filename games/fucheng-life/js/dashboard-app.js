@@ -1230,6 +1230,8 @@
   function pendingKindOf(ev) {
     if (!ev) return "modal";
     if (ev.category === "本月危机") return "crisis";
+    /* 合约进度事件也常带 requires，但语义是合约门禁，不是 NPC 人情。 */
+    if (ev.contract) return "contract";
     if (ev.requires) return "npc";
     return "o1";
   }

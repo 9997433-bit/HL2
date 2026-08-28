@@ -38,6 +38,14 @@ assert.doesNotMatch(
 assert.match(tracksPendingSrc, /opts\.pending/,
   "contract resolution events must support explicit pending:false");
 
+/* 合约进度事件常带 requires，kind 应按 contract 记账，勿误标 npc。 */
+const pendingKindSrc = functionSection(dashSrc, "pendingKindOf");
+const contractKindAt = pendingKindSrc.indexOf("ev.contract");
+const requiresKindAt = pendingKindSrc.indexOf("ev.requires");
+assert.ok(contractKindAt >= 0, "pendingKindOf must recognize contract-tagged events");
+assert.ok(requiresKindAt > contractKindAt,
+  "pendingKindOf must classify contract before requires/npc");
+
 /* boot 要合并两条补弹结果，并在自动选轨 / 签约 / 教学前留下分流。 */
 const initSrc = functionSection(dashSrc, "init", "\n  FC.ready.then");
 const replayStart = initSrc.lastIndexOf("replayContractResolution()");
