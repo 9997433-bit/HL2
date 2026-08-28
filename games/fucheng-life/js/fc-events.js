@@ -24,6 +24,7 @@
 
    Public API
      FC.overlay.push(kind, el) / .pop(el) / .top() / .trap(el, event)
+     FC.confirm({title, body, confirmLabel, cancelLabel}) → Promise<boolean>
      FC.events.load()                → Promise<deck>
      FC.events.deck()                → array | null
      FC.events.pick({layer, avoid, allowRedline, era, months, done})
@@ -181,10 +182,17 @@
     return out;
   }
 
+  /* 解析在模块加载时就跑，所以它不能有脾气：没有 URL、没有 location 的宿主
+     （测试沙箱、小程序壳）拿到相对路径就行，fetch 失败自有 SEED 兜底 —— 一份
+     取不到的 story.json 不该连带 FC.overlay / FC.confirm 一起不存在。 */
   function storyUrl() {
-    var s = doc && doc.currentScript;
-    if (s && s.src) return new URL("../data/story.json", s.src).href;
-    return new URL("./data/story.json", global.location.href).href;
+    try {
+      var s = doc && doc.currentScript;
+      if (s && s.src) return new URL("../data/story.json", s.src).href;
+      return new URL("./data/story.json", global.location.href).href;
+    } catch (e) {
+      return "./data/story.json";
+    }
   }
 
   var URL_STORY = storyUrl();
@@ -209,7 +217,7 @@
     var source;
     if (eventsOf(FC.story)) {
       source = Promise.resolve(FC.story);
-    } else if (global.location.protocol === "file:") {
+    } else if (global.location && global.location.protocol === "file:") {
       /* A fetch from file:// is refused before it leaves the page and Chrome
          logs it as an error; go straight to the mirror instead. */
       source = Promise.reject(new Error("file://"));
@@ -946,6 +954,90 @@
     return result;
   }
 
+  /* ---------------------------------------------------------------- confirm
+     一句问句，两个按钮，没有账要结 —— 「这一步撤不回来，你确定吗」。
+     借 .fc-event 的壳（同一套层色、scrim、开合动效），但不进事件队列：
+     确认框是压在别的窗口上面问的，不该排在城市要说的话后面。
+     ESC 与遮罩一律作废（取消）——问句的默认答案永远是「不」。 */
+  var confirmSeq = 0;
+
+  function confirmDialog(opts) {
+    opts = opts || {};
+    var soft = reduced();
+    var id = ++confirmSeq;
+    var titleId = "fcConfirmTitle" + id;
+    var bodyId = "fcConfirmBody" + id;
+    var body = opts.body == null ? "" : String(opts.body);
+
+    var host = doc.createElement("div");
+    host.className = "fc-event fc-event--confirm";
+    host.setAttribute("data-layer", opts.layer || "L2");
+    host.setAttribute("data-type", opts.type || "relation");
+    host.innerHTML =
+      '<div class="fc-event__scrim"></div>' +
+      '<div class="fc-event__card" role="alertdialog" aria-modal="true" tabindex="-1" ' +
+           'aria-labelledby="' + titleId + '"' +
+           (body ? ' aria-describedby="' + bodyId + '"' : "") + ">" +
+        '<i class="fc-event__accent" aria-hidden="true"></i>' +
+        '<div class="fc-event__face fc-event__face--ask">' +
+          '<h2 class="fc-event__title" id="' + titleId + '">' +
+            esc(opts.title || "确认") + "</h2>" +
+          (body ? '<p class="fc-event__body" id="' + bodyId + '">' + esc(body) + "</p>" : "") +
+          '<div class="fc-event__choices" role="group" aria-label="确认">' +
+            '<button type="button" class="fc-btn fc-btn--primary fc-confirm__yes">' +
+              esc(opts.confirmLabel || "确定") + "</button>" +
+            '<button type="button" class="fc-btn fc-btn--ghost fc-confirm__no">' +
+              esc(opts.cancelLabel || "取消") + "</button>" +
+          "</div>" +
+        "</div>" +
+      "</div>";
+
+    var card = host.querySelector(".fc-event__card");
+    var yes = host.querySelector(".fc-confirm__yes");
+    var no = host.querySelector(".fc-confirm__no");
+
+    return new Promise(function (resolve) {
+      var settled = false;
+
+      function settle(value) {
+        if (settled) return;
+        settled = true;
+        host.classList.add("is-closing");
+        var done = function () {
+          if (host.parentNode) host.parentNode.removeChild(host);
+          FC.overlay.pop(host);
+          resolve(!!value);
+        };
+        if (soft) done();
+        else global.setTimeout(done, 200);
+      }
+
+      doc.body.appendChild(host);
+      /* 自成一层 kind：确认框要能压在事件卡或账本上面问，而不是被当成第二个 modal 拒掉。 */
+      if (!FC.overlay.push("confirm", host)) {
+        if (host.parentNode) host.parentNode.removeChild(host);
+        resolve(false);
+        return;
+      }
+      /* push 按 kind 给的是 300；确认框永远盖住派它出来的那个窗口。 */
+      host.style.zIndex = 400;
+      FC.overlay.top().onKey = function (e) {
+        if (e.key === "Escape") { e.preventDefault(); settle(false); return; }
+        if (e.key === "Tab") FC.overlay.trap(card, e);
+      };
+
+      yes.addEventListener("click", function () { settle(true); });
+      no.addEventListener("click", function () { settle(false); });
+      host.querySelector(".fc-event__scrim")
+        .addEventListener("click", function () { settle(false); });
+
+      yes.focus();
+
+      if (soft) host.classList.add("is-open");
+      else global.requestAnimationFrame(function () { host.classList.add("is-open"); });
+    });
+  }
+
   /* -------------------------------------------------------------- 分流与队列 */
   function present(mode, ev, opts, resolve) {
     if (mode === "toast") renderToast(ev, opts, resolve);
@@ -989,6 +1081,8 @@
       });
     }
   }
+
+  FC.confirm = confirmDialog;
 
   FC.events = {
     load: load,
