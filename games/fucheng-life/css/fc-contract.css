@@ -276,6 +276,8 @@
 }
 
 .fc-contract-card__pitch {
+  /* 三张卡文案长短不一，锁定行高让 meta 行对齐 */
+  min-height: 2.7em;
   font-size: 13px;
   line-height: 1.6;
   color: var(--text-hi);
@@ -302,12 +304,14 @@
 }
 
 .fc-contract-card__detail {
+  min-height: 4.5em;
   font-size: 12px;
   line-height: 1.6;
   color: var(--text-dim);
 }
 
 .fc-contract-card__source {
+  margin-top: auto;
   font: 500 11px/1.5 var(--font-mono);
   color: var(--text-faint);
 }
