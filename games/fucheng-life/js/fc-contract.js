@@ -19,7 +19,9 @@
      FC.contract.showPicker(opts)         → Promise<id|null>
      FC.contract.closePicker()
      FC.contract.isPicking()
-     FC.contract.resolutionEvent(run)     → O1 形状的结算弹窗载荷
+     FC.contract.resolutionEvent(run)     → O1 形状的结算弹窗载荷（已领取则 null）
+     FC.contract.needsResolutionReplay(run) → 结算弹窗还欠玩家一次
+     FC.contract.markResolutionDone(run)  → 补弹放完后销账
      FC.contract.creditAction(run, id, res)
      FC.contract.creditDeltas(run, applied)
      FC.contract.progressLabel(run)       → 「¥120,000 / ¥260,000」这类右侧读数
@@ -91,10 +93,39 @@
     return "剩 " + Math.max(0, leftMonths) + " / " + c.deadlineMonths + " 个月";
   }
 
+  /* R15：结算弹窗是奖惩唯一的入账口，被快进或刷新吞掉就得补一次，
+     补完又不能每月重弹。待办位记在 sim 的 contract.resolutionPending 上，
+     所以判定优先问 FC.Sim；老存档 / 单独加载本文件时才退回读字段——
+     此时 resolutionPending === false 一律当作已领取，不再重弹。 */
+  function needsResolutionReplay(run) {
+    var c = run && run.contract;
+    if (!c || !c.status || c.status === "active") return false;
+    if (FC.Sim && typeof FC.Sim.needsContractResolution === "function") {
+      return !!FC.Sim.needsContractResolution(run);
+    }
+    if (c.resolutionDone === true) return false;
+    return c.resolutionPending !== false;
+  }
+
+  function markResolutionDone(run) {
+    var c = run && run.contract;
+    if (!c) return false;
+    var cleared = false;
+    if (FC.Sim && typeof FC.Sim.markContractResolutionDone === "function") {
+      cleared = !!FC.Sim.markContractResolutionDone(run);
+    }
+    if (c.resolutionPending === true) {
+      c.resolutionPending = false;
+      cleared = true;
+    }
+    c.resolutionDone = true;
+    return cleared;
+  }
+
   /* 结算弹窗借 O1 的卡片：唯一那个选项承载奖惩，dashboard 的 openEvent 照常落账。 */
   function resolutionEvent(run) {
     var c = run && run.contract;
-    if (!c || c.status === "active") return null;
+    if (!needsResolutionReplay(run)) return null;
     var def = defOf(c.id);
     if (!def) return null;
     var won = c.status === "won";
@@ -293,6 +324,8 @@
     progressLabel: progressLabel,
     deadlineLabel: deadlineLabel,
     resolutionEvent: resolutionEvent,
+    needsResolutionReplay: needsResolutionReplay,
+    markResolutionDone: markResolutionDone,
     creditAction: creditAction,
     creditDeltas: creditDeltas,
     isPicking: function () { return !!picker; },
