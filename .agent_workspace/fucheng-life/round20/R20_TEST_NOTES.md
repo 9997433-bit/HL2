@@ -9,21 +9,28 @@
   `FC.overlay.push` 成功后挂 `onKey`（Escape 只 `preventDefault` 不关卡，Tab 交
   `FC.overlay.trap(panel, e)`），聚焦 `.fc-career-pick__panel`，下一帧加 `is-open`；
   `finish` 里先写日志，再加 `is-closing`，等 180ms 才摘 DOM、`pop`、`render`。
-- **O1 的 `fc-gameplay.css` 尚未进树**：HEAD 上 `.fc-career-pick` 还是 R6 的静态版本，
-  没有 `is-open` / `is-closing` 规则，`.fc-career-pick__panel` 连底色都没有（只有宽度、
-  内距、圆角）。两张卡的 JS 都已经在切类，CSS 没接住，所以现在的实际观感是
-  「点完之后卡住不动 180ms，然后凭空消失」，面板文字直接压在模糊过的仪表盘上。
-  **场景 1、2、3 必须等 O1 落 CSS 后重跑**，本笔记先按落地后的目标形态写预期。
-- 全量 `./scripts/run-fucheng-life-tests.sh` 落字时 `30 passed, 0 failed`；G1 的
-  `tests/r20-*.test.js` 还没进树，合入前以「专项与全量都 `0 failed`」为准。
+- **O1 已落**（`518bb3c`）：`.fc-career-pick` 基态 `opacity: 0` + `0.18s var(--ease-out)`
+  过渡，`is-open` 归 1、`is-closing` 回 0；面板 `translateY(14px) scale(0.98)` 起手，
+  `0.22s` 归位，关闭时改用 `0.18s` 落到 `translateY(8px) scale(0.99)`；玻璃底走
+  `--fc-glass-2-bg` + `--shadow-lift` + `--fc-glass-highlight`，并补了 `max-height: 92vh`
+  与 `overflow: auto`。用到的六个 token 都在 `fc-tokens.css` 里，且 `dashboard.html`
+  第一条就 link 了它 —— 任何一个 token 掉了，过渡会静默退化成瞬切、底色会变透明，
+  这是场景 1 首先要看的东西。
+- 两张卡共用同一套 class，O1 的 CSS 一次覆盖选轨与闯城两处。
+- **G1 已落**（`27723c5`）：`tests/r20-picker-motion.test.js` 进了 runner，全量
+  `./scripts/run-fucheng-life-tests.sh` 复跑为 `31 passed, 0 failed`。静态断言只能守住
+  类名与时序这类形状，动效手感、reduce 兜底与 390px 仍要靠下面的手工场景。
 
 ## 自动化入口
 
 从仓库根目录执行：
 
 ```bash
+node games/fucheng-life/tests/r20-picker-motion.test.js
 ./scripts/run-fucheng-life-tests.sh
 ```
+
+预期：R20 专项断言通过；全量汇总为 `0 failed`，两条命令退出码均为 `0`。
 
 ## 手工入口
 
@@ -71,14 +78,15 @@ python3 -m http.server 8000
 3. **reduced-motion 兜底**
    - DevTools → Rendering → Emulate CSS media feature `prefers-reduced-motion: reduce`
      （或直接改系统设置），两张卡各弹一次。
-   - 预期：卡片直接到位，没有位移与缩放；关闭仍要等 180ms（`setTimeout` 不看媒体查询），
-     这段时间遮罩照旧吃点击，连点不应弹出第二张卡。
-   - **最要紧的一条**：reduce 下面板必须可见。`opacity: 0` → 加 `is-open` 的写法，一旦
-     reduce 规则把过渡整个 `none` 掉而类又没来得及加上，卡就会变成「看不见但拦点击」的
-     死锁。核对方式是弹卡后在 Console 跑
-     `getComputedStyle(document.querySelector(".fc-career-pick")).opacity`，必须是 `1`。
-     `screens.css` 的全局 reduce 规则已把 `transition-duration` 压到 `0.05ms !important`，
-     `fc-gameplay.css` 里 career-pick 自己的兜底属于二重保险，两层都要在。
+   - 预期：卡片直接到位，没有淡入、没有位移与缩放；关闭仍要等 180ms（`setTimeout` 不看
+     媒体查询），这段时间遮罩已经不可见但还在拦点击，连点不应弹出第二张卡、不应多写日志。
+   - **最要紧的一条**：reduce 下面板必须可见。O1 的 reduce 块只关掉了 `transition` 与
+     `transform`，没有强写 `opacity: 1` —— 可见性仍然依赖 rAF 把 `is-open` 加上。核对
+     方式是弹卡后在 Console 跑
+     `getComputedStyle(document.querySelector(".fc-career-pick")).opacity`，必须是 `1`；
+     若读到 `0`，卡就是「看不见但拦点击」的死锁，得让 reduce 块直接兜住 opacity。
+   - `screens.css` 的全局 reduce 规则已把 `transition-duration` 压到 `0.05ms !important`，
+     `fc-gameplay.css` 里 career-pick 自己的兜底是二重保险，两层都要在。
    - rAF 边界：卡弹出的瞬间切到别的标签页停几秒再切回来（rAF 被节流），
      回来后面板必须可见可点，不能停在透明态。
 
@@ -108,11 +116,11 @@ python3 -m http.server 8000
 6. **390px 可见性**
    - 设备模式 `390 × 844`，两张卡各看一遍：面板宽度 `min(520px, 100%)` 减掉外层 16px
      内距后不贴边、不横向溢出，四张目标卡的名称与说明不截断。
-   - 高度是本档的真风险点：闯城卡是标题 + 引导语 + 四张卡，`.fc-career-pick` 用
-     `place-items: center` 居中，一旦内容比视口高，卡会同时溢出上下两端，而 body 又被
-     `fc-scroll-lock` 锁住 —— 玩家够不到最后一张目标就成了软锁。要么面板带
-     `max-height` + 内部滚动，要么整卡在 844 高内放得下。横屏 `844 × 390` 再验一次，
-     那是更狠的一档。
+   - 高度是本档的真风险点：`.fc-career-pick` 用 `place-items: center` 居中，内容一旦比
+     视口高就会同时溢出上下两端，而 body 又被 `fc-scroll-lock` 锁住，玩家够不到最后一张
+     目标即软锁。O1 已给面板加 `max-height: 92vh` + `overflow: auto`，要验的是它真的
+     生效：横屏 `844 × 390` 下闯城卡应当在面板**内部**出现滚动条、四张目标卡都能滚到并
+     点中，背后页面不跟着滚。
    - 遮罩仍要点得到（选轨手动入口靠它取消）；闯城卡点遮罩不关是预期行为，不算 bug。
    - 关卡后布局不跳；目标 HUD 出现时不把行动区挤出屏。
 
