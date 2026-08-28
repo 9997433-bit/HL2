@@ -65,4 +65,15 @@ Model slug: `gpt-5.6-sol-xhigh-fast`
 
 ## 验证
 
-实现提交后进行浏览器验证，并在本节记录结果。
+- `node --check games/fucheng-life/effects/effects.js`：通过。
+- Google Chrome 148 直接打开 `file:///workspace/games/fucheng-life/effects/demo.html`：通过，无需服务器或构建步骤。
+- 桌面 1440×1000 与手机 390×844 实际截图检查：首屏无裁切；霓虹辉光、玻璃模糊、雨线/灯火均正常渲染。
+- 浏览器交互探针 12/12 通过：
+  - HTML、CSS、JS 与 Canvas 全部加载，桌面粒子场生成 360 个对象。
+  - 桌面和手机断点均无横向溢出。
+  - L5 单次切换、`L2 → L4 → L3` 快速连续切换均收束到正确且唯一的面板。
+  - 方向键从 L3 正确切换到 L4。
+  - 动态暂停按钮同时更新状态与页面冻结类。
+  - `prefers-reduced-motion: reduce` 下层级切换立即完成。
+  - 捕获到的 JavaScript 异常与浏览器 error 日志均为 0。
+- 视觉复核：首屏与层级控制台均已由浏览器成像检查，L3 色域、玻璃层次、进度光轨及内容排版正常。
