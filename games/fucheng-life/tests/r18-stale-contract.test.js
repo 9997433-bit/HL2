@@ -67,6 +67,14 @@ assert.match(
   "careerPickBtn click must open the existing career track picker path"
 );
 
+/* .fc-btn 自带 display，会盖掉浏览器默认 [hidden]；工具区必须显式收起。 */
+const gameplayCss = fs.readFileSync(path.join(gameRoot, "css/fc-gameplay.css"), "utf8");
+assert.match(
+  gameplayCss,
+  /\.fc-dash-tools\s+\.fc-btn\[hidden\]\s*\{[^}]*display\s*:\s*none\s*!important/,
+  "dash-tools ghost buttons must honor the HTML hidden attribute"
+);
+
 /* R18 只修文案，不升级教学 KEY；合约步骤必须讲清过期门禁不会绝对补弹。 */
 assert.match(guideSrc, /\bKEY\s*=\s*["']fucheng\.guide\.v7["']/,
   "fc-guide must keep the v7 teaching key");
