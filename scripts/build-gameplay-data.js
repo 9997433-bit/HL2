@@ -9,6 +9,7 @@ const ambientCore = require("./curated/ambient-core");
 const ambientLayers = require("./curated/ambient-layers");
 const zones = require("./curated/zones");
 const sagasExtra = require("./curated/sagas-extra");
+const originSagas = require("./curated/origin-sagas");
 
 const LAYERS = ["L1", "L2", "L3", "L4", "L5"];
 
@@ -16,10 +17,10 @@ const ORIGIN_BIAS = {
   "humble-scholar": { layers: ["L1", "L3"], tags: ["教育", "机会"] },
   orphan: { layers: ["L1", "L5"], tags: ["风险", "机会"] },
   "wealthy-merchant": { layers: ["L4", "L5"], tags: ["金钱", "人情"] },
-  "state-household": { layers: ["L2", "L3"], tags: ["职场", "人情"] },
-  "factory-youth": { layers: ["L1", "L2"], tags: ["职场", "健康"] },
-  "urban-white-collar": { layers: ["L2", "L3"], tags: ["职场", "金钱"] },
-  "small-business": { layers: ["L2", "L4"], tags: ["机会", "金钱"] }
+  "blended-family": { layers: ["L2", "L3"], tags: ["人情", "居住"] },
+  "transnational": { layers: ["L3", "L4"], tags: ["机会", "教育"] },
+  "public-system": { layers: ["L2", "L3"], tags: ["职场", "人情"] },
+  "rural-migrant": { layers: ["L1", "L2"], tags: ["职场", "金钱"] }
 };
 
 /** 行动回报略降 — 拉长积累周期 */
@@ -167,6 +168,37 @@ function inferLayer(key) {
   return map[key] || "L2";
 }
 
+/** story.json 是出身表的 SSOT：只打包它声明的出身，且必须一条不缺。 */
+function buildOriginSagas() {
+  const story = JSON.parse(fs.readFileSync(path.join(__dirname, "../games/fucheng-life/data/story.json"), "utf8"));
+  const declared = new Set(story.origins.map((o) => o.id));
+  const seenIds = new Set();
+  const seenOrigins = new Set();
+  const out = [];
+
+  originSagas.forEach((saga) => {
+    if (!saga.id || !saga.originId) throw new Error("origin saga needs id + originId");
+    if (seenIds.has(saga.id)) throw new Error("duplicate origin saga id: " + saga.id);
+    if (seenOrigins.has(saga.originId)) throw new Error("duplicate origin saga origin: " + saga.originId);
+    seenIds.add(saga.id);
+    seenOrigins.add(saga.originId);
+    if (!Array.isArray(saga.steps) || saga.steps.length < 3 || saga.steps.length > 4) {
+      throw new Error("origin saga " + saga.id + " needs 3-4 steps");
+    }
+    if (!saga.steps.some((s) => Array.isArray(s.choices) && s.choices.length >= 2)) {
+      throw new Error("origin saga " + saga.id + " needs at least one choice step");
+    }
+    if (declared.has(saga.originId)) out.push(Object.assign({ kind: "origin", once: true }, saga));
+  });
+
+  const missing = [...declared].filter((id) => !seenOrigins.has(id));
+  if (missing.length) throw new Error("origins without a mini-saga: " + missing.join(", "));
+
+  const dormant = [...seenOrigins].filter((id) => !declared.has(id));
+  if (dormant.length) console.log("origin sagas held back (not in story.json):", dormant.join(", "));
+  return out;
+}
+
 const CAREER_TRACKS = [
   { id: "staff", name: "职员线", levels: ["实习生", "专员", "主管", "总监", "副总裁"] },
   { id: "tech", name: "技术线", levels: ["码农", "工程师", "架构师", "专家", "首席"] },
@@ -182,12 +214,16 @@ const pack = {
     sagaMonthlyOdds: 0.045,
     recentAmbientWindow: 18,
     minMonthsBeforeBankruptcy: 48,
-    minMonthsBeforeRedline: 72
+    minMonthsBeforeRedline: 72,
+    originSagaMinMonths: 3,
+    originSagaMaxMonths: 18,
+    originSagaMonthlyOdds: 0.2
   },
   actions: ACTION_DEFS,
   ambientEvents: buildAmbientEvents(),
   zoneEvents: buildZoneEvents(),
   sagas: BASE_SAGAS.concat(sagasExtra),
+  originSagas: buildOriginSagas(),
   careerTracks: CAREER_TRACKS,
   lifeStages: [
     { id: "arrival", minAge: 22, maxAge: 27, label: "入城期", apBonus: 0 },
@@ -221,3 +257,4 @@ console.log("ambientEvents:", pack.ambientEvents.length);
 console.log("zone keys:", Object.keys(pack.zoneEvents).length);
 console.log("zone events:", Object.values(pack.zoneEvents).reduce((a, b) => a + b.length, 0));
 console.log("sagas:", pack.sagas.length);
+console.log("origin sagas:", pack.originSagas.length);
