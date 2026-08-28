@@ -534,6 +534,75 @@
     }
   }
 
+  /* 自动花 AP：先听 suggestMonth 的建议，建议这月点不动就挑第一个能点的行动。
+     一轮下来 AP 没少，说明没有行动可点了，收手让调用方去解释剩下的点。 */
+  function autoSpendAp() {
+    var guard = 0;
+    while (run.ap > 0 && guard++ < 24) {
+      var tip = FC.Sim.suggestMonth ? FC.Sim.suggestMonth(run, era, origin) : null;
+      var id = tip && tip.actionId;
+      var acts = FC.Sim.actions();
+      var act = null;
+      var i;
+      if (id) {
+        for (i = 0; i < acts.length; i++) if (acts[i].id === id) act = acts[i];
+      }
+      if (!act || !FC.Sim.canAction(run, act, era, origin)) {
+        act = null;
+        for (i = 0; i < acts.length; i++) {
+          if (FC.Sim.canAction(run, acts[i], era, origin)) { act = acts[i]; break; }
+        }
+      }
+      if (!act) break;
+      var before = run.ap;
+      onAction(act.id);
+      if (run.ap >= before) break;
+    }
+    return run.ap;
+  }
+
+  function sysLog(text) {
+    pushLog({ t: ts(), tag: "系统", tint: "var(--text-faint)", text: text, d: {} });
+    renderLog();
+  }
+
+  var fastForwarding = false;
+
+  /* 快进：每个月先自动花完 AP 再推进。AP 花不完、撞上强弹窗、或者走到结局，
+     都停在当月，并把停下的原因写进日志。 */
+  function fastForwardMonths(n) {
+    n = n || 3;
+    if (fastForwarding || run.ended) return Promise.resolve(true);
+    fastForwarding = true;
+    return (function step(i) {
+      if (i >= n) return Promise.resolve(false);
+      autoSpendAp();
+      if (run.ap > 0) {
+        sysLog("快进中止：还剩 " + run.ap + " 点行动点花不出去（可能缺探区目标）。");
+        return Promise.resolve(true);
+      }
+      return tick(i < n - 1).then(function (hit) {
+        if (hit) {
+          sysLog("快进被一件事打断，剩下的月份没走。");
+          return true;
+        }
+        return step(i + 1);
+      });
+    })(0).then(function (hit) {
+      fastForwarding = false;
+      return hit;
+    }, function (err) {
+      fastForwarding = false;
+      sysLog("快进出错，已停在当月。");
+      throw err;
+    });
+  }
+
+  function startFastForward() {
+    if (!window.confirm("快进会自动花完行动点并连续推进 3 个月。遇到大事会停下。确定？")) return;
+    fastForwardMonths(3);
+  }
+
   /* 签约窗口只有头三个月。「再想想」记下当月，下个月才会再问一次。 */
   function maybeOfferContract() {
     if (!run.done) run.done = {};
@@ -1099,6 +1168,7 @@
       : { label: "链式事件", tint: "var(--neon-violet)" };
   }
 
+  /* 返回值是「这一步弹过窗没有」，不是「玩家选没选」—— 月度弹窗额度按敲门次数算。 */
   function resolveSagaStep(step, silent) {
     var tag = sagaTag();
     if (step.choices && step.choices.length && FC.events) {
@@ -1114,7 +1184,7 @@
         })
       };
       return FC.events.show(sagaEv, { moneyRef: income() }).then(function (res) {
-        if (res.dismissed) return false;
+        if (res.dismissed) return true;
         var idx = res.choiceId != null ? parseInt(res.choiceId, 10) || 0 : 0;
         var applied = FC.Sim.advanceSaga(run, idx, income());
         pushLog({
@@ -1128,10 +1198,10 @@
     }
     var applied = FC.Sim.advanceSaga(run, 0, income());
     pushLog({ t: ts(), tag: tag.label, tint: tag.tint, text: step.text, d: applied.applied, kind: "saga" });
-    return Promise.resolve(true);
+    return Promise.resolve(false);
   }
 
-  function finishMonth(moves, silent) {
+  function finishMonth(moves, silent, sagaShown) {
     /* R12：人情余波先落账，再走城市 ambient —— 人比天气先敲门。 */
     var ripple = FC.Sim.dueNpcRipple ? FC.Sim.dueNpcRipple(run) : null;
     if (ripple && FC.Sim.resolveNpcRipple) {
@@ -1200,23 +1270,50 @@
 
     return checkEnding().then(function (ended) {
       if (ended) return true;
-      if (settled && FC.contract) {
-        var resolution = FC.contract.resolutionEvent(run);
-        if (resolution) return openEvent(resolution, silent);
-      }
       if (settledSecondary && settledSecondary.status === "won") {
+        var scDef = settledSecondary.def || {};
+        var scApplied = FC.Sim.applyDeltas(run, scDef.reward || {}, income());
         pushLog({
           t: ts(), tag: "副线", tint: "var(--neon-jade)",
-          text: "二级合约「" + ((settledSecondary.def && settledSecondary.def.name) || "") + "」达成。",
-          d: (settledSecondary.def && settledSecondary.def.reward) || {}, kind: "contract"
+          text: "二级合约「" + (scDef.name || "") + "」达成。",
+          d: scApplied, kind: "contract"
         });
+        render(true);
+        renderLog();
+        flyMoney([scApplied.money], null);
       }
-      return maybeOfferSecondaryContract();
-    }).then(function (hit) {
+      return monthModal(settled, silent, sagaShown);
+    });
+  }
+
+  /* 要约被「再想想」推掉也算敲过门：picker 会把当月记进 done。 */
+  function offerShownThisMonth() {
+    var d = run.done || {};
+    return d.secondarySkipped === run.months || d.contractSkipped === run.months;
+  }
+
+  /* R14：一个月最多敲一次门 —— 合约结算 > 二级/主合约要约 > 危机 / O1。
+     命中的那一扇负责把账本补上，后面的强弹窗一律顺延到下个月；链式事件
+     这个月已经弹过窗的话，最低优先级的危机 / O1 也让位。 */
+  function monthModal(settled, silent, sagaShown) {
+    if (settled && FC.contract && FC.contract.resolutionEvent) {
+      var resolution = FC.contract.resolutionEvent(run);
+      /* openEvent 结束时自己会 maybeShowLedger，这里不必再叫一次。 */
+      if (resolution) return openEvent(resolution, silent).then(function () { return true; });
+    }
+    return maybeOfferSecondaryContract().then(function (hit) {
       if (hit) return true;
       return maybeOfferContract();
     }).then(function (hit) {
-      if (hit) return true;
+      if (hit) {
+        maybeShowLedger(silent);
+        return true;
+      }
+      /* 被推掉的要约、以及本月已经弹过的链式事件，都占掉这个月的名额。 */
+      if (offerShownThisMonth() || sagaShown) {
+        maybeShowLedger(silent);
+        return true;
+      }
       var ev = drawModalEvent();
       if (!ev) { maybeShowLedger(silent); return false; }
       return openEvent(ev, silent);
@@ -1238,14 +1335,14 @@
     if (!FC.Sim.tryStartOriginSaga(run, origin)) FC.Sim.tryStartRandomSaga(run, era, origin);
     var moves = [];
 
-    var sagaChain = Promise.resolve();
+    var sagaChain = Promise.resolve(false);
     if (run.saga) {
       var step = FC.Sim.sagaStep(run);
       if (step) sagaChain = resolveSagaStep(step, silent);
     }
 
-    return sagaChain.then(function () {
-      return finishMonth(moves, silent);
+    return sagaChain.then(function (sagaShown) {
+      return finishMonth(moves, silent, sagaShown);
     });
   }
 
@@ -1330,14 +1427,7 @@
         if (e.target.closest("[data-drawer-close]")) { closeDrawer(); return; }
         if (e.target.closest("[data-drawer-tick6]")) {
           closeDrawer();
-          if (!window.confirm("快进会连续推进 3 个月（每月仍需先花完行动点）。确定？")) return;
-          (function step(i) {
-            if (i >= 3) return;
-            tick(i < 2).then(function (hit) {
-              if (!hit) step(i + 1);
-              else pushLog({ t: ts(), tag: "系统", tint: "var(--text-faint)", text: "快进被一件事打断。", d: {} });
-            });
-          })(0);
+          startFastForward();
           return;
         }
         if (e.target.closest("[data-drawer-reset]")) {
@@ -1396,16 +1486,7 @@
     }
 
     $("tickBtn").addEventListener("click", function () { tick(false); });
-    $("tick6Btn").addEventListener("click", function () {
-      if (!window.confirm("快进会连续推进 3 个月（每月仍需先花完行动点）。确定？")) return;
-      (function step(i) {
-        if (i >= 3) return;
-        tick(i < 2).then(function (hit) {
-          if (!hit) step(i + 1);
-          else pushLog({ t: ts(), tag: "系统", tint: "var(--text-faint)", text: "快进被一件事打断。", d: {} });
-        });
-      })(0);
-    });
+    $("tick6Btn").addEventListener("click", startFastForward);
     $("ledgerBtn").addEventListener("click", function () { FC.ledger.show(buildLedgerPayload()); });
     $("resetBtn").addEventListener("click", function () {
       if (FC.events) FC.events.close();

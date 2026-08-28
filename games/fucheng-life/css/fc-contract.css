@@ -239,6 +239,7 @@
 }
 
 .fc-contract-card {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -263,6 +264,47 @@
 }
 
 .fc-contract-card:active { transform: translateY(-1px) scale(0.99); }
+
+/* 推荐态：只用描边 + 一格微位移 + 角标，不做发光，免得压过另外两张 */
+
+.fc-contract-card.is-recommended {
+  border-color: color-mix(in srgb, var(--tint) 36%, rgba(255, 255, 255, 0.1));
+  border-top-color: var(--tint);
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--tint) 9%, transparent), transparent 60%),
+    rgba(255, 255, 255, 0.05);
+  box-shadow: var(--fc-glass-highlight), 0 10px 26px rgba(0, 0, 0, 0.34);
+  transform: translateY(-2px);
+}
+
+.fc-contract-card.is-recommended:hover,
+.fc-contract-card.is-recommended:focus-visible {
+  transform: translateY(-5px);
+  border-color: var(--tint);
+  box-shadow: var(--fc-glass-highlight), 0 16px 38px rgba(0, 0, 0, 0.46);
+}
+
+.fc-contract-card.is-recommended:active { transform: translateY(-2px) scale(0.99); }
+
+.fc-contract-card__badge {
+  position: absolute;
+  top: 11px;
+  right: 12px;
+  padding: 3px 9px;
+  border-radius: var(--r-sm);
+  border: 1px solid color-mix(in srgb, var(--tint) 40%, transparent);
+  background: color-mix(in srgb, var(--tint) 12%, rgba(6, 10, 22, 0.55));
+  font: 600 10px/1.4 var(--font-sans);
+  letter-spacing: 0.1em;
+  color: color-mix(in srgb, var(--tint) 70%, #fff);
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.fc-contract-card.is-recommended .fc-contract-card__en {
+  /* 给角标留位，长 EN 换行而不是钻到角标底下 */
+  max-width: calc(100% - 76px);
+}
 
 .fc-contract-card__en {
   font: 600 9px/1 var(--font-mono);

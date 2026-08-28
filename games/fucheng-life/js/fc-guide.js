@@ -5,8 +5,8 @@
   var doc = global.document;
   var FC = global.FC || (global.FC = {});
 
-  /* v3：补上「探区」这一步 —— 选地点 ≠ 立刻发生事件。 */
-  var KEY = "fucheng.guide.v3";
+  /* v4：合约这一步补上「与闯城主目标对齐」的提示。 */
+  var KEY = "fucheng.guide.v4";
 
   var STEPS = [
     {
@@ -29,7 +29,8 @@
     },
     {
       title: "④ 人生合约",
-      body: "入城头三个月会让你签一张合约（落户 / 首付 / 升职）。进度条一直挂在这里，到期城市会结算。",
+      body: "入城头三个月会让你签一张合约（落户 / 首付 / 升职）。进度条一直挂在这里，到期城市会结算。" +
+        "闯城档记得让它对齐主目标：目标落户就签落户积分，攒首付就签攒首付，向上爬一层就签升职——两条进度条一起走才划算。",
       target: "contractHud",
       fallback: "vitalsPanel"
     },
@@ -175,6 +176,7 @@
     dismiss: function () {
       try {
         global.localStorage.setItem(KEY, "1");
+        global.localStorage.setItem("fucheng.guide.v3", "1");
         global.localStorage.setItem("fucheng.guide.v2", "1");
         global.localStorage.setItem("fucheng.guide.v1", "1");
       } catch (e) { /* ignore */ }
@@ -183,6 +185,7 @@
     reset: function () {
       try {
         global.localStorage.removeItem(KEY);
+        global.localStorage.removeItem("fucheng.guide.v3");
         global.localStorage.removeItem("fucheng.guide.v2");
         global.localStorage.removeItem("fucheng.guide.v1");
       } catch (e) { /* ignore */ }

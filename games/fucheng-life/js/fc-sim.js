@@ -462,6 +462,7 @@
         npcRipple: [],
         npcArc: {},
         lastCrisisMonth: 0,
+        recentCrisis: [],
         zoneAftershock: null,
         challengeMonths: (function () {
           var mode = null;
@@ -508,6 +509,7 @@
       if (!run.npcRipple) run.npcRipple = [];
       if (!run.npcArc) run.npcArc = {};
       if (run.lastCrisisMonth == null) run.lastCrisisMonth = 0;
+      if (!run.recentCrisis) run.recentCrisis = [];
       if (run.zoneAftershock === undefined) run.zoneAftershock = null;
       if (run.challengeMonths == null) {
         var mode = null;
@@ -1271,6 +1273,8 @@
       var since = months - (run.lastCrisisMonth || 0);
       if (since < 3) return null;
 
+      var recent = run.recentCrisis || [];
+      var eligible = [];
       var pool = [];
       FC.Sim.MONTH_CRISES.forEach(function (c) {
         if (c.minMonths && months < c.minMonths) return;
@@ -1282,8 +1286,13 @@
         if (c.needHealthBelow != null) w += 2;
         if (c.needDebtAbove != null) w += 2;
         if (since >= 5) w += 1;
+        eligible.push({ c: c, w: w });
+        if (recent.indexOf(c.id) >= 0) return;
         pool.push({ c: c, w: w });
       });
+
+      /* 近 4 次都轮过时不再空手而归，退回全部合格项。 */
+      if (!pool.length) pool = eligible;
 
       if (!pool.length) {
         if (since < 5) return null;
@@ -1294,12 +1303,24 @@
       pool.forEach(function (p) { total += p.w; });
       var roll = Math.random() * total;
       var acc = 0;
+      var picked = pool[pool.length - 1].c;
       var i;
       for (i = 0; i < pool.length; i++) {
         acc += pool[i].w;
-        if (roll <= acc) return pool[i].c;
+        if (roll <= acc) { picked = pool[i].c; break; }
       }
-      return pool[pool.length - 1].c;
+      FC.Sim.noteCrisis(run, picked);
+      return picked;
+    },
+
+    /** 记住最近几次危机 id，供下次抽取时排除。 */
+    noteCrisis: function (run, crisis) {
+      if (!run || !crisis || !crisis.id) return;
+      var recent = (run.recentCrisis || []).filter(function (id) {
+        return id !== crisis.id;
+      });
+      recent.push(crisis.id);
+      run.recentCrisis = recent.slice(-4);
     },
 
     crisisToEvent: function (crisis, run, origin) {
@@ -1575,6 +1596,20 @@
         if (g.id === id) found = g;
       });
       return found;
+    },
+
+    /** 主目标 → 对应合约 id；「还清负债」没有合约可签，返回 null。 */
+    GOAL_CONTRACT: {
+      hukou: "hukou",
+      downpay: "home",
+      rise: "promote",
+      debtfree: null
+    },
+
+    contractForGoal: function (goalId) {
+      var id = goalId && goalId.id ? goalId.id : goalId;
+      if (!id) return null;
+      return FC.Sim.GOAL_CONTRACT[id] || null;
     },
 
     needsChallengeGoal: function (run) {

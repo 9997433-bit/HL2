@@ -25,6 +25,8 @@
      FC.contract.progressLabel(run)       → 「¥120,000 / ¥260,000」这类右侧读数
      FC.contract.deadlineLabel(run)       → 「剩 21 个月」
      FC.contract.targetLabel(def, goal)
+     FC.contract.GOAL_CONTRACT            → 闯城主目标 id → 合约 id 的映射表
+     FC.contract.recommendedId(run)       → 该局主目标对应的合约 id（没有则 null）
 */
 (function (global) {
   "use strict";
@@ -138,14 +140,51 @@
     return FC.Sim.creditContract(run, applied.edu * 0.15);
   }
 
+  /* ------------------------------------------------- 主目标 → 合约推荐 (R14)
+     闯城档在入城时先挑主目标，几分钟后又要在这里挑合约——两处选择互不知情，
+     玩家很容易签下一张跟自己主目标使不上劲的合约。「还清负债」没有对口合约，
+     三张卡都不该被标成推荐，所以映射到 null。 */
+  var GOAL_CONTRACT = {
+    hukou: "hukou",
+    downpay: "home",
+    rise: "promote",
+    debtfree: null
+  };
+
+  /* 参数放宽到 run / run.goal / 目标 id，测试和调用方都不必先剥一层。 */
+  function recommendedId(run) {
+    var goal = run && run.goal ? run.goal : run;
+    var gid = typeof goal === "string" ? goal : (goal && goal.id);
+    if (!gid) return null;
+    return GOAL_CONTRACT[gid] || null;
+  }
+
+  function goalName(run) {
+    var goal = run && run.goal;
+    if (!goal) return "";
+    if (goal.name) return goal.name;
+    var def = FC.Sim && FC.Sim.goalDef && FC.Sim.goalDef(goal.id);
+    return (def && def.name) || "";
+  }
+
   /* ------------------------------------------------------------ 签约弹窗 */
   var picker = null;
 
-  function cardHtml(def, run, era, origin) {
+  /* 角标自带内联样式：本轮只动 JS，没有 CSS 兜底也得看着像个角标。 */
+  function badgeHtml() {
+    return '<span class="fc-contract-card__badge" style="align-self:flex-end;' +
+      "margin:-6px 0 -2px;padding:2px 8px;border-radius:999px;" +
+      "border:1px solid var(--tint);color:var(--tint);" +
+      'font:600 10px/1.6 var(--font-mono);letter-spacing:0.08em">匹配主目标</span>';
+  }
+
+  function cardHtml(def, run, era, origin, isRecommended) {
     var goal = FC.Sim.contractGoal(def, run, era, origin);
     var start = Math.round(FC.Sim.contractPreview(run, def.id, era, origin));
-    return '<button type="button" class="fc-contract-card" data-id="' + esc(def.id) +
+    return '<button type="button" class="fc-contract-card' +
+      (isRecommended ? " is-recommended" : "") + '" data-id="' + esc(def.id) +
       '" style="--tint:' + (def.tint || "var(--neon-cyan)") + '">' +
+      (isRecommended ? badgeHtml() : "") +
       '<span class="fc-contract-card__en">' + esc(def.en || "") + "</span>" +
       '<b class="fc-contract-card__name">' + esc(def.name) + "</b>" +
       '<span class="fc-contract-card__pitch">' + esc(def.pitch) + "</span>" +
@@ -159,9 +198,28 @@
       "</button>";
   }
 
+  /* 推荐卡置顶。数字快捷键按数组顺序取卡，所以排序必须落在 list 本身，
+     而不是只调 DOM——否则按 1 会签到第二张。defs() 是 pack 的原数组，先 slice。 */
+  function orderDefs(list, rec) {
+    var ordered = list.slice();
+    var at = -1;
+    ordered.forEach(function (def, i) { if (def.id === rec) at = i; });
+    if (at > 0) ordered.unshift(ordered.splice(at, 1)[0]);
+    return ordered;
+  }
+
   function renderPicker(opts, resolve) {
     var soft = reduced();
-    var list = defs();
+    var run = opts.run || {};
+    var rec = recommendedId(run);
+    var list = orderDefs(defs(), rec);
+    if (rec && list[0].id !== rec) rec = null;
+    var lede = '三张合约只能签一张，整局有效。签下之后，' +
+      '仪表盘顶上会一直挂着它的进度与剩余月数；到期那天，城市会自己结算。';
+    if (rec) {
+      lede += "你的闯城主目标是「" + esc(goalName(run)) +
+        "」，最对口的那张已经排在最前面——签别的也行，只是两条线各走各的。";
+    }
     var host = doc.createElement("div");
     host.className = "fc-contract-pick";
     host.innerHTML =
@@ -170,11 +228,10 @@
            'aria-labelledby="fcContractTitle" tabindex="-1">' +
         '<p class="fc-contract-pick__eyebrow">MID-TERM CONTRACT · 中期人生合约</p>' +
         '<h2 class="fc-contract-pick__title" id="fcContractTitle">这一局，你打算跟城市要什么？</h2>' +
-        '<p class="fc-contract-pick__lede">三张合约只能签一张，整局有效。签下之后，' +
-          '仪表盘顶上会一直挂着它的进度与剩余月数；到期那天，城市会自己结算。</p>' +
+        '<p class="fc-contract-pick__lede">' + lede + "</p>" +
         '<div class="fc-contract-pick__grid">' +
           list.map(function (def) {
-            return cardHtml(def, opts.run || {}, opts.era, opts.origin);
+            return cardHtml(def, run, opts.era, opts.origin, def.id === rec);
           }).join("") +
         "</div>" +
         '<button type="button" class="fc-btn fc-btn--ghost fc-contract-pick__skip">' +
@@ -228,6 +285,8 @@
   FC.contract = {
     PICK_WINDOW: PICK_WINDOW,
     SECONDARY_WINDOW: 6,
+    GOAL_CONTRACT: GOAL_CONTRACT,
+    recommendedId: recommendedId,
     defs: defs,
     def: defOf,
     targetLabel: targetLabel,
