@@ -39,7 +39,7 @@
 |-------|--------|
 | Round 1 | complete — 6/6 done |
 | Round 2 | complete — 6/6 done |
-| Round 3 | pending |
+| Round 3 | in_progress — 0/6 dispatched |
 
 ## Subagent Status (Round 1)
 | Agent | Model | Status |
@@ -66,3 +66,18 @@
 | opus-r2-event-overlay | opus-fast | ✅ done → `29db60d` |
 | gpt-sol-r2-story-wire | gpt-sol | ✅ done → `78292ca` |
 | gpt-sol-r2-effects-merge | gpt-sol | ✅ done → `ac75606` |
+
+## Round 2 简报
+见 `.agent_workspace/fucheng-life/round2/ROUND2_CONCLUSION_BRIEF.md`
+
+## Subagent Status (Round 3)
+| Agent | Model | Status |
+|-------|-------|--------|
+| fable-r3-sota-acceptance | fable | dispatched ☁️ |
+| fable-r3-final-report | fable | dispatched ☁️ |
+| opus-r3-p1-polish | opus-fast | dispatched ☁️ |
+| opus-r3-o2-ledger | opus-fast | dispatched |
+| gpt-sol-r3-test-harness | gpt-sol | dispatched |
+| gpt-sol-r3-pages-readme | gpt-sol | dispatched |
+
+Round 3 上下文：`.agent_workspace/fucheng-life/round3/ROUND3_CONTEXT.md`
