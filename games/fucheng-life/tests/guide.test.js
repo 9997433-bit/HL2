@@ -14,6 +14,8 @@ assert.ok(dashboardHtml.includes("fc-guide.js"), "dashboard must load fc-guide.j
 assert.ok(dashboardHtml.includes('id="guideBtn"'), "dashboard must expose a replay tutorial button");
 assert.ok(dashboardHtml.includes("fc-career.js"), "dashboard must load fc-career.js");
 assert.ok(dashboardHtml.includes("assetShop"), "assets tab must expose asset shop host");
+assert.ok(guideSrc.includes("boxesOverlap"), "guide must avoid covering the highlighted control");
+assert.ok(guideSrc.includes("is-right"), "guide must support side placement when vertical space is tight");
 assert.ok(guideSrc.includes("fucheng.guide.v3"), "coach guide must use v3 storage key");
 assert.ok(guideSrc.includes("fc-coach"), "guide must render coach-mark UI");
 assert.ok(guideSrc.includes("actionGrid"), "first teach step must target the desktop action grid");
