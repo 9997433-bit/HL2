@@ -1174,15 +1174,18 @@
       }
 
       /* 吞掉的按键要有回音，否则玩家只会以为键盘没进来、接着一路猛敲 Esc。
-         连按得能重新起拍：先摘类、强制回流，再挂上去。 */
-      var escPulseTimer = 0;
+         连按得能重新起拍：先摘类、强制回流，再挂上去；旧的那次回调靠 gen 比对
+         自己作废，不用 clearTimeout —— onKey 跑在 overlay 的分发里，多依赖一个
+         全局就多一个把整条键盘链炸掉的机会。摸不到 classList 就干脆不抖。 */
+      var escPulses = 0;
       function pulseEsc() {
-        if (!panel || settled) return;
-        clearTimeout(escPulseTimer);
+        if (settled || !panel || !panel.classList) return;
+        var gen = ++escPulses;
         panel.classList.remove("is-esc-pulse");
         void panel.offsetWidth;
         panel.classList.add("is-esc-pulse");
-        escPulseTimer = setTimeout(function () {
+        setTimeout(function () {
+          if (gen !== escPulses) return;
           panel.classList.remove("is-esc-pulse");
         }, 320);
       }
