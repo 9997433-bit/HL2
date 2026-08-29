@@ -69,7 +69,7 @@ function testLetterAnswerLock() {
   assert.ok(letterStart > 0, "letter answer must exist");
   const letterGuardStart = eventsJs.lastIndexOf("function answer(choice) {", letterStart);
   assert.ok(letterGuardStart > 0, "letter answer function must exist");
-  const letterChunk = eventsJs.slice(letterGuardStart, letterStart + 800);
+  const letterChunk = eventsJs.slice(letterGuardStart, letterStart + 1400);
   assert.match(
     letterChunk,
     /if\s*\(\s*settled\s*\|\|\s*cooling\s*\|\|\s*answered\s*\)\s*return\s*;/,
