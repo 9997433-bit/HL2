@@ -443,6 +443,7 @@
   position: relative;
   width: min(520px, 100%);
   max-height: 90vh;
+  max-height: 90dvh;
   overflow: auto;
   padding: 24px 22px;
   animation: fc-ending-in 0.5s var(--ease-out) both;
@@ -729,6 +730,7 @@
   /* 日志在视口内滚动，避免整页被流水账拉长 */
   .fc-log {
     max-height: min(42vh, 340px);
+    max-height: min(42dvh, 340px);
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
     overscroll-behavior: contain;
@@ -1137,6 +1139,7 @@
   position: relative;
   width: min(520px, 100%);
   max-height: 92vh;
+  max-height: 92dvh;
   overflow: auto;
   padding: 22px 20px;
   border-radius: var(--r-lg);
