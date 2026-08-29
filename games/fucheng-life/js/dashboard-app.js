@@ -1113,7 +1113,9 @@
     if (!FC.career || !FC.career.needsPick(run)) return Promise.resolve(false);
     var pick = { run: run, era: era, origin: origin };
     if (opts.manual) pick.cancelable = true;
-    return FC.career.showPicker(pick).then(function (id) {
+    return FC.career.showPicker(pick).then(function (result) {
+      var id = result && typeof result === "object" ? result.id : result;
+      var fallback = !!(result && typeof result === "object" && result.fallback);
       if (!id) return false;
       FC.career.applyTrack(run, id);
       var trackName = id;
@@ -1122,7 +1124,10 @@
       });
       pushLog({
         t: ts(), tag: "职场", tint: "var(--neon-violet)",
-        text: "你选择了「" + trackName + "」轨道作为起点。", d: {}, kind: "saga"
+        text: fallback
+          ? "未点选，系统按推荐轨「" + trackName + "」为你入职。"
+          : "你选择了「" + trackName + "」轨道作为起点。",
+        d: {}, kind: "saga"
       });
       render(true);
       renderLog();
@@ -1146,6 +1151,7 @@
           '<p class="fc-eyebrow">CHALLENGE · 闯城 60 月</p>' +
           '<h2 class="fc-career-pick__title" id="fcChallengeTitle">这六十个月，你赌哪一张牌？</h2>' +
           '<p class="fc-career-pick__lede" id="fcChallengeLede">选一个主目标。期满按完成度与生存质量打分，不是混满月数就算赢。必须选定一张才能往下走。</p>' +
+          '<span class="fc-sr" id="fcChallengeLive" aria-live="polite"></span>' +
           '<div class="fc-career-pick__grid">' +
             goals.map(function (g) {
               return '<button type="button" class="fc-career-card" data-goal="' + esc(g.id) + '">' +
@@ -1153,11 +1159,16 @@
             }).join("") +
           "</div></div>";
       var panel = host.querySelector(".fc-career-pick__panel");
+      var live = host.querySelector("#fcChallengeLive");
+      var softClose = !!(window.matchMedia &&
+        window.matchMedia("(prefers-reduced-motion: reduce)").matches);
       var settled = false;
       function finish(id) {
         if (settled) return;
         settled = true;
         FC.Sim.pickChallengeGoal(run, id || goals[0].id, era, origin);
+        /* 选定即落盘，避免 180ms 关闭窗内刷新丢选择 */
+        if (FC.write) FC.write({ run: run });
         var def = FC.Sim.goalDef(run.goal.id);
         pushLog({
           t: ts(), tag: "闯城", tint: "var(--neon-gold)",
@@ -1165,13 +1176,15 @@
           d: {}, kind: "saga"
         });
         host.classList.add("is-closing");
-        setTimeout(function () {
+        var done = function () {
           if (host.parentNode) host.parentNode.removeChild(host);
           FC.overlay.pop(host);
           render(true);
           renderLog();
           resolve(true);
-        }, 180);
+        };
+        if (softClose) done();
+        else setTimeout(done, 180);
       }
 
       /* 吞掉的按键要有回音，否则玩家只会以为键盘没进来、接着一路猛敲 Esc。
@@ -1185,6 +1198,10 @@
         panel.classList.remove("is-esc-pulse");
         void panel.offsetWidth;
         panel.classList.add("is-esc-pulse");
+        if (live) {
+          live.textContent = "";
+          live.textContent = "请选定一张主目标后再继续。";
+        }
         setTimeout(function () {
           if (gen !== escPulses) return;
           panel.classList.remove("is-esc-pulse");

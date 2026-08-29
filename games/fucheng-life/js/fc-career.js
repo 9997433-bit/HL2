@@ -20,6 +20,11 @@
     return "staff";
   }
 
+  function reduced() {
+    return !!(global.matchMedia &&
+      global.matchMedia("(prefers-reduced-motion: reduce)").matches);
+  }
+
   var picker = null;
 
   FC.career = {
@@ -43,6 +48,7 @@
         if (!doc || !FC.overlay || !tracks().length) { resolve(null); return; }
         if (picker || (FC.events && FC.events.isOpen())) { resolve(null); return; }
 
+        var soft = reduced();
         var hint = suggestTrack(opts.origin);
         var host = doc.createElement("div");
         host.className = "fc-career-pick";
@@ -66,7 +72,8 @@
         if (!panel) { resolve(null); return; }
         var settled = false;
 
-        function close(value) {
+        /* null = 取消；{ id, fallback } = 选定（fallback 表示 Esc/遮罩兜底推荐轨）。 */
+        function close(value, meta) {
           if (settled) return;
           settled = true;
           host.classList.add("is-closing");
@@ -74,20 +81,22 @@
             if (host.parentNode) host.parentNode.removeChild(host);
             FC.overlay.pop(host);
             picker = null;
-            resolve(value);
+            if (value == null) resolve(null);
+            else resolve({ id: value, fallback: !!(meta && meta.fallback) });
           };
-          global.setTimeout(done, 180);
+          if (soft) done();
+          else global.setTimeout(done, 180);
         }
 
-        function finish(id) {
-          close(id || hint);
+        function finish(id, fallback) {
+          close(id || hint, { fallback: !!fallback });
         }
 
         /* 手动入口（玩家自己点开看看）关掉就该当没发生：resolve(null)，
-           不把推荐轨硬塞给他。开局强制选轨仍走 finish(hint) 兜底。 */
+           不把推荐轨硬塞给他。开局强制选轨仍走 finish(hint, true) 兜底。 */
         function dismiss() {
           if (opts.cancelable) { close(null); return; }
-          finish(hint);
+          finish(hint, true);
         }
 
         function onKey(e) {
@@ -97,7 +106,7 @@
 
         [].slice.call(host.querySelectorAll(".fc-career-card")).forEach(function (btn) {
           btn.addEventListener("click", function () {
-            finish(btn.getAttribute("data-track"));
+            finish(btn.getAttribute("data-track"), false);
           });
         });
         var scrim = host.querySelector(".fc-career-pick__scrim");
@@ -107,7 +116,8 @@
         if (FC.overlay.push("modal", host)) FC.overlay.top().onKey = onKey;
         picker = { host: host, finish: finish };
         if (panel && panel.focus) panel.focus();
-        global.requestAnimationFrame(function () { host.classList.add("is-open"); });
+        if (soft) host.classList.add("is-open");
+        else global.requestAnimationFrame(function () { host.classList.add("is-open"); });
       });
     }
   };

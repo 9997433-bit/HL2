@@ -256,10 +256,10 @@
     host.innerHTML =
       '<div class="fc-contract-pick__scrim"></div>' +
       '<div class="fc-contract-pick__panel" role="dialog" aria-modal="true" ' +
-           'aria-labelledby="fcContractTitle" tabindex="-1">' +
+           'aria-labelledby="fcContractTitle" aria-describedby="fcContractLede" tabindex="-1">' +
         '<p class="fc-contract-pick__eyebrow">MID-TERM CONTRACT · 中期人生合约</p>' +
         '<h2 class="fc-contract-pick__title" id="fcContractTitle">这一局，你打算跟城市要什么？</h2>' +
-        '<p class="fc-contract-pick__lede">' + lede + "</p>" +
+        '<p class="fc-contract-pick__lede" id="fcContractLede">' + lede + "</p>" +
         '<div class="fc-contract-pick__grid">' +
           list.map(function (def) {
             return cardHtml(def, run, opts.era, opts.origin, def.id === rec);
@@ -356,10 +356,11 @@
         host.className = "fc-contract-pick fc-contract-pick--secondary";
         host.innerHTML =
           '<div class="fc-contract-pick__scrim"></div>' +
-          '<div class="fc-contract-pick__panel" role="dialog" aria-modal="true" tabindex="-1">' +
+          '<div class="fc-contract-pick__panel" role="dialog" aria-modal="true" ' +
+               'aria-labelledby="fcContract2Title" aria-describedby="fcContract2Lede" tabindex="-1">' +
             '<p class="fc-contract-pick__eyebrow">SECOND CHAPTER · 二级合约</p>' +
-            '<h2 class="fc-contract-pick__title">主线已达成，下一章签什么？</h2>' +
-            '<p class="fc-contract-pick__lede">六个月内可选一张副线目标：换租、结婚备案或副业备案。</p>' +
+            '<h2 class="fc-contract-pick__title" id="fcContract2Title">主线已达成，下一章签什么？</h2>' +
+            '<p class="fc-contract-pick__lede" id="fcContract2Lede">六个月内可选一张副线目标：换租、结婚备案或副业备案。</p>' +
             '<div class="fc-contract-pick__grid">' +
               list.map(function (def) {
                 return '<button type="button" class="fc-contract-card" data-id="' + esc(def.id) +

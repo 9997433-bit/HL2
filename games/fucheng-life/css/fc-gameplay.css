@@ -1213,6 +1213,25 @@
 .fc-career-card span { font-size: 12px; color: var(--text-dim); }
 .fc-career-pick__rec { color: var(--neon-gold); font-size: 11px; margin-left: 6px; }
 
+/* 读屏专用：闯城 Esc 弱提示等 */
+.fc-career-pick .fc-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+@media (max-width: 360px) {
+  .fc-career-pick__panel { padding: 16px 14px; }
+  .fc-career-pick__lede { font-size: 12px; line-height: 1.55; }
+  .fc-career-pick__grid { gap: 8px; margin-top: 12px; }
+  .fc-career-card { padding: 10px 12px; gap: 2px; }
+  .fc-career-card b { font-size: 14px; }
+  .fc-career-card span { font-size: 11px; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .fc-career-pick,
   .fc-career-pick__panel,

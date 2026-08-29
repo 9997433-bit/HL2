@@ -318,8 +318,13 @@ function testRequiredWordingAndCareerLogName() {
   );
   assert.match(
     careerSrc,
-    /text\s*:\s*["'][^"']*选择了[^"']*["']\s*\+\s*trackName\s*\+/,
-    "career selection log must interpolate the resolved track name"
+    /fallback[\s\S]{0,200}未点选|系统按推荐轨/,
+    "career fallback log must use distinct wording from a manual pick"
+  );
+  assert.match(
+    careerSrc,
+    /text\s*:\s*fallback[\s\S]{0,80}["'][^"']*["']\s*:\s*["'][^"']*选择了/,
+    "career selection log must branch on fallback vs explicit pick"
   );
   assert.doesNotMatch(
     careerSrc,
