@@ -580,7 +580,8 @@
     }
 
     function answer(choice) {
-      if (settled || cooling) return;
+      /* answered 早退：挡住 is-leaving 窗口内二次点击 / Enter 换单 */
+      if (settled || cooling || answered) return;
       answered = outcome("modal", ev, choice);
       var deltas = answered.deltas;
 
@@ -605,6 +606,11 @@
         rollDeltas(resultFace);
         go.focus();
       };
+
+      /* 透明离开窗内不再可 Tab/点选：先 disable 问面按钮 */
+      [].slice.call(askFace.querySelectorAll("button")).forEach(function (b) {
+        b.disabled = true;
+      });
 
       if (soft) swap();
       else {
@@ -843,7 +849,7 @@
     }
 
     function answer(choice) {
-      if (settled || cooling) return;
+      if (settled || cooling || answered) return;
       answered = outcome("letter", ev, choice);
 
       receiptFace.innerHTML =
@@ -862,6 +868,10 @@
         rollDeltas(receiptFace);
         go.focus();
       };
+
+      [].slice.call(readFace.querySelectorAll("button")).forEach(function (b) {
+        b.disabled = true;
+      });
 
       if (soft) swap();
       else {

@@ -228,3 +228,8 @@ python3 -m http.server 8000
     可见控件名单为空时仍拦截 Tab，不让焦点泄漏到背后的仪表盘。  
     选轨与闯城选择卡均以 `aria-labelledby` / `aria-describedby` 关联各自标题与说明。  
     `node games/fucheng-life/tests/r22-trap-visible.test.js` 与 `./scripts/run-fucheng-life-tests.sh` 全绿。
+
+46. [x] **R23 · is-leaving 窗口锁单（事件卡 + 信纸）**  
+    事件问面与信纸读面在离开动画窗口内不可再次作答：已选定后 `answer()` 早退，选项按钮 disabled，`.is-leaving` 关闭指针事件。  
+    `prefers-reduced-motion` / soft 路径仍即时换面，不引入额外空窗。  
+    `node games/fucheng-life/tests/r23-leaving-lock.test.js` 与 `./scripts/run-fucheng-life-tests.sh` 全绿。

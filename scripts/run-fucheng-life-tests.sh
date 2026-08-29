@@ -59,6 +59,7 @@ run_test "R19 cancelable career dismiss and §40 wording" "$TEST_DIR/r19-career-
 run_test "R20 career-pick motion and challenge Escape" "$TEST_DIR/r20-picker-motion.test.js"
 run_test "R21 overlay focus trap and challenge Escape pulse" "$TEST_DIR/r21-focus-trap.test.js"
 run_test "R22 visible focus trap and picker ARIA labels" "$TEST_DIR/r22-trap-visible.test.js"
+run_test "R23 leaving-lock for event and letter faces" "$TEST_DIR/r23-leaving-lock.test.js"
 run_test "dashboard browser boot regression" "$TEST_DIR/page-boot.test.js"
 
 printf '\n浮城人生 test summary: %d passed, %d failed\n' "$passed" "$failed"

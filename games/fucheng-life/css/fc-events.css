@@ -190,6 +190,7 @@ body.fc-scroll-lock {
 .fc-event__face--ask.is-leaving {
   opacity: 0;
   transform: translateY(-8px);
+  pointer-events: none;
 }
 
 /* --------------------------------------------------------------- choices */
@@ -686,6 +687,7 @@ body.fc-scroll-lock {
 .fc-letter__face--read.is-leaving {
   opacity: 0;
   transform: translateY(-8px);
+  pointer-events: none;
 }
 
 .fc-letter__acts {
