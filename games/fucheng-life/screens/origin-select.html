@@ -257,7 +257,7 @@
     pickedId = id;
     allocPanel.hidden = false;
     loadAlloc();
-    next.removeAttribute("aria-disabled");
+    /* loadAlloc → renderAllocRows 会按剩余点数设 aria-disabled；勿在此强行摘掉。 */
     if (persist) FC.write({ originId: o.id });
   }
 

@@ -1030,6 +1030,28 @@
       }
     }
 
+    /* 讨债优先于随机危机：人情账 ≤ −3 时先抽讨债门，抽不到再走危机/O1。 */
+    var debtor = FC.Sim.debtNpc(run);
+    if (debtor) {
+      var debtEv = FC.events.pick({
+        layer: layerOf(),
+        avoid: run.recentModal || [],
+        era: era.id,
+        months: run.months,
+        done: run.done,
+        npcs: run.npcs,
+        contract: FC.Sim.contractCtx(run),
+        debtNpc: debtor.id
+      });
+      if (debtEv) {
+        if (debtEv.once) run.done[debtEv.id] = true;
+        FC.Sim.markNpcFollowupFired(run, debtEv.id);
+        run.sinceModal = 0;
+        run.recentModal = (run.recentModal || []).concat(debtEv.id).slice(-8);
+        return debtEv;
+      }
+    }
+
     if (FC.Sim.pickMonthCrisis && FC.Sim.crisisToEvent) {
       var crisis = FC.Sim.pickMonthCrisis(run, era, origin);
       if (crisis) {
@@ -1050,8 +1072,6 @@
       npcs: run.npcs,
       contract: FC.Sim.contractCtx(run)
     };
-    var debtor = FC.Sim.debtNpc(run);
-    if (debtor) draw.debtNpc = debtor.id;
     var ev = FC.events.pick(draw);
     if (!ev) return null;
     if (ev.type === "redline" && (run.months < 6 || (run.lastRedline && run.months - run.lastRedline < 12))) {
@@ -1223,7 +1243,8 @@
       document.body.appendChild(host);
       if (FC.overlay.push("modal", host)) FC.overlay.top().onKey = onKey;
       if (panel && panel.focus) panel.focus();
-      requestAnimationFrame(function () { host.classList.add("is-open"); });
+      if (softClose) host.classList.add("is-open");
+      else requestAnimationFrame(function () { host.classList.add("is-open"); });
     });
   }
 
@@ -1447,10 +1468,12 @@
     var kind = FC.Sim.checkEnd(run, origin);
     if (!kind || !FC.ending) return Promise.resolve(false);
     run.ended = true;
+    FC.write({ run: run });
     var payload = FC.ending.buildPayload(run, era, origin, kind);
     return FC.ending.show(payload).then(function () {
       FC.write({ run: null });
       window.location.href = "../index.html";
+      return true;
     });
   }
 
@@ -1542,13 +1565,22 @@
     if (run.gap > 0) run.gap--;
     settleMonth(moves);
 
+    /* 急救只救一次：第二次再跌到临界就留给结局判定，否则「健康结局」永远碰不到。 */
     if (run.health <= 4) {
-      var fee = Math.round(income() * 2.2);
-      run.money -= fee;
-      if (run.money < 0) { run.debt += -run.money; run.money = 0; }
-      run.health = 26;
-      moves.push(-fee);
-      pushLog({ t: ts(), tag: "透支", tint: "var(--bad)", text: "你在工位上失去意识。身体的账单，最后一起结。", d: { money: -fee, health: 22 } });
+      if (!run.done) run.done = {};
+      if (!run.done.healthBailed) {
+        run.done.healthBailed = true;
+        var fee = Math.round(income() * 2.2);
+        run.money -= fee;
+        if (run.money < 0) { run.debt += -run.money; run.money = 0; }
+        run.health = 26;
+        moves.push(-fee);
+        pushLog({
+          t: ts(), tag: "透支", tint: "var(--bad)",
+          text: "你在工位上失去意识。医院先把你拉回来——下一次未必还有机会。",
+          d: { money: -fee, health: 22 }
+        });
+      }
     }
 
     /* 合约每月只结算一次，在月结之后、抽卡之前：到期那天城市先把账算完，
@@ -1622,6 +1654,7 @@
   }
 
   function tick(silent) {
+    if (run.ended) return Promise.resolve(true);
     if (run.ap > 0) {
       pushLog({ t: ts(), tag: "系统", tint: "var(--text-faint)", text: "还有 " + run.ap + " 点行动点未使用。", d: {} });
       renderLog();
@@ -1790,14 +1823,19 @@
     $("tick6Btn").addEventListener("click", startFastForward);
     $("ledgerBtn").addEventListener("click", function () { FC.ledger.show(buildLedgerPayload()); });
     $("resetBtn").addEventListener("click", function () {
-      if (FC.events) FC.events.close();
-      if (FC.ledger) FC.ledger.close();
-      run = FC.Sim.freshRun(era, origin);
-      FC.Sim.resetMonthAp(run, era);
-      run.log = [];
-      pushLog({ t: ts(), tag: "入城", tint: "var(--neon-amber)", text: "你在" + era.name + "走出车站。", d: {} });
-      render(true); renderLog();
-      maybeOfferContract();
+      var ask = FC.confirm
+        ? FC.confirm({
+          title: "重开这一局？",
+          body: "当前进度会清掉，从入城重新开始。闯城档会再问一次主目标。",
+          confirmLabel: "重开人生",
+          cancelLabel: "再想想",
+          layer: "L" + layerOf()
+        })
+        : Promise.resolve(nativeConfirm("重开会清掉当前进度"));
+      ask.then(function (ok) {
+        if (!ok) return;
+        restartRun();
+      });
     });
     $("log").addEventListener("animationend", function (ev) {
       if (ev.animationName === "fc-logslide") ev.target.classList.remove("is-new");
@@ -1858,16 +1896,29 @@
        只要补弹真的发生过，这一次进门就到此为止：选轨 / 合约 / 教学都顺延到
        下次进门，免得补的那张卡后面又排一串新弹窗。唯一的例外是闯城主目标 ——
        没选目标这一局没法计分，所以它照弹。 */
+    startBootOffers(false);
+  }
+
+  /* 入城 / 重开共用：选轨 → 闯城目标 → 合约 → 教学。
+     fromReset 时不做补弹（新档没有待办），整条链必走。 */
+  function startBootOffers(fromReset) {
+    if (fromReset) {
+      return maybeOfferCareerTrack()
+        .then(function () { return maybeOfferChallengeGoal(); })
+        .then(function () { return maybeOfferContract(); })
+        .then(function () {
+          if (FC.guide && FC.guide.shouldShow()) return FC.guide.show();
+          return false;
+        });
+    }
     var replayed = false;
-    replayContractResolution()
+    return replayContractResolution()
       .then(function (shown) {
         if (shown) replayed = true;
         return replayPendingModal();
       })
       .then(function (shown) {
         if (shown) replayed = true;
-        /* 轨道没选过时 maybeOfferCareerTrack 自己会兜底，这里跳过只是把它
-           推到下次进门；已经选过就本来也没这一步。 */
         if (replayed) return false;
         return maybeOfferCareerTrack();
       })
@@ -1881,6 +1932,20 @@
         if (FC.guide && FC.guide.shouldShow()) return FC.guide.show();
         return false;
       });
+  }
+
+  function restartRun() {
+    if (FC.events) FC.events.close();
+    if (FC.ledger) FC.ledger.close();
+    if (FC.guide && FC.guide.isOpen && FC.guide.isOpen() && FC.guide.dismiss) FC.guide.dismiss();
+    run = FC.Sim.freshRun(era, origin);
+    FC.Sim.resetMonthAp(run, era);
+    run.log = [];
+    pushLog({ t: ts(), tag: "入城", tint: "var(--neon-amber)", text: "你在" + era.name + "走出车站。", d: {} });
+    render(true);
+    renderLog();
+    FC.write({ run: run });
+    startBootOffers(true);
   }
 
   FC.ready.then(init, function () {

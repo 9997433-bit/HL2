@@ -241,3 +241,7 @@ python3 -m http.server 8000
 48. [x] **R25 · 体验残留大扫除**  
     选轨 Esc 兜底日志与手选措辞分叉；闯城选定后立即落盘，reduce 下关闭不空等；主/二级合约 picker 补齐 ARIA；闯城 Esc 增加 `aria-live` 提示；≤360px 选轨/闯城卡密度收紧。  
     `node games/fucheng-life/tests/r25-ux-sweep.test.js` 与 `./scripts/run-fucheng-life-tests.sh` 全绿。
+
+49. [x] **R26 · 最终可玩收口**  
+    重开人生需确认，并重走选轨 → 闯城目标 → 合约 → 教学；结局展示后停止月结；健康急救仅一次，再次临界可健康结局；讨债优先于随机危机；完整人生约十年可退休；出身 CTA 不再误亮。  
+    `node games/fucheng-life/tests/r26-final-playable.test.js` 与 `./scripts/run-fucheng-life-tests.sh` 全绿。
