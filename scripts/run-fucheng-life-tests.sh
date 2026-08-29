@@ -62,6 +62,7 @@ run_test "R22 visible focus trap and picker ARIA labels" "$TEST_DIR/r22-trap-vis
 run_test "R23 leaving-lock for event and letter faces" "$TEST_DIR/r23-leaving-lock.test.js"
 run_test "R24 overlay max-height vh/dvh dual declarations" "$TEST_DIR/r24-dvh-modals.test.js"
 run_test "R25 UX sweep residuals" "$TEST_DIR/r25-ux-sweep.test.js"
+run_test "R26 final playable gates" "$TEST_DIR/r26-final-playable.test.js"
 run_test "dashboard browser boot regression" "$TEST_DIR/page-boot.test.js"
 
 printf '\n浮城人生 test summary: %d passed, %d failed\n' "$passed" "$failed"

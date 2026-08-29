@@ -7,6 +7,7 @@
     "recentAmbientWindow": 18,
     "minMonthsBeforeBankruptcy": 48,
     "minMonthsBeforeRedline": 72,
+    "minMonthsBeforeRetire": 120,
     "originSagaMinMonths": 3,
     "originSagaMaxMonths": 18,
     "originSagaMonthlyOdds": 0.2

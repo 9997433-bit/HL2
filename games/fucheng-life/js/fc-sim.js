@@ -1706,12 +1706,15 @@
       var bal = (pack && pack.balance) || {};
       if (run.ended) return null;
       if (run.challengeMonths > 0 && (run.months || 0) >= run.challengeMonths) return "challenge";
-      if (run.health <= 0 && run.months >= 24) return "health";
+      /* 急救只救一次；再次跌到临界（≤4）且已入城两年，走健康结局。 */
+      if (run.health <= 4 && run.months >= 24 && run.done && run.done.healthBailed) return "health";
       if (run.money <= 0 && run.debt > FC.Sim.income(run, FC.era(), origin) * 10 &&
           run.months >= (bal.minMonthsBeforeBankruptcy || 48)) return "bankruptcy";
       if (run.rep <= 5 && run.months > (bal.minMonthsBeforeRedline || 72)) return "redline";
       if (run.age >= 75) return "elder";
-      if (run.age >= 62 && run.months >= 240 && run.months % 12 === 0) return "retire";
+      /* 完整人生：62 岁且入城满约十年可退休（快进可达），不必硬拖 20 年。 */
+      if (run.age >= 62 && run.months >= (bal.minMonthsBeforeRetire || 120) &&
+          run.months % 12 === 0) return "retire";
       return null;
     },
 
