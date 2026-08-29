@@ -233,3 +233,7 @@ python3 -m http.server 8000
     事件问面与信纸读面在离开动画窗口内不可再次作答：已选定后 `answer()` 早退，选项按钮 disabled，`.is-leaving` 关闭指针事件。  
     `prefers-reduced-motion` / soft 路径仍即时换面，不引入额外空窗。  
     `node games/fucheng-life/tests/r23-leaving-lock.test.js` 与 `./scripts/run-fucheng-life-tests.sh` 全绿。
+
+47. [x] **R24 · overlay max-height `vh`/`dvh` 双写**  
+    选轨、合约、事件、信纸、确认、台账与结局等 overlay 面板的 `max-height` 在保留 `vh` 回退的同时声明 `dvh`，避免移动端动态工具栏把面板顶出可视区。  
+    `node games/fucheng-life/tests/r24-dvh-modals.test.js` 与 `./scripts/run-fucheng-life-tests.sh` 全绿。

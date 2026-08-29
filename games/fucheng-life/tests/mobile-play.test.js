@@ -20,6 +20,7 @@ assert.ok(dashHtml.includes('id="locPanel"') && dashHtml.includes("fc-life-main"
 
 assert.ok(css.includes("#actionGrid"), "mobile CSS must hide desktop action grid");
 assert.ok(css.includes("min(42vh, 340px)"), "log must scroll inside a capped viewport on mobile");
+assert.ok(css.includes("min(42dvh, 340px)"), "mobile log max-height must also use dvh for dynamic toolbars");
 assert.ok(css.includes("#elevatorPanel"), "mobile CSS should collapse elevator panel");
 
 assert.ok(guideSrc.includes('fallback: "mobileDock"'),
