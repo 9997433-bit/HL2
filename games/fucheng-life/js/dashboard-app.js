@@ -1141,10 +1141,11 @@
       host.className = "fc-career-pick";
       host.innerHTML =
         '<div class="fc-career-pick__scrim"></div>' +
-        '<div class="fc-career-pick__panel" role="dialog" aria-modal="true" tabindex="-1">' +
+        '<div class="fc-career-pick__panel" role="dialog" aria-modal="true" tabindex="-1" ' +
+             'aria-labelledby="fcChallengeTitle" aria-describedby="fcChallengeLede">' +
           '<p class="fc-eyebrow">CHALLENGE · 闯城 60 月</p>' +
-          '<h2 class="fc-career-pick__title">这六十个月，你赌哪一张牌？</h2>' +
-          '<p class="fc-career-pick__lede">选一个主目标。期满按完成度与生存质量打分，不是混满月数就算赢。必须选定一张才能往下走。</p>' +
+          '<h2 class="fc-career-pick__title" id="fcChallengeTitle">这六十个月，你赌哪一张牌？</h2>' +
+          '<p class="fc-career-pick__lede" id="fcChallengeLede">选一个主目标。期满按完成度与生存质量打分，不是混满月数就算赢。必须选定一张才能往下走。</p>' +
           '<div class="fc-career-pick__grid">' +
             goals.map(function (g) {
               return '<button type="button" class="fc-career-card" data-goal="' + esc(g.id) + '">' +

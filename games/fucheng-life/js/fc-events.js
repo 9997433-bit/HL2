@@ -119,10 +119,25 @@
       },
       trap: function (rootEl, e) {
         if (e.key !== "Tab") return;
-        var items = [].slice.call(
+        var found = [].slice.call(
           rootEl.querySelectorAll("button:not([disabled]), [href], [tabindex]:not([tabindex='-1'])")
         );
-        if (!items.length) return;
+        /* 折叠的分段仍在 DOM 里，querySelectorAll 照样选中，但 Tab 不会停在它们身上：
+           把不可见的项留在环里，回绕就会落到一个看不见的按钮，看起来像焦点凭空消失一拍。 */
+        var items = [], el, cs, i;
+        for (i = 0; i < found.length; i++) {
+          el = found[i];
+          if (el.closest && el.closest("[hidden]")) continue;
+          if (el.offsetParent === null) {
+            /* position:fixed 的节点没有 offsetParent 却是可见的，只有它能豁免 */
+            cs = global.getComputedStyle ? global.getComputedStyle(el) : null;
+            if (!cs || cs.position !== "fixed") continue;
+          }
+          items.push(el);
+        }
+        /* 整段都不可聚焦时仍要吞掉 Tab：红线冷却期的卡片一个可用按钮也没有，
+           放行就会把焦点漏给背后的仪表盘。 */
+        if (!items.length) { e.preventDefault(); return; }
         var first = items[0], last = items[items.length - 1];
         /* 开卡后焦点落在 panel 自身（tabindex="-1"，不在 items 内），此时不接管就会漏到背后的仪表盘 */
         if (items.indexOf(doc.activeElement) < 0) { e.preventDefault(); if (e.shiftKey) last.focus(); else first.focus(); }
