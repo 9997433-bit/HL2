@@ -142,7 +142,11 @@ async function main() {
   assert.ok(nullGuard >= 0, "career offer must return false when the picker resolves without an id");
   assert.ok(applyTrack > nullGuard,
     "career offer must reject a missing id before applying a track or writing its log");
-
+  assert.match(
+    offerSrc,
+    /result\s*&&\s*typeof\s+result\s*===\s*["']object["']/,
+    "career offer must unwrap { id, fallback } picker results"
+  );
   const initSrc = functionSection(dashSrc, "init");
   assert.match(
     initSrc,

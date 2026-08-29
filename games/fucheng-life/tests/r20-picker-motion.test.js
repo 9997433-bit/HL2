@@ -83,7 +83,7 @@ assert.match(reducedMatch[1], /transform\s*:\s*none/,
   "reduced-motion fallback must remove panel transforms");
 
 /* The career module must leave its shared exit class mounted for the same 180ms. */
-const closeStart = careerSrc.indexOf("function close(value)");
+const closeStart = careerSrc.indexOf("function close(value");
 const closeEnd = careerSrc.indexOf("\n        function finish(", closeStart);
 assert.ok(closeStart >= 0 && closeEnd > closeStart, "career picker close helper must be bounded");
 const careerCloseSrc = careerSrc.slice(closeStart, closeEnd);
@@ -91,6 +91,8 @@ assert.match(careerCloseSrc, /classList\.add\(\s*["']is-closing["']\s*\)/,
   "career picker close must enter is-closing");
 assert.match(careerCloseSrc, /setTimeout\(\s*done\s*,\s*180\s*\)/,
   "career picker must stay mounted for its 180ms exit");
+assert.match(careerCloseSrc, /if\s*\(\s*soft\s*\)\s*done\(\s*\)/,
+  "career picker must skip the exit delay under reduced motion");
 
 /* Execute the challenge picker in a small DOM harness so Esc cannot settle it. */
 async function testChallengePicker() {

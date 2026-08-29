@@ -237,3 +237,7 @@ python3 -m http.server 8000
 47. [x] **R24 · overlay max-height `vh`/`dvh` 双写**  
     选轨、合约、事件、信纸、确认、台账与结局等 overlay 面板的 `max-height` 在保留 `vh` 回退的同时声明 `dvh`，避免移动端动态工具栏把面板顶出可视区。  
     `node games/fucheng-life/tests/r24-dvh-modals.test.js` 与 `./scripts/run-fucheng-life-tests.sh` 全绿。
+
+48. [x] **R25 · 体验残留大扫除**  
+    选轨 Esc 兜底日志与手选措辞分叉；闯城选定后立即落盘，reduce 下关闭不空等；主/二级合约 picker 补齐 ARIA；闯城 Esc 增加 `aria-live` 提示；≤360px 选轨/闯城卡密度收紧。  
+    `node games/fucheng-life/tests/r25-ux-sweep.test.js` 与 `./scripts/run-fucheng-life-tests.sh` 全绿。
